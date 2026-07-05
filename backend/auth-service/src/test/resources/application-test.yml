@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+
+app:
+  jwt:
+    # Base64 encoded secret (at least 32 bytes for HS256)
+    secret: VGhpc0lzQVRlc3RTZWNyZXRLZXlGb3JKV1RTaWduaW5nSXRNdXN0QmVBdExlYXN0MjU2Qml0cw==
+    access-token-expiry: 900000
+    refresh-token-expiry: 604800000
+  cors:
+    allowed-origins: http://localhost:3000
+  password-reset:
+    base-url: http://localhost:3000/reset-password
+    token-expiry-minutes: 60
