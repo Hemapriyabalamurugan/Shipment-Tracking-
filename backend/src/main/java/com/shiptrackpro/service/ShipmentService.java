@@ -1,7 +1,7 @@
+
 package com.shiptrackpro.service;
 
 import com.shiptrackpro.entity.Shipment;
-import com.shiptrackpro.exception.ResourceNotFoundException;
 import com.shiptrackpro.repository.ShipmentRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,65 +16,52 @@ public class ShipmentService {
         this.shipmentRepository = shipmentRepository;
     }
 
+    // Create Shipment
     public Shipment saveShipment(Shipment shipment) {
         return shipmentRepository.save(shipment);
     }
 
+    // Get All Shipments
     public List<Shipment> getAllShipments() {
         return shipmentRepository.findAll();
     }
 
+    // Get Shipment By Id
     public Shipment getShipmentById(Long id) {
         return shipmentRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Shipment not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Shipment not found with id: " + id));
     }
 
-    public Shipment updateShipment(Long id, Shipment shipment) {
+    // Update Shipment
+    public Shipment updateShipment(Long id, Shipment shipmentDetails) {
 
-        Shipment existing = shipmentRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Shipment not found with id: " + id));
+        Shipment shipment = getShipmentById(id);
 
-        existing.setTrackingNumber(shipment.getTrackingNumber());
+        shipment.setTrackingNumber(shipmentDetails.getTrackingNumber());
+        shipment.setSenderName(shipmentDetails.getSenderName());
+        shipment.setSenderPhone(shipmentDetails.getSenderPhone());
 
-        existing.setCustomer(shipment.getCustomer());
-        existing.setBusinessClient(shipment.getBusinessClient());
-        existing.setDriver(shipment.getDriver());
+        shipment.setReceiverName(shipmentDetails.getReceiverName());
+        shipment.setReceiverPhone(shipmentDetails.getReceiverPhone());
 
-        existing.setSenderName(shipment.getSenderName());
-        existing.setSenderPhone(shipment.getSenderPhone());
+        shipment.setDeliveryAddress(shipmentDetails.getDeliveryAddress());
+        shipment.setDeliveryCity(shipmentDetails.getDeliveryCity());
+        shipment.setDeliveryState(shipmentDetails.getDeliveryState());
+        shipment.setDeliveryZip(shipmentDetails.getDeliveryZip());
+        shipment.setDeliveryCountry(shipmentDetails.getDeliveryCountry());
 
-        existing.setReceiverName(shipment.getReceiverName());
-        existing.setReceiverPhone(shipment.getReceiverPhone());
+        shipment.setPackageWeightKg(shipmentDetails.getPackageWeightKg());
+        shipment.setPackageDescription(shipmentDetails.getPackageDescription());
+        shipment.setPackageType(shipmentDetails.getPackageType());
 
-        existing.setDeliveryAddress(shipment.getDeliveryAddress());
-        existing.setDeliveryCity(shipment.getDeliveryCity());
-        existing.setDeliveryState(shipment.getDeliveryState());
-        existing.setDeliveryZip(shipment.getDeliveryZip());
-        existing.setDeliveryCountry(shipment.getDeliveryCountry());
+        shipment.setStatus(shipmentDetails.getStatus());
 
-        existing.setPackageWeightKg(shipment.getPackageWeightKg());
-        existing.setPackageDescription(shipment.getPackageDescription());
-        existing.setPackageType(shipment.getPackageType());
-
-        existing.setStatus(shipment.getStatus());
-
-        existing.setCurrentLocationLat(shipment.getCurrentLocationLat());
-        existing.setCurrentLocationLng(shipment.getCurrentLocationLng());
-
-        existing.setEstimatedDeliveryDate(shipment.getEstimatedDeliveryDate());
-        existing.setActualDeliveryDate(shipment.getActualDeliveryDate());
-        existing.setScheduledDate(shipment.getScheduledDate());
-
-        return shipmentRepository.save(existing);
+        return shipmentRepository.save(shipment);
     }
 
+    // Delete Shipment
     public void deleteShipment(Long id) {
-        Shipment shipment = shipmentRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Shipment not found with id: " + id));
-
-        shipmentRepository.delete(shipment);
+        shipmentRepository.deleteById(id);
     }
 }
+

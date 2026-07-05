@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Table(name = "shipments")
 @Getter
 @Setter
+
+
 public class Shipment {
 
     @Id
@@ -20,6 +22,10 @@ public class Shipment {
 
     @Column(name = "tracking_number", nullable = false, unique = true)
     private String trackingNumber;
+
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
