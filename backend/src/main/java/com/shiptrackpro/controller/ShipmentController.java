@@ -1,7 +1,7 @@
-package com.training.controller;
+package com.shiptrackpro.controller;
 
-import com.training.entity.Shipment;
-import com.training.service.ShipmentService;
+import com.shiptrackpro.entity.Shipment;
+import com.shiptrackpro.service.ShipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
