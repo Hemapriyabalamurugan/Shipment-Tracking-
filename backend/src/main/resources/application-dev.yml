@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/ShiptrackPro
     username: postgres
-    password: use_your_password
+    password: useyour_password
     driver-class-name: org.postgresql.Driver
 
   jpa:
