@@ -5,7 +5,27 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/backend/pom.xml" />
+        <option value="$PROJECT_DIR$/delivery-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/pod-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/Notification-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/shipmentManagement-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/delivery-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/delivery-service/auth-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/auth-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/auth-service/eureka-server/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/eureka-server/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/api-gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/Notification-service/analytics-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/analytics-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/analytics-report-service/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/tracking-service/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/backend/pom.xml" />
+        <option value="$PROJECT_DIR$/backend/tracking-service/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_25" default="true" project-jdk-name="25" project-jdk-type="JavaSDK">

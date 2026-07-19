@@ -2,68 +2,40 @@ server:
   port: 8081
 
 spring:
-  application:
-    name: auth-service
-
-  # ── Database ──
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:shiptrack}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ShiptrackPro
+    username: postgres
+    password: manoj123!@#
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+
     show-sql: true
+
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-
-  # ── Mail (SMTP for password-reset emails) ──
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+   host: smtp.gmail.com
+   port: 587
+   username: catjilarajput@gmail.com
+   password: ttgt euqi epnx wynl
+   properties:
+     mail:
+       smtp:
+         auth: true
+         starttls:
+           enable: true
+jwt:
+ secret: myVeryLongSecretKeyForShipmentApplicationJwtAuthentication2025
+ expiration: 86400000
 
-  # ── OAuth2 Client (Google) ──
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:placeholder}
-            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder}
-            scope: openid, profile, email
-            redirect-uri: "{baseUrl}/auth/oauth2/callback/google"
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
-            user-name-attribute: sub
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
 
-# ── Application-specific config ──
-app:
-  jwt:
-    secret: ${JWT_SECRET:U2hpcFRyYWNrUHJvU2VjcmV0S2V5Rm9ySldUU2lnbmluZ011c3RCZUF0TGVhc3QyNTZCaXRzTG9uZyEh}
-    access-token-expiry: 900000        # 15 minutes in ms
-    refresh-token-expiry: 604800000    # 7 days in ms
-  cors:
-    allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:5173}
-  password-reset:
-    base-url: ${FRONTEND_URL:http://localhost:3000}/reset-password
-    token-expiry-minutes: 60
-
-logging:
-  level:
-    com.shiptrack.auth: DEBUG
-    org.springframework.security: DEBUG
+#  jackson:
+#    serialization:
+#      write-dates-as-timestamps: false
