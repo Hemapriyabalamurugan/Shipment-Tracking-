@@ -32,11 +32,11 @@ export const NAV_BY_ROLE = {
       items: [
       // changes done here to section add role like admin 
         { label: "Dashboard", to: "/app/admin/dashboard", icon: LayoutDashboard },
-        {
-          label: "Live Delivery Monitoring",
-          to: "/app/live-map",
-          icon: Activity,
-        },
+        // {
+        //   label: "Live Delivery Monitoring",
+        //   to: "/app/live-map",
+        //   icon: Activity,
+        // },
         { label: "Analytics", to: "/app/analytics", icon: BarChart3 },
       ],
     },
@@ -146,19 +146,19 @@ export const NAV_BY_ROLE = {
         },
       ],
     },
-    {
-      label: "Account",
-      items: [
-        { label: "Invoices", to: "/app/billing", icon: CreditCard },
-        { label: "Reports", to: "/app/business-reports", icon: FileText },
-        {
-          label: "Notifications",
-          to: "/app/notifications",
-          icon: MessageSquare,
-        },
-        // { label: "Settings", to: "/app/settings", icon: Settings },
-      ],
-    },
+    // {
+    //   label: "Account",
+    //   items: [
+    //     // { label: "Invoices", to: "/app/billing", icon: CreditCard },
+    //     // { label: "Reports", to: "/app/business-reports", icon: FileText },
+    //     // {
+    //     //   label: "Notifications",
+    //     //   to: "/app/notifications",
+    //     //   icon: MessageSquare,
+    //     // },
+    //     // { label: "Settings", to: "/app/settings", icon: Settings },
+    //   ],
+    // },
   ],
   customer: [
     {
@@ -278,7 +278,7 @@ export const PAGE_ACCESS = {
     "support_agent",
   ],
   "/app/notifications": [
-    // "admin",
+    "admin",
     "logistics_operator",
     "business_client",
     "customer",

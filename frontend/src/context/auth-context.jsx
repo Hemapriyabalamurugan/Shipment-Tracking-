@@ -8,6 +8,12 @@ import {
   useState,
 } from "react";
 import { authApi } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  connectNotificationSocket,
+  disconnectNotificationSocket,
+} from "@/lib/websocket";
+import { queryKeys } from "@/lib/query-client";
 
 const AuthContext = createContext(null);
 
@@ -17,6 +23,7 @@ export function AuthProvider({ children }) {
     loading: true,
     error: null,
   });
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     let active = true;
@@ -43,6 +50,39 @@ export function AuthProvider({ children }) {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!state.user) return;
+
+    // connectNotificationSocket(state.user.id, () => {
+    //   console.log("📩 Notification received");
+
+    //   queryClient.invalidateQueries({
+    //     queryKey: queryKeys.notifications,
+    //   });
+    // });
+connectNotificationSocket(state.user.id, () => {
+  console.log("📩 Notification received");
+
+  // Refresh notifications
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.notifications,
+  });
+
+  // Refresh shipment list
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.shipments,
+  });
+
+  // Refresh current customer's shipment list
+  queryClient.invalidateQueries({
+    queryKey: queryKeys.myShipments(state.user.id),
+  });
+});
+    return () => {
+      disconnectNotificationSocket();
+    };
+  }, [state.user, queryClient]);
 
   const login = useCallback(async (email, role) => {
     setState((s) => ({
@@ -83,6 +123,19 @@ export function AuthProvider({ children }) {
       user: updated,
     }));
   }, []);
+  // ================changes done her ====================
+  const refreshUser = useCallback(async () => {
+    const user = await authApi.me();
+
+    setState({
+      user,
+      loading: false,
+      error: null,
+    });
+
+    return user;
+  }, []);
+  // ================================================
 
   const hasRole = useCallback(
     (...roles) => (state.user ? roles.includes(state.user.role) : false),
@@ -95,6 +148,7 @@ export function AuthProvider({ children }) {
       login,
       logout,
       updateProfile,
+      refreshUser,
       hasRole,
     }),
     [state, login, logout, updateProfile, hasRole],

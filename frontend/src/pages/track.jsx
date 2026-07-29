@@ -1,6 +1,8 @@
 
 import { useState } from "react";
-import { useTrackByNumber } from "@/lib/hooks";
+// import { useTrackByNumber } from "@/lib/hooks";
+import { useEffect } from "react";
+import { shipmentsApi } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/shared/page-header";
 import { MapView } from "@/components/shared/map-view";
@@ -22,7 +24,36 @@ import { relativeDay } from "@/lib/utils";
 export function TrackPage() {
   const [trackingInput, setTrackingInput] = useState("");
   const [submitted, setSubmitted] = useState("");
-  const trackQuery = useTrackByNumber(submitted);
+  // =================================================
+  const [tracking, setTracking] = useState(null);
+  const [loading, setLoading] = useState(false);
+  // const trackQuery = useTrackByNumber(submitted);
+  // ==================================================
+  useEffect(() => {
+    if (!submitted) {
+      setTracking(null);
+      return;
+    }
+
+    async function loadTracking() {
+      try {
+        setLoading(true);
+
+        const data = await shipmentsApi.getTracking(submitted);
+
+        setTracking(data);
+      } catch (error) {
+        console.error(error);
+
+        setTracking(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadTracking();
+  }, [submitted]);
+  // ======================================================================
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -30,7 +61,7 @@ export function TrackPage() {
     setSubmitted(trackingInput.trim());
   };
 
-  const shipment = trackQuery.data;
+  // const tracking = trackQuery.data;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -72,10 +103,11 @@ export function TrackPage() {
                 Track <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </form>
-
-            <p className="text-center text-xs text-muted-foreground">
+{/* ===================================================================== */}
+            {/* <p className="text-center text-xs text-muted-foreground">
               Try: STP-9F4K-8821 · STP-2H7M-4410 · STP-5C2P-7733
-            </p>
+            </p> */}
+            {/* ========================================================= */}
           </div>
         </div>
       </Card>
@@ -102,7 +134,7 @@ export function TrackPage() {
         </Card>
       )}
 
-      {shipment && (
+      {tracking && (
         <div className="space-y-4">
           <Card className="overflow-hidden">
             <CardContent className="p-4">

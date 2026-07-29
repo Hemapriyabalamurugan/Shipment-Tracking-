@@ -1,87 +1,15 @@
-//package com.shipment.shipmentmanagement.controller;
-//
-//import com.shipment.shipmentmanagement.entity.Shipment;
-//import com.shipment.shipmentmanagement.service.ShipmentService;
-//import org.springframework.web.bind.annotation.*;
-//import com.shipment.shipmentmanagement.dto.ShipmentAnalyticsDto;
-//import com.shipment.shipmentmanagement.dto.CustomerShipmentAnalyticsDto;
-//import com.shipment.shipmentmanagement.dto.BusinessShipmentAnalyticsDto;
-//import java.util.List;
-//
-//@RestController
-//@RequestMapping("/api/shipments")
-//public class ShipmentController {
-//
-//    private final ShipmentService shipmentService;
-//
-//    public ShipmentController(ShipmentService shipmentService) {
-//        this.shipmentService = shipmentService;
-//    }
-//
-//    @PostMapping
-//    public Shipment saveShipment(@RequestBody Shipment shipment) {
-//        return shipmentService.saveShipment(shipment);
-//    }
-//
-//    @GetMapping
-//    public List<Shipment> getAllShipments() {
-//        return shipmentService.getAllShipments();
-//    }
-//
-//    @GetMapping("/{id}")
-//    public Shipment getShipmentById(@PathVariable Long id) {
-//        return shipmentService.getShipmentById(id);
-//    }
-//
-//    @PutMapping("/{id}")
-//    public Shipment updateShipment(@PathVariable Long id,
-//                                   @RequestBody Shipment shipment) {
-//        return shipmentService.updateShipment(id, shipment);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public String deleteShipment(@PathVariable Long id) {
-//        shipmentService.deleteShipment(id);
-//        return "Shipment deleted successfully";
-//    }
-//
-//    @GetMapping("/analytics/summary")
-//    public ShipmentAnalyticsDto getShipmentAnalytics() {
-//
-//        return shipmentService.getShipmentAnalytics();
-//    }
-//
-//    @GetMapping("/analytics/customer/{customerId}")
-//    public CustomerShipmentAnalyticsDto getCustomerAnalytics(
-//            @PathVariable Long customerId
-//    ) {
-//
-//        return shipmentService.getCustomerAnalytics(
-//                customerId
-//        );
-//    }
-//
-//    @GetMapping("/analytics/business/{businessClientId}")
-//    public BusinessShipmentAnalyticsDto getBusinessAnalytics(
-//            @PathVariable Long businessClientId
-//    ) {
-//        return shipmentService.getBusinessAnalytics(
-//                businessClientId
-//        );
-//    }
-//}
-//
+
 
 package com.shipment.shipmentmanagement.controller;
 
-import com.shipment.shipmentmanagement.dto.BusinessShipmentAnalyticsDto;
-import com.shipment.shipmentmanagement.dto.CustomerShipmentAnalyticsDto;
-import com.shipment.shipmentmanagement.dto.ShipmentAnalyticsDto;
+import com.shipment.shipmentmanagement.dto.*;
 import com.shipment.shipmentmanagement.entity.Shipment;
 import com.shipment.shipmentmanagement.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
+import com.shipment.shipmentmanagement.entity.enums.ShipmentStatus;
+import com.shipment.shipmentmanagement.service.RouteService;
+import com.shipment.shipmentmanagement.dto.HubDropdownResponse;
 
 import java.util.List;
 
@@ -91,6 +19,7 @@ import java.util.List;
 public class ShipmentController {
 
     private final ShipmentService shipmentService;
+    private final RouteService routeService;
 
     @PostMapping
     public Shipment saveShipment(@RequestBody Shipment shipment) {
@@ -138,5 +67,86 @@ public class ShipmentController {
             @PathVariable Long businessClientId
     ) {
         return shipmentService.getBusinessAnalytics(businessClientId);
+    }
+    @GetMapping("/customer/{customerId}")
+    public List<Shipment> getShipmentsByCustomer(
+            @PathVariable Long customerId
+    ) {
+        return shipmentService.getShipmentsByCustomer(customerId);
+    }
+
+    @PostMapping("/{id}/accept")
+    public Shipment acceptShipment(
+            @PathVariable Long id,
+            @RequestBody AcceptShipmentRequest request
+    ) {
+        return shipmentService.acceptShipment(
+                id,
+                request.getOperatorId()
+        );
+    }
+
+    @PutMapping("/{id}/status")
+    public Shipment updateShipmentStatus(
+            @PathVariable Long id,
+            @RequestParam ShipmentStatus status
+    ) {
+
+        return shipmentService.updateShipmentStatus(
+                id,
+                status
+        );
+    }
+
+    @PutMapping("/{shipmentId}/reach-next-hub")
+    public String reachNextHub(
+            @PathVariable Long shipmentId
+    ) {
+
+        routeService.markCurrentHubReached(shipmentId);
+
+        return "Current hub updated successfully.";
+    }
+    @GetMapping("/{shipmentId}/tracking")
+    public TrackingResponse getTrackingDetails(
+            @PathVariable Long shipmentId
+    ) {
+
+        return shipmentService.getTrackingDetails(
+                shipmentId
+        );
+    }
+
+    @GetMapping("/{shipmentId}/navigation")
+    public NavigationResponse getNavigation(
+            @PathVariable Long shipmentId
+    ) {
+
+        return routeService.getNavigation(
+                shipmentId
+        );
+    }
+
+    @GetMapping("/analytics")
+    public List<ShipmentAnalyticsDataResponse> getAllShipmentsForAnalytics() {
+        return shipmentService.getAllShipmentsForAnalytics();
+    }
+
+    @GetMapping("/analytics/business/{businessClientId}/shipments")
+    public List<ShipmentAnalyticsDataResponse> getBusinessShipmentsForAnalytics(
+            @PathVariable Long businessClientId
+    ) {
+        return shipmentService.getBusinessShipmentsForAnalytics(businessClientId);
+    }
+
+    @GetMapping("/analytics/{shipmentId}")
+    public ShipmentAnalyticsDataResponse getShipmentForVerification(
+            @PathVariable Long shipmentId
+    ) {
+        return shipmentService.getShipmentForVerification(shipmentId);
+    }
+    @GetMapping("/hubs")
+    public List<HubDropdownResponse> getAllHubs() {
+        return shipmentService.getAllHubs();
     }
 }

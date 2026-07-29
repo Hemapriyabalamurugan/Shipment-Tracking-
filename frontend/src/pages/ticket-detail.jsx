@@ -105,14 +105,15 @@ export function TicketDetailPage() {
     );
   }
 
-  const isStaff = user.role === "support" || user.role === "admin";
+  // const isStaff = user.role === "support" || user.role === "admin";
+  const isStaff = user?.role === "support_agent" || user?.role === "admin";
 
   const handleReply = async () => {
     if (!body.trim()) return;
     await reply.mutateAsync({
       id: ticket.id,
       body,
-      author: user.name,
+      author: user.name ?? user.firstName,
     });
     setBody("");
     toast.success("Reply sent");
@@ -196,7 +197,8 @@ export function TicketDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {ticket.messages.map((m) => {
-                const isMe = m.author === user.name;
+                // const isMe = m.author === user.name;
+                const isMe = m.author === (user.name ?? user.firstName);
                 return (
                   <div
                     key={m.id}

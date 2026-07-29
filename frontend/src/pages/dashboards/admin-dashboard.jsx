@@ -154,8 +154,8 @@ export default function AdminDashboard() {
                 operations overview
               </p> */}
               <p className="text-sm text-muted-foreground">
-                Welcome back, {user.firstName} — real-time logistics operations
-                overview
+                Welcome back, {user.firstName ?? user.name} — real-time
+                logistics operations overview
               </p>
             </div>
           </div>
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           label="Total Users"
-          value={formatNumber(totalUsers + 1910)}
+          value={formatNumber(totalUsers)}
           icon={Users}
           iconClass="bg-primary/10 text-primary"
           trend={{ value: "+142", direction: "up", positive: true }}
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
         />
         <StatCard
           label="Total Shipments"
-          value={formatNumber(4148)}
+          value={formatNumber(shipments.data?.length ?? 0)}
           icon={Package}
           iconClass="bg-chart-6/10 text-chart-6"
           trend={{ value: "+12.4%", direction: "up", positive: true }}
@@ -281,8 +281,8 @@ export default function AdminDashboard() {
           </CardContent>
         </Card> */}
 
-        {/* <Card> */}
-        {/* <CardHeader className="pb-3">
+      {/* <Card> */}
+      {/* <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <Gauge className="h-4 w-4 text-primary" />
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
               </Badge>
             </div>
           </CardHeader> */}
-        {/* <CardContent className="space-y-2.5">
+      {/* <CardContent className="space-y-2.5">
             {microservices.data?.slice(0, 6).map((ms) => (
               <div
                 key={ms.id}
@@ -351,7 +351,7 @@ export default function AdminDashboard() {
               <Link to="/app/system-monitoring">View all services</Link>
             </Button>
           </CardContent> */}
-        {/* </Card> */}
+      {/* </Card> */}
       {/* </div> */}
 
       {/* Charts */}
@@ -448,80 +448,8 @@ export default function AdminDashboard() {
       </div> */}
 
       {/* Activity + Microservice Monitor */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>24-Hour Delivery Activity</CardTitle>
-            <CardDescription>Deliveries and pickups by hour</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={240}>
-              <AreaChart data={analytics.data?.deliveryTrend24h}>
-                <defs>
-                  <linearGradient id="gdel" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="0%"
-                      stopColor="hsl(var(--chart-2))"
-                      stopOpacity={0.3}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="hsl(var(--chart-2))"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                  <linearGradient id="gpick" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="0%"
-                      stopColor="hsl(var(--chart-6))"
-                      stopOpacity={0.3}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="hsl(var(--chart-6))"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="hour"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <Tooltip content={<ChartTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="deliveries"
-                  stroke="hsl(var(--chart-2))"
-                  strokeWidth={2.5}
-                  fill="url(#gdel)"
-                  name="Deliveries"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="pickups"
-                  stroke="hsl(var(--chart-6))"
-                  strokeWidth={2.5}
-                  fill="url(#gpick)"
-                  name="Pickups"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* <Card>
+      
+      {/* <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -586,7 +514,6 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card> */}
-      </div>
 
       {/* {/* Activity Feed + Shipments */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

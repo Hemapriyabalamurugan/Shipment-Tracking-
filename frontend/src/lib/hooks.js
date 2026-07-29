@@ -10,6 +10,7 @@ import {
   analyticsApi,
 } from "./api";
 import { queryKeys } from "./query-client";
+import { useAuth } from "@/context/auth-context";
 export function useShipments() {
   return useQuery({
     queryKey: queryKeys.shipments,
@@ -23,6 +24,15 @@ export function useShipment(id) {
     enabled: !!id,
   });
 }
+// ===============================================================
+export function useNavigation(shipmentId) {
+  return useQuery({
+    queryKey: ["shipments", shipmentId, "navigation"],
+    queryFn: () => shipmentsApi.getNavigation(shipmentId),
+    enabled: !!shipmentId,
+  });
+}
+// ===================================================================
 export function useMyShipments(customerId) {
   return useQuery({
     queryKey: customerId
@@ -160,10 +170,33 @@ export function useAnalytics() {
     queryFn: analyticsApi.get,
   });
 }
+// export function useAnalytics() {
+//   const { user } = useAuth();
+
+//   return useQuery({
+//     queryKey: ["analytics", user.role, user.id],
+//     queryFn: () => {
+//       if (user.role === "ADMIN") {
+//         return analyticsApi.get();
+//       }
+
+//       return analyticsApi.getBusinessDashboard(user.id);
+//     },
+//     enabled: !!user,
+//   });
+// }
 export function useActivity() {
   return useQuery({
     queryKey: queryKeys.activity,
     queryFn: analyticsApi.activity,
+  });
+}
+
+export function useBusinessAnalytics(businessClientId) {
+  return useQuery({
+    queryKey: ["business-analytics", businessClientId],
+    queryFn: () => analyticsApi.getBusinessDashboard(businessClientId),
+    enabled: !!businessClientId,
   });
 }
 
@@ -213,12 +246,15 @@ export function usePodRecords() {
   return useQuery({
     queryKey: queryKeys.podRecords,
     queryFn: podApi.list,
+    refetchInterval: 5000,
   });
 }
 export function useVerifyPod() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: podApi.verify,
+    // mutationFn: podApi.verify,
+    mutationFn: ({ id, businessClientId }) =>
+      podApi.verify(id, businessClientId),
     onSuccess: () =>
       qc.invalidateQueries({
         queryKey: queryKeys.podRecords,
@@ -258,5 +294,81 @@ export function useDriverPerformance() {
   return useQuery({
     queryKey: queryKeys.driverPerformance,
     queryFn: driverPerformanceApi.list,
+  });
+}
+// export function useAcceptShipment() {
+//   const qc = useQueryClient();
+
+//   return useMutation({
+//     mutationFn: ({ id, operatorId }) => shipmentsApi.accept(id, operatorId),
+
+//     onSuccess: () => {
+//       qc.invalidateQueries({
+//         queryKey: queryKeys.shipments,
+//       });
+
+//       qc.invalidateQueries({
+//         queryKey: queryKeys.notifications,
+//       });
+//     },
+//   });
+// }
+export function useAcceptShipment() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, operatorId }) => shipmentsApi.accept(id, operatorId),
+
+    onSuccess: async () => {
+      await qc.invalidateQueries({
+        queryKey: queryKeys.shipments,
+      });
+
+      await qc.refetchQueries({
+        queryKey: queryKeys.shipments,
+      });
+
+      await qc.invalidateQueries({
+        queryKey: queryKeys.notifications,
+      });
+    },
+  });
+}
+export function useUpdateShipmentStatus() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, status }) => shipmentsApi.updateStatus(id, status),
+
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.shipments,
+      });
+
+      qc.invalidateQueries({
+        queryKey: queryKeys.notifications,
+      });
+    },
+  });
+}
+export function useReachNextHub() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (shipmentId) => shipmentsApi.reachNextHub(shipmentId),
+
+    onSuccess: (_, shipmentId) => {
+      qc.invalidateQueries({
+        queryKey: ["shipments", shipmentId, "navigation"],
+      });
+
+      qc.invalidateQueries({
+        queryKey: ["shipments", shipmentId, "tracking"],
+      });
+
+      qc.invalidateQueries({
+        queryKey: queryKeys.shipments,
+      });
+    },
   });
 }

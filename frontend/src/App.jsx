@@ -43,6 +43,8 @@ import CustomerDashboard from "./pages/dashboards/customer-dashboard";
 import BusinessDashboard from "./pages/dashboards/business-dashboard";
 import OperatorDashboard from "./pages/dashboards/operator-dashboard";
 import SupportDashboard from "./pages/dashboards/support-dashboard";
+import OperatorNavigationPage from "@/pages/navigation";
+
 
 export default function App() {
   return (
@@ -87,6 +89,14 @@ export default function App() {
 
                 <Route path="shipments" element={<ShipmentsPage />} />
                 <Route path="shipments/:id" element={<ShipmentDetailPage />} />
+
+                <Route
+                  path="operator/navigation/:id"
+                  element={<OperatorNavigationPage />}
+                />
+
+                
+
                 <Route path="live-map" element={<LiveMapPage />} />
                 <Route path="track" element={<TrackPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />

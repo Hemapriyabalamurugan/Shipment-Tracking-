@@ -104,4 +104,16 @@ public class NotificationController {
 
         return service.getUnreadNotificationCount(userId);
     }
+
+    @PutMapping("/shipment/{shipmentId}/accepted/{operatorId}")
+    public void markShipmentAccepted(
+            @PathVariable Long shipmentId,
+            @PathVariable Long operatorId
+    ) {
+
+        service.markShipmentAccepted(
+                shipmentId,
+                operatorId
+        );
+    }
 }

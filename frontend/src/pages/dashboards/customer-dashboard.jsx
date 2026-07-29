@@ -43,8 +43,10 @@ export default function CustomerDashboard() {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-fade-in">
-        {/* <CustomerHeader userName={user.name} /> */}
-        <CustomerHeader userName={user?.email || "Customer"} />
+        
+        <CustomerHeader
+          userName={user?.firstName ?? user?.name ?? "Customer"}
+        />
         <LoadingState />
       </div>
     );
@@ -52,9 +54,10 @@ export default function CustomerDashboard() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* <CustomerHeader userName={user.name} /> */}
+     
 
-      <CustomerHeader userName={user?.email || "Customer"} />
+      <CustomerHeader userName={user?.firstName ?? user?.name ?? "Customer"} />
+      
       <div className="grid grid-cols-3 gap-3">
         <MiniStat
           label="Active"
@@ -90,7 +93,7 @@ export default function CustomerDashboard() {
         </Card>
       )}
 
-      {featured && (
+      {/* {featured && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card className="overflow-hidden">
             <CardHeader className="pb-3">
@@ -100,17 +103,9 @@ export default function CustomerDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="h-[300px]">
-                <MapView
-                  shipment={featured}
-                  className="!rounded-none h-[300px]"
-                />
-              </div>
+              
               <div className="flex items-center justify-between border-t border-border p-3 text-xs">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" />{" "}
-                  {featured.currentLocation.name}
-                </span>
+                
                 <span className="font-semibold text-primary">
                   {featured.progress}% complete
                 </span>
@@ -127,9 +122,9 @@ export default function CustomerDashboard() {
             </CardContent>
           </Card>
         </div>
-      )}
+      )} */}
 
-      {podRecords.data && podRecords.data.length > 0 && (
+      {/* {podRecords.data && podRecords.data.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -182,7 +177,7 @@ export default function CustomerDashboard() {
             </div>
           </CardContent>
         </Card>
-      )}
+      )} */}
 
       <Card>
         <CardHeader className="pb-3">
@@ -220,10 +215,8 @@ function CustomerHeader({ userName }) {
     <div className="flex items-center justify-between">
       <div>
         <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-          {/* Hi, {userName.split(" ")[0]}! */}
-
-          {/*  changes done here */}
-          Hi, {userName ? userName.split("@")[0] : "Customer"}!
+          
+          Hi, {userName}
         </h1>
         <p className="text-sm text-muted-foreground">
           Track your packages and deliveries
@@ -297,11 +290,11 @@ function FeaturedTrackingCard({ shipment }) {
 
         <div className="mt-5">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{shipment.origin.name}</span>
+            <span>{shipment.senderCity}</span>
             <span className="font-medium text-foreground">
               {shipment.progress}%
             </span>
-            <span>{shipment.destination.name}</span>
+            <span>{shipment.receiverCity}</span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
             <div
@@ -315,21 +308,12 @@ function FeaturedTrackingCard({ shipment }) {
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-4 text-xs">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5" />
-            Currently at {shipment.currentLocation.name}
-          </span>
+         
           <span className="flex items-center gap-1.5 text-muted-foreground">
             <Clock className="h-3.5 w-3.5" />
-            ETA {formatDateTime(shipment.estimatedDelivery)}
+            ETA {formatDateTime(shipment.estimatedDeliveryAt)}
           </span>
         </div>
-
-        <Button asChild className="mt-5 w-full sm:w-auto">
-          <Link to={`/app/shipments/${shipment.id}`}>
-            View full details <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Link>
-        </Button>
       </div>
 
       <div className="flex items-center justify-between border-t border-border bg-muted/30 px-5 py-3">
@@ -339,9 +323,9 @@ function FeaturedTrackingCard({ shipment }) {
             {shipment.trackingNumber}
           </p>
         </div>
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/app/track">
-            Track <ChevronRight className="h-4 w-4" />
+        <Button asChild className="mt-2 w-full sm:w-auto">
+          <Link to={`/app/shipments/${shipment.id}`}>
+            Track <ArrowRight className="ml-1.5 h-4 w-4 " />
           </Link>
         </Button>
       </div>
@@ -382,7 +366,7 @@ function DeliveryRow({ shipment }) {
           <StatusBadge status={shipment.status} size="sm" />
         </div>
         <p className="mt-0.5 truncate text-xs text-muted-foreground">
-          {shipment.origin.name} → {shipment.destination.name}
+          {shipment.senderCity} → {shipment.receiverCity}
         </p>
       </div>
       <div className="text-right">

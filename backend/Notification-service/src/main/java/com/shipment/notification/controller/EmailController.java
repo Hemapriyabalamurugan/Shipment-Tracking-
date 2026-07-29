@@ -5,6 +5,8 @@ import com.shipment.notification.email.EmailService;
 import com.shipment.notification.email.EmailTemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/email")
@@ -21,15 +23,24 @@ public class EmailController {
 
         String html =
                 templateService.loadTemplate(
-                        "src/main/resources/templates/shipment-delivered.html");
+                        "shipment-delivered.html");
 
-        html =
-                templateService.replacePlaceholders(
-                        html,
-                        request.getCustomerName(),
-                        request.getTrackingNumber(),
-                        request.getDeliveryDate());
+//        html =
+//                templateService.replacePlaceholders(
+//                        html,
+//                        request.getCustomerName(),
+//                        request.getTrackingNumber(),
+//                        request.getDeliveryDate());
+        Map<String, String> values = new HashMap<>();
 
+        values.put("customerName", request.getCustomerName());
+        values.put("trackingNumber", request.getTrackingNumber());
+        values.put("deliveryDate", request.getDeliveryDate());
+
+        html = templateService.replacePlaceholders(
+                html,
+                values
+        );
         emailService.sendHtmlEmail(
                 request.getEmail(),
                 "Shipment Delivered",

@@ -1,11 +1,13 @@
 package com.shipment.pod.controller;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shipment.pod.dto.ProofOfDeliveryRequest;
+import com.shipment.pod.dto.ProofOfDeliveryResponse;
 import com.shipment.pod.entity.ProofOfDelivery;
 import com.shipment.pod.service.ProofOfDeliveryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import com.shipment.pod.dto.PodAnalyticsDto;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
 
 import java.util.List;
 
@@ -16,15 +18,35 @@ public class ProofOfDeliveryController {
 
     private final ProofOfDeliveryService service;
 
-    @PostMapping
-    public ProofOfDelivery create(
-            @RequestBody ProofOfDeliveryRequest request) {
+//    @PostMapping
+//    public ProofOfDelivery create(
+//            @RequestBody ProofOfDeliveryRequest request) {
+//
+//        return service.create(request);
+//    }
 
-        return service.create(request);
-    }
+//    @PostMapping(consumes = "multipart/form-data")
+//    public ProofOfDelivery create(
+//            @RequestPart("request") ProofOfDeliveryRequest request,
+//            @RequestPart("photo") MultipartFile photo) throws Exception {
+//
+//        return service.create(request, photo);
+//    }
+@PostMapping(consumes = "multipart/form-data")
+public ProofOfDelivery create(
+        @RequestPart("request") String request,
+        @RequestPart("photo") MultipartFile photo) throws Exception {
+
+    ObjectMapper mapper = new ObjectMapper();
+
+    ProofOfDeliveryRequest podRequest =
+            mapper.readValue(request, ProofOfDeliveryRequest.class);
+
+    return service.create(podRequest, photo);
+}
 
     @GetMapping("/shipment/{shipmentId}")
-    public List<ProofOfDelivery> getByShipment(
+    public ProofOfDelivery getByShipment(
             @PathVariable Long shipmentId) {
 
         return service.getByShipment(shipmentId);
@@ -43,16 +65,17 @@ public class ProofOfDeliveryController {
         return service.getPendingVerification();
     }
 
-    @PutMapping("/{id}/verify")
+    @PutMapping("/{id}/verify/{businessClientId}")
     public ProofOfDelivery verify(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @PathVariable Long businessClientId
+    ) {
 
-        return service.verify(id);
+        return service.verify(id, businessClientId);
     }
 
-    @GetMapping("/analytics")
-    public PodAnalyticsDto analytics() {
-
-        return service.getAnalytics();
+    @GetMapping
+    public List<ProofOfDeliveryResponse> getAll() {
+        return service.getAll();
     }
 }

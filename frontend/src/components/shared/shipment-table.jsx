@@ -17,8 +17,7 @@ const modeIcon = {
   road: Truck,
   rail: Train,
   air: Plane,
-  ocean: Ship,
-  multimodal: Truck,
+ 
 };
 
 export function ShipmentTable({
@@ -52,7 +51,8 @@ export function ShipmentTable({
         </TableHeader>
         <TableBody>
           {shipments.map((s) => {
-            const ModeIcon = modeIcon[s.mode];
+            // const ModeIcon = modeIcon[s.mode];
+            const ModeIcon =  Truck;
             return (
               <TableRow key={s.id} className="group">
                 <TableCell>
@@ -68,7 +68,7 @@ export function ShipmentTable({
                         {s.trackingNumber}
                       </span>
                       <span className="text-[11px] text-muted-foreground">
-                        {s.carrier}
+                        {"ShipTrack"}
                       </span>
                     </span>
                   </Link>
@@ -79,21 +79,21 @@ export function ShipmentTable({
                 <TableCell className="hidden md:table-cell">
                   <div className="flex items-center gap-2 text-xs">
                     <span className="max-w-[120px] truncate text-foreground">
-                      {s.origin.name}
+                      {s.senderCity}
                     </span>
                     <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
                     <span className="max-w-[120px] truncate text-foreground">
-                      {s.destination.name}
+                      {s.receiverCity}
                     </span>
                   </div>
                 </TableCell>
                 {showCustomer && (
                   <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
-                    {s.customer}
+                    {s.senderName}
                   </TableCell>
                 )}
                 <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
-                  {relativeDay(s.estimatedDelivery)}
+                  {relativeDay(s.estimatedDeliveryAt)}
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <PriorityBadge priority={s.priority} />
@@ -111,7 +111,7 @@ export function ShipmentTable({
 }
 
 export function ShipmentListItem({ shipment }) {
-  const ModeIcon = modeIcon[shipment.mode];
+  const ModeIcon = Truck;
   return (
     <Link
       to={`/app/shipments/${shipment.id}`}
@@ -130,15 +130,15 @@ export function ShipmentListItem({ shipment }) {
           <StatusBadge status={shipment.status} size="sm" />
         </div>
         <p className="mt-0.5 truncate text-xs text-muted-foreground">
-          {shipment.origin.name} → {shipment.destination.name}
+          {shipment.senderCity} → {shipment.receiverCity}
         </p>
       </div>
       <div className="text-right">
         <p className="text-xs font-medium text-foreground">
-          {relativeDay(shipment.estimatedDelivery)}
+          {relativeDay(shipment.estimatedDeliveryAt)}
         </p>
         <p className="text-[11px] text-muted-foreground">
-          {formatDateTime(shipment.estimatedDelivery)}
+          {formatDateTime(shipment.estimatedDeliveryAt)}
         </p>
       </div>
     </Link>

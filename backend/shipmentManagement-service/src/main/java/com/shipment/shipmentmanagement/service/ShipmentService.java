@@ -1,14 +1,20 @@
 
 package com.shipment.shipmentmanagement.service;
 
+import com.shipment.shipmentmanagement.dto.*;
 import com.shipment.shipmentmanagement.entity.Shipment;
 import com.shipment.shipmentmanagement.repository.ShipmentRepository;
 import org.springframework.stereotype.Service;
-import com.shipment.shipmentmanagement.dto.ShipmentAnalyticsDto;
 import com.shipment.shipmentmanagement.entity.enums.ShipmentStatus;
-import com.shipment.shipmentmanagement.dto.CustomerShipmentAnalyticsDto;
-import com.shipment.shipmentmanagement.dto.BusinessShipmentAnalyticsDto;
+import com.shipment.shipmentmanagement.dto.CustomerLookupResponse;
+import com.shipment.shipmentmanagement.repository.HubRepository;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+import com.shipment.shipmentmanagement.client.AuthClient;
+import com.shipment.shipmentmanagement.client.NotificationClient;
+import com.shipment.shipmentmanagement.entity.Hub;
+import com.shipment.shipmentmanagement.dto.TrackingResponse;
 
 import java.util.List;
 import java.time.Duration;
@@ -16,25 +22,141 @@ import java.time.Duration;
 public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
+    private final NotificationClient notificationClient;
+    private final AuthClient authClient;
+    private final RouteService routeService;
+    private final HubRepository hubRepository;
 
-    public ShipmentService(ShipmentRepository shipmentRepository) {
+    public ShipmentService(ShipmentRepository shipmentRepository, NotificationClient notificationClient, AuthClient authClient, RouteService routeService, HubRepository hubRepository) {
         this.shipmentRepository = shipmentRepository;
+        this.notificationClient = notificationClient;
+        this.authClient = authClient;
+        this.routeService = routeService;
+        this.hubRepository = hubRepository;
     }
 
     // Create Shipment
+//    +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//    public Shipment saveShipment(Shipment shipment) {
+//        return shipmentRepository.save(shipment);
+//    }
+//    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//========================================================
+//    public Shipment saveShipment(Shipment shipment) {
+//
+//        if (shipment.getStatus() == null) {
+//            shipment.setStatus(ShipmentStatus.CREATED);
+//        }
+//
+//        if (shipment.getTrackingNumber() == null || shipment.getTrackingNumber().isBlank()) {
+//            shipment.setTrackingNumber("TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+//        }
+//
+//        return shipmentRepository.save(shipment);
+//    }
+
     public Shipment saveShipment(Shipment shipment) {
-        return shipmentRepository.save(shipment);
+
+        if (shipment.getStatus() == null) {
+            shipment.setStatus(ShipmentStatus.CREATED);
+        }
+
+        if (shipment.getTrackingNumber() == null
+                || shipment.getTrackingNumber().isBlank()) {
+            shipment.setTrackingNumber(
+                    "TRK-" + UUID.randomUUID()
+                            .toString()
+                            .substring(0, 8)
+                            .toUpperCase()
+            );
+        }
+
+        // Get logged-in Business Client
+        UserProfileResponse currentUser =
+                authClient.getCurrentUser();
+
+        shipment.setBusinessClientId(
+                currentUser.getId()
+        );
+        // Find registered customer by receiver phone and name
+        CustomerLookupResponse customer =
+                authClient.findCustomer(
+                        shipment.getReceiverPhone(),
+                        shipment.getReceiverName()
+                );
+
+
+
+        shipment.setCustomerId(customer.getId());
+
+        Shipment savedShipment = shipmentRepository.save(shipment);
+
+        List<Hub> route =
+                routeService.generateRoute(
+                        savedShipment.getSenderCity(),
+                        savedShipment.getReceiverCity()
+                );
+
+        routeService.saveRoute(
+                savedShipment.getId(),
+                route
+        );
+
+//        NotificationRequest request = new NotificationRequest();
+//        request.setUserId(1L); // Temporary operator user
+//        request.setShipmentId(savedShipment.getId());
+//        request.setChannel("IN_APP");
+//        request.setTitle("New Shipment Created");
+//        request.setMessage(
+//                "Shipment " + savedShipment.getTrackingNumber()
+//                        + " requires operator review."
+//        );
+//        request.setPriority("NORMAL");
+        List<OperatorResponse> operators = authClient.getOperators();
+
+        for (OperatorResponse operator : operators) {
+
+            NotificationRequest request = new NotificationRequest();
+
+            request.setUserId(operator.getId());
+            request.setShipmentId(savedShipment.getId());
+            request.setChannel("IN_APP");
+            request.setTitle("New Shipment Created");
+            request.setMessage(
+                    "Shipment " + savedShipment.getTrackingNumber()
+                            + " requires operator review."
+            );
+            request.setPriority("NORMAL");
+
+            notificationClient.createNotification(request);
+        }
+
+//        notificationClient.createNotification(request);
+        System.out.println("Shipment Type = " + savedShipment.getShipmentType());
+        System.out.println("Priority = " + savedShipment.getPriority());
+        return savedShipment;
     }
 
-    // Get All Shipments
+
+//==============================================================
+
+
     public List<Shipment> getAllShipments() {
-        return shipmentRepository.findAll();
+        return shipmentRepository.findAllByOrderByCreatedAtDesc();
     }
+//    public List<Shipment> getShipmentsByCustomer(Long customerId) {
+//        return shipmentRepository.findByCustomerId(customerId);
+//    }
+public List<Shipment> getShipmentsByCustomer(Long customerId) {
+    return shipmentRepository.findByCustomerIdOrderByCreatedAtDesc(
+            customerId
+    );
+}
 
     // Get Shipment By Id
     public Shipment getShipmentById(Long id) {
         return shipmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Shipment not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Shipment not found with id: " ));
     }
 
     // Update Shipment
@@ -43,10 +165,10 @@ public class ShipmentService {
         Shipment shipment = getShipmentById(id);
 
         shipment.setTrackingNumber(shipmentDetails.getTrackingNumber());
-        shipment.setSenderName(shipmentDetails.getSenderName());
+        shipment.setSenderName(shipmentDetails.getSenderName().toUpperCase().trim());
         shipment.setSenderPhone(shipmentDetails.getSenderPhone());
 
-        shipment.setReceiverName(shipmentDetails.getReceiverName());
+        shipment.setReceiverName(shipmentDetails.getReceiverName().toUpperCase().trim());
         shipment.setReceiverPhone(shipmentDetails.getReceiverPhone());
 
 //        shipment.setDeliveryAddress(shipmentDetails.getDeliveryAddress());
@@ -71,7 +193,9 @@ public class ShipmentService {
 
     // Delete Shipment
     public void deleteShipment(Long id) {
-        shipmentRepository.deleteById(id);
+
+        Shipment shipment = getShipmentById(id);
+        shipmentRepository.delete(shipment);
     }
 
 
@@ -266,5 +390,362 @@ public ShipmentAnalyticsDto getShipmentAnalytics() {
     }
 
 
+
+//    public Shipment acceptShipment(
+//            Long shipmentId,
+//            Long operatorId
+//    ) {
+//
+//        Shipment shipment = shipmentRepository.findById(shipmentId)
+//                .orElseThrow(() ->
+//                        new RuntimeException("Shipment not found"));
+//
+//        if (shipment.getDriverId() != null) {
+//            throw new RuntimeException(
+//                    "Shipment has already been accepted by another operator."
+//            );
+//        }
+//
+//        shipment.setDriverId(operatorId);
+//
+//        shipment.setStatus(ShipmentStatus.PICKED_UP);
+//
+//
+//        // Notify Business Client
+//        NotificationRequest businessNotification = new NotificationRequest();
+//
+//        businessNotification.setUserId(shipment.getBusinessClientId());
+//        businessNotification.setShipmentId(shipment.getId());
+//        businessNotification.setChannel("IN_APP");
+//        businessNotification.setTitle("Shipment Accepted");
+//        businessNotification.setMessage(
+//                "Your shipment " + shipment.getTrackingNumber()
+//                        + " has been accepted by an operator."
+//        );
+//        businessNotification.setPriority("NORMAL");
+//
+//        notificationClient.createNotification(businessNotification);
+//
+//// Notify Customer
+//        NotificationRequest customerNotification = new NotificationRequest();
+//
+//        customerNotification.setUserId(shipment.getCustomerId());
+//        customerNotification.setShipmentId(shipment.getId());
+//        customerNotification.setChannel("IN_APP");
+//        customerNotification.setTitle("Package Picked Up");
+//        customerNotification.setMessage(
+//                "Your package " + shipment.getTrackingNumber()
+//                        + " has been picked up and is now being processed."
+//        );
+//        customerNotification.setPriority("NORMAL");
+//
+//        notificationClient.createNotification(customerNotification);
+//        return shipment;
+//    }
+public Shipment acceptShipment(Long shipmentId, Long operatorId) {
+
+    Shipment shipment = shipmentRepository.findById(shipmentId)
+            .orElseThrow(() ->
+                    new RuntimeException("Shipment not found"));
+
+    if (shipment.getDriverId() != null) {
+        throw new RuntimeException(
+                "Shipment has already been accepted by another operator."
+        );
+    }
+
+    shipment.setDriverId(operatorId);
+    shipment.setStatus(ShipmentStatus.PICKED_UP);
+    shipment.setPickedUpAt(LocalDateTime.now());
+    shipment.setEstimatedDeliveryAt(
+            shipment.getPickedUpAt().plusDays(3)
+    );
+    shipment = shipmentRepository.save(shipment);
+    System.out.println("Business Client ID = " + shipment.getBusinessClientId());
+    System.out.println("Customer ID = " + shipment.getCustomerId());
+//    sendNotification(
+//            shipment.getBusinessClientId(),
+//            shipment,
+//            "Shipment Accepted",
+//            "Your shipment " + shipment.getTrackingNumber()
+//                    + " has been accepted by an operator."
+//    );
+    System.out.println("Sending BUSINESS notification...");
+//=====================================================================
+//    sendNotification(
+//            shipment.getBusinessClientId(),
+//            shipment,
+//            "Shipment Accepted",
+//            "Your shipment " + shipment.getTrackingNumber()
+//                    + " has been accepted by an operator."
+//    );
+
+    sendNotification(
+            shipment.getBusinessClientId(),
+            shipment,
+            "Shipment Accepted",
+            "Your shipment " + shipment.getTrackingNumber()
+                    + " has been accepted by an operator.",
+            "PICKED_UP"
+    );
+//    =================================================================
+
+    System.out.println("BUSINESS notification sent.");
+
+//    sendNotification(
+//            shipment.getCustomerId(),
+//            shipment,
+//            "Package Picked Up",
+//            "Your package " + shipment.getTrackingNumber()
+//                    + " has been picked up and is now being processed."
+//    );
+    System.out.println("Sending CUSTOMER notification...");
+
+//    sendNotification(
+//            shipment.getCustomerId(),
+//            shipment,
+//            "Package Picked Up",
+//            "Your package " + shipment.getTrackingNumber()
+//                    + " has been picked up and is now being processed."
+//    );
+    sendNotification(
+            shipment.getCustomerId(),
+            shipment,
+            "Package Picked Up",
+            "Your package " + shipment.getTrackingNumber()
+                    + " has been picked up and is now being processed.",
+            "PICKED_UP"
+    );
+
+    System.out.println("CUSTOMER notification sent.");
+
+//    notificationClient.markShipmentAccepted(
+//            shipment.getId(),
+//            operatorId
+//    );
+    System.out.println("Updating operator notifications...");
+
+    notificationClient.markShipmentAccepted(
+            shipment.getId(),
+            operatorId
+    );
+
+    System.out.println("Operator notifications updated.");
+
+    return shipment;
+}
+
+    private void sendNotification(
+            Long userId,
+            Shipment shipment,
+            String title,
+            String message,
+             String eventType
+    ) {
+
+        NotificationRequest request = new NotificationRequest();
+
+        request.setUserId(userId);
+        request.setShipmentId(shipment.getId());
+        request.setChannel("IN_APP");
+        request.setTitle(title);
+        request.setMessage(message);
+        request.setPriority("NORMAL");
+        request.setEventType(eventType);
+        request.setEventType("CREATED");
+
+        notificationClient.createNotification(request);
+    }
+
+    public Shipment updateShipmentStatus(
+            Long shipmentId,
+            ShipmentStatus status
+    ) {
+
+        Shipment shipment = shipmentRepository.findById(shipmentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Shipment not found"));
+
+        shipment.setStatus(status);
+        if (status == ShipmentStatus.DELIVERED) {
+            shipment.setDeliveredAt(shipment.getEstimatedDeliveryAt());
+        }
+        Shipment updatedShipment =
+                shipmentRepository.save(shipment);
+        if (status == ShipmentStatus.IN_TRANSIT) {
+
+            routeService.markCurrentHubReached(
+                    shipmentId
+            );
+        }
+
+        // Notify Business Client
+//        sendNotification(
+//                updatedShipment.getBusinessClientId(),
+//                updatedShipment,
+//                "Shipment Status Updated",
+//                "Shipment " + updatedShipment.getTrackingNumber()
+//                        + " is now " + status
+//        );
+        sendNotification(
+                updatedShipment.getBusinessClientId(),
+                updatedShipment,
+                "Shipment Status Updated",
+                "Shipment " + updatedShipment.getTrackingNumber()
+                        + " is now " + status,
+                status.name()
+        );
+
+        // Notify Customer
+//        sendNotification(
+//                updatedShipment.getCustomerId(),
+//                updatedShipment,
+//                "Shipment Status Updated",
+//                "Your package " + updatedShipment.getTrackingNumber()
+//                        + " is now " + status
+//        );
+        String title;
+        String message;
+
+        switch (status) {
+
+            case PICKED_UP -> {
+                title = "Package Picked Up";
+                message = "Your package "
+                        + updatedShipment.getTrackingNumber()
+                        + " has been picked up.";
+            }
+
+            case IN_TRANSIT -> {
+                title = "Shipment In Transit";
+                message = "Your shipment "
+                        + updatedShipment.getTrackingNumber()
+                        + " is currently in transit.";
+            }
+
+            case OUT_FOR_DELIVERY -> {
+                title = "Out For Delivery";
+                message = "Your shipment "
+                        + updatedShipment.getTrackingNumber()
+                        + " is out for delivery.";
+            }
+
+            case DELIVERED -> {
+                title = "Shipment Delivered";
+                message = "Your shipment "
+                        + updatedShipment.getTrackingNumber()
+                        + " has been delivered successfully.";
+            }
+
+            case FAILED_DELIVERY -> {
+                title = "Delivery Failed";
+                message = "Delivery attempt failed for shipment "
+                        + updatedShipment.getTrackingNumber()
+                        + ".";
+            }
+
+            default -> {
+                title = "Shipment Status Updated";
+                message = "Your shipment status has changed.";
+            }
+        }
+
+//        sendNotification(
+//                updatedShipment.getCustomerId(),
+//                updatedShipment,
+//                title,
+//                message
+//        );
+        sendNotification(
+                updatedShipment.getCustomerId(),
+                updatedShipment,
+                title,
+                message,
+                status.name()
+        );
+
+        return updatedShipment;
+    }
+
+    public TrackingResponse getTrackingDetails(
+            Long shipmentId
+    ) {
+
+        Shipment shipment =
+                getShipmentById(shipmentId);
+
+        return routeService.getTrackingDetails(
+                shipment
+        );
+    }
+
+
+    public List<ShipmentAnalyticsDataResponse> getAllShipmentsForAnalytics() {
+
+        return shipmentRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(shipment -> ShipmentAnalyticsDataResponse.builder()
+                        .shipmentId(shipment.getId())
+                        .businessClientId(shipment.getBusinessClientId())
+                        .status(shipment.getStatus().name())
+                        .createdAt(shipment.getCreatedAt())
+                        .pickedUpAt(shipment.getPickedUpAt())
+                        .estimatedDeliveryAt(shipment.getEstimatedDeliveryAt())
+                        .deliveredAt(shipment.getDeliveredAt())
+                        .build())
+                .toList();
+    }
+
+    public List<ShipmentAnalyticsDataResponse> getBusinessShipmentsForAnalytics(
+            Long businessClientId
+    ) {
+
+        return shipmentRepository.findByBusinessClientId(businessClientId)
+                .stream()
+                .map(shipment -> ShipmentAnalyticsDataResponse.builder()
+                        .shipmentId(shipment.getId())
+                        .businessClientId(shipment.getBusinessClientId())
+                        .status(shipment.getStatus().name())
+                        .createdAt(shipment.getCreatedAt())
+                        .pickedUpAt(shipment.getPickedUpAt())
+                        .estimatedDeliveryAt(shipment.getEstimatedDeliveryAt())
+                        .deliveredAt(shipment.getDeliveredAt())
+                        .build())
+                .toList();
+    }
+
+
+    public ShipmentAnalyticsDataResponse getShipmentForVerification(
+            Long shipmentId
+    ) {
+
+        Shipment shipment = shipmentRepository.findById(shipmentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Shipment not found"));
+
+        return ShipmentAnalyticsDataResponse.builder()
+                .shipmentId(shipment.getId())
+                .trackingNumber(shipment.getTrackingNumber())
+                .businessClientId(shipment.getBusinessClientId())
+                .status(shipment.getStatus().name())
+                .createdAt(shipment.getCreatedAt())
+                .pickedUpAt(shipment.getPickedUpAt())
+                .estimatedDeliveryAt(shipment.getEstimatedDeliveryAt())
+                .deliveredAt(shipment.getDeliveredAt())
+                .build();
+    }
+
+    public List<HubDropdownResponse> getAllHubs() {
+
+        return hubRepository.findByActiveTrueOrderByCityAsc()
+                .stream()
+                .map(hub -> HubDropdownResponse.builder()
+                        .id(hub.getId())
+                        .city(hub.getCity())
+                        .state(hub.getState())
+                        .pincode(hub.getPincode())
+                        .build())
+                .toList();
+    }
 }
 

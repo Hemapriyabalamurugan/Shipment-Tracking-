@@ -227,7 +227,10 @@ export function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
                 <Label>Current password</Label>
-                <Input type="password" defaultValue="demo1234" />
+                <Input
+                  type="password"
+                  placeholder="Enter your current password"
+                />
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">

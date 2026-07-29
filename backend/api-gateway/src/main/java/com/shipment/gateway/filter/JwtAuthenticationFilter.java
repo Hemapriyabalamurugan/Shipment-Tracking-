@@ -54,6 +54,9 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
+        System.out.println("PATH = " + path);
+        System.out.println("AUTH HEADER = " + authHeader);
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 
             exchange.getResponse()
@@ -74,6 +77,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                     .setComplete();
         }
 
+        System.out.println("Forwarding request to service: " + path);
         return chain.filter(exchange);
     }
 

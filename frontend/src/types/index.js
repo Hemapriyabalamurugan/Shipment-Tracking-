@@ -13,53 +13,44 @@ export const ROLE_DESCRIPTIONS = {
   customer: "Track your packages & get real-time delivery updates",
   support: "Assist customers and investigate shipment issues",
 };
-
 export const STATUS_META = {
-  pending: {
-    label: "Pending",
-    color: "text-muted-foreground",
-    bg: "bg-muted",
+  CREATED: {
+    label: "Created",
+    bg: "bg-muted text-muted-foreground",
     dot: "bg-slate-400",
   },
-  picked_up: {
+  REACHED_HUB: {
+    label: "Reached Hub",
+    bg: "bg-green-100 text-green-700",
+    dot: "bg-green-500",
+  },
+  PICKED_UP: {
     label: "Picked Up",
-    color: "text-info-foreground",
     bg: "bg-info/10 text-info",
     dot: "bg-info",
   },
-  in_transit: {
+  IN_TRANSIT: {
     label: "In Transit",
-    color: "text-primary",
     bg: "bg-primary/10 text-primary",
     dot: "bg-primary",
   },
-  out_for_delivery: {
+  OUT_FOR_DELIVERY: {
     label: "Out for Delivery",
-    color: "text-chart-2",
     bg: "bg-success/10 text-success",
     dot: "bg-success",
   },
-  delivered: {
+  DELIVERED: {
     label: "Delivered",
-    color: "text-success",
     bg: "bg-success/10 text-success",
     dot: "bg-success",
   },
-  delayed: {
-    label: "Delayed",
-    color: "text-warning-foreground",
-    bg: "bg-warning/15 text-warning",
-    dot: "bg-warning",
-  },
-  exception: {
-    label: "Exception",
-    color: "text-destructive",
+  FAILED_DELIVERY: {
+    label: "Failed Delivery",
     bg: "bg-destructive/10 text-destructive",
     dot: "bg-destructive",
   },
-  cancelled: {
+  CANCELLED: {
     label: "Cancelled",
-    color: "text-muted-foreground",
     bg: "bg-muted text-muted-foreground",
     dot: "bg-slate-400",
   },

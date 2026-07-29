@@ -29,5 +29,19 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     List<Shipment> findByStatus(
             ShipmentStatus status
     );
+//    List<Shipment> findByCustomerId(Long customerId);
+List<Shipment> findByCustomerIdOrderByCreatedAtDesc(
+        Long customerId
+);
+    List<Shipment> findAllByOrderByCreatedAtDesc();
+
+    //    extra feature
+
+
+    List<Shipment> findByBusinessClientId(Long businessClientId);
+
+    List<Shipment> findByStatusInOrderByCreatedAtDesc(
+            List<ShipmentStatus> statuses
+    );
 
 }

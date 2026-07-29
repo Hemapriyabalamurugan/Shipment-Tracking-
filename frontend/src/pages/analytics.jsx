@@ -1,9 +1,13 @@
-
-import { useAnalytics } from "@/lib/hooks";
+// import { useAnalytics } from "@/lib/hooks";
+import { useAnalytics, useBusinessAnalytics } from "@/lib/hooks";
+import { useAuth } from "@/context/auth-context";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { ChartTooltip } from "@/components/shared/brand-backdrop";
 import { LoadingState } from "@/components/shared/states";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { analyticsApi } from "@/lib/api";
 import {
   Card,
   CardContent,
@@ -33,21 +37,60 @@ import {
 } from "recharts";
 import { BarChart3, TrendingUp, Percent, Truck, Award } from "lucide-react";
 
-export function AnalyticsPage() {
+function AdminAnalyticsPage() {
+  const { user } = useAuth();
   const analytics = useAnalytics();
 
-  if (analytics.isLoading) {
-    return (
-      <div>
-        <PageHeader
-          title="Analytics"
-          description="Performance & delivery insights"
-          icon={BarChart3}
-        />
-        <LoadingState />
-      </div>
-    );
-  }
+  return <AnalyticsContent analytics={analytics} user={user} />;
+}
+
+
+
+function BusinessAnalyticsPage() {
+  const { user } = useAuth();
+  const analytics = useBusinessAnalytics(user.id);
+
+  return <AnalyticsContent analytics={analytics} user={user} />;
+}
+
+function AnalyticsContent({ analytics,user }) {
+  
+  // const { user } = useAuth();
+
+  
+  // if (analytics.isLoading) {
+  //   return (
+  //     <div>
+  //       <PageHeader
+  //         title="Analytics"
+  //         description="Performance & delivery insights"
+  //         icon={BarChart3}
+  //         actions={
+  //           <Button
+  //             onClick={async () => {
+  //               const blob =
+  //                 user.role === "admin"
+  //                   ? await analyticsApi.exportPdf()
+  //                   : await analyticsApi.exportBusinessPdf(user.id);
+
+  //               const url = window.URL.createObjectURL(blob);
+
+  //               const link = document.createElement("a");
+  //               link.href = url;
+  //               link.download = "analytics-report.pdf";
+  //               link.click();
+
+  //               window.URL.revokeObjectURL(url);
+  //             }}
+  //           >
+  //             Export PDF
+  //           </Button>
+  //         }
+  //       />
+  //       <LoadingState />
+  //     </div>
+  //   );
+  // }
 
   const data = analytics.data;
 
@@ -57,12 +100,36 @@ export function AnalyticsPage() {
         title="Analytics"
         description="Delivery performance & operational insights"
         icon={BarChart3}
+        actions={<Button
+              onClick={async () => {
+                const blob =
+                  user.role === "admin"
+                    ? await analyticsApi.exportPdf()
+                    : await analyticsApi.exportBusinessPdf(user.id);
+
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "analytics-report.pdf";
+                link.click();
+
+                window.URL.revokeObjectURL(url);
+              }}
+            >
+              Export PDF
+                    </Button>
+          } 
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {analytics.isLoading ? (
+        <LoadingState />
+      ) : (
+        <>
+          {/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="On-Time Rate"
-          value="96.8%"
+          value={`${data.onTimeRate}%`}
           icon={Percent}
           iconClass="bg-success/10 text-success"
           trend={{ value: "+1.2%", direction: "up", positive: true }}
@@ -70,7 +137,7 @@ export function AnalyticsPage() {
         />
         <StatCard
           label="Total Shipments"
-          value="2,050"
+          value={data.totalShipments}
           icon={Truck}
           iconClass="bg-primary/10 text-primary"
           trend={{ value: "+7.3%", direction: "up", positive: true }}
@@ -78,21 +145,244 @@ export function AnalyticsPage() {
         />
         <StatCard
           label="Avg Transit Time"
-          value="2.4 days"
+          value={`${data.averageTransitDays} days`}
           icon={TrendingUp}
           iconClass="bg-chart-6/10 text-chart-6"
           trend={{ value: "-0.3d", direction: "down", positive: true }}
           footer="faster"
         />
-        {/* <StatCard
+      </div> */}
+          {/* <StatCard
           label="Carrier Score"
           value="A+"
           icon={Award}
           iconClass="bg-chart-4/10 text-chart-4"
           footer="top quartile"
         /> */}
-      </div>
 
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>24-Hour Delivery Activity</CardTitle>
+                <CardDescription>
+                  Deliveries and pickups by hour
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  <AreaChart data={analytics.data?.deliveryActivity24h ?? []}>
+                    <defs>
+                      <linearGradient id="gdel" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="0%"
+                          stopColor="hsl(var(--chart-2))"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="hsl(var(--chart-2))"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                      <linearGradient id="gpick" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="0%"
+                          stopColor="hsl(var(--chart-6))"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="hsl(var(--chart-6))"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="hour"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fontSize: 11,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fontSize: 11,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <Tooltip content={<ChartTooltip />} />
+                    <Area
+                      type="linear"
+                      dataKey="deliveries"
+                      stroke="hsl(var(--chart-2))"
+                      strokeWidth={2.5}
+                      fill="url(#gdel)"
+                      name="Deliveries"
+                    />
+                    <Area
+                      type="linear"
+                      dataKey="pickups"
+                      stroke="hsl(var(--chart-6))"
+                      strokeWidth={2.5}
+                      fill="url(#gpick)"
+                      name="Pickups"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Shipping Volume & Delivery trend */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Shipping Volume & Delivery Trend</CardTitle>
+                    <CardDescription>
+                      Monthly shipments vs successful deliveries
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={260}>
+                  <AreaChart data={analytics.data?.volumeByMonth ?? []}>
+                    <defs>
+                      <linearGradient id="bv1" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="0%"
+                          stopColor="hsl(var(--chart-1))"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="hsl(var(--chart-1))"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                      <linearGradient id="bv2" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="0%"
+                          stopColor="hsl(var(--chart-2))"
+                          stopOpacity={0.3}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="hsl(var(--chart-2))"
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fontSize: 12,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fontSize: 12,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <Tooltip content={<ChartTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="shipments"
+                      stroke="hsl(var(--chart-1))"
+                      strokeWidth={2.5}
+                      fill="url(#bv1)"
+                      name="Shipments"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="delivered"
+                      stroke="hsl(var(--chart-2))"
+                      strokeWidth={2.5}
+                      fill="url(#bv2)"
+                      name="Delivered"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* average delivery time */}
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Average Delivery Time</CardTitle>
+                <CardDescription>
+                  Days from pickup to delivery — trending down
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={analytics.data?.averageDeliveryTime ?? []}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fontSize: 12,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <YAxis
+                      domain={[2, 4]}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fontSize: 12,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                      tickFormatter={(v) => `${v}d`}
+                    />
+                    <Tooltip
+                      content={<ChartTooltip formatter={(v) => `${v} days`} />}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="avgDays"
+                      stroke="hsl(var(--chart-6))"
+                      strokeWidth={3}
+                      dot={{ r: 5, fill: "hsl(var(--chart-6))" }}
+                      name="Avg Days"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+          {/* 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -166,133 +456,59 @@ export function AnalyticsPage() {
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
-
-        {/* <Card>
-          <CardHeader>
-            <CardTitle>Transport Modes</CardTitle>
-            <CardDescription>Distribution by mode</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={data.modeSplit}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="45%"
-                  innerRadius={50}
-                  outerRadius={85}
-                  paddingAngle={3}
-                >
-                  {data.modeSplit.map((e, i) => (
-                    <Cell key={i} fill={e.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  content={<ChartTooltip formatter={(v) => `${v}%`} />}
-                />
-                <Legend
-                  verticalAlign="bottom"
-                  iconType="circle"
-                  formatter={(v) => (
-                    <span className="text-xs text-muted-foreground">{v}</span>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
         </Card> */}
-      </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>On-Time Performance</CardTitle>
-            <CardDescription>Weekly delivery rate</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={data.onTimeRate}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="week"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <YAxis
-                  domain={[90, 100]}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <Tooltip
-                  content={<ChartTooltip formatter={(v) => `${v}%`} />}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="rate"
-                  stroke="hsl(var(--chart-2))"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: "hsl(var(--chart-2))" }}
-                  name="On-time %"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>On-Time Performance</CardTitle>
+                <CardDescription>Weekly delivery rate</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  {/* <LineChart data={data.onTimeRate}> */}
+                  <LineChart data={data.onTimePerformance ?? []}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="hsl(var(--border))"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="week"
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fontSize: 12,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <YAxis
+                      domain={[90, 100]}
+                      tickLine={false}
+                      axisLine={false}
+                      tick={{
+                        fontSize: 12,
+                        fill: "hsl(var(--muted-foreground))",
+                      }}
+                    />
+                    <Tooltip
+                      content={<ChartTooltip formatter={(v) => `${v}%`} />}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="rate"
+                      stroke="hsl(var(--chart-2))"
+                      strokeWidth={3}
+                      dot={{ r: 4, fill: "hsl(var(--chart-2))" }}
+                      name="On-time %"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* <Card>
-          <CardHeader>
-            <CardTitle>Carrier Performance</CardTitle>
-            <CardDescription>On-time % by carrier</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={data.carrierPerformance} layout="vertical">
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                  horizontal={false}
-                />
-                <XAxis
-                  type="number"
-                  domain={[80, 100]}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="carrier"
-                  width={120}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <Tooltip
-                  content={<ChartTooltip formatter={(v) => `${v}%`} />}
-                  cursor={{ fill: "hsl(var(--muted))" }}
-                />
-                <Bar
-                  dataKey="onTime"
-                  name="On-time %"
-                  radius={[0, 6, 6, 0]}
-                  fill="hsl(var(--chart-1))"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card> */}
-      </div>
-
-      {/* <Card>
+          {/* <Card>
         <CardHeader>
           <CardTitle>Operational Performance</CardTitle>
           <CardDescription>Key stage completion rates</CardDescription>
@@ -331,6 +547,19 @@ export function AnalyticsPage() {
           </ResponsiveContainer>
         </CardContent>
       </Card> */}
+        </>
+      )}
     </div>
+  );
+}
+
+export function AnalyticsPage() {
+  const { user } = useAuth();
+  console.log(user);
+
+  return user.role === "admin" ? (
+    <AdminAnalyticsPage />
+  ) : (
+    <BusinessAnalyticsPage />
   );
 }

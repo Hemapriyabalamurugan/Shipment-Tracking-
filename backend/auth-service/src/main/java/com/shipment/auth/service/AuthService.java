@@ -59,4 +59,5 @@ LoginOtpResponse sendLoginOtp(
     UserAnalyticsDto getUserAnalytics();
 
     UserProfileResponse getCurrentUser(String email);
+    UserProfileResponse getUserById(Long id);
 }

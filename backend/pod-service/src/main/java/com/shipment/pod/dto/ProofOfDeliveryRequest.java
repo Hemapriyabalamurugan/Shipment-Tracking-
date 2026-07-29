@@ -35,7 +35,7 @@ public class ProofOfDeliveryRequest {
 
     private String recipientName;
 
-    private String signatureData;
+    private String signatureUrl;
 
     private String photoUrl;
 

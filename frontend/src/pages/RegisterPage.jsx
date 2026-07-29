@@ -1,7 +1,7 @@
-import axios from "axios";
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // make sure react-router-dom is installed
-
+import { authApi } from "@/lib/api";
 const RegisterPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -20,18 +20,18 @@ const RegisterPage = () => {
   });
 
   // Mapping of roles to dashboard routes
-  const roleRouteMap = {
-    customer: "/customer-dashboard",
-    businessclient: "/business-dashboard",
-    support: "/support-dashboard",
-    // add more mappings as needed, e.g.:
-    // shipper: '/shipper-dashboard',
-    // carrier: '/carrier-dashboard',
-    // freight_forwarder: '/freight-dashboard',
-    // warehouse_manager: '/warehouse-dashboard',
-    // logistics_manager: '/logistics-dashboard',
+  // const roleRouteMap = {
+  //   customer: "/customer-dashboard",
+  //   businessclient: "/business-dashboard",
+  //   support: "/support-dashboard",
+  //   // add more mappings as needed, e.g.:
+  //   // shipper: '/shipper-dashboard',
+  //   // carrier: '/carrier-dashboard',
+  //   // freight_forwarder: '/freight-dashboard',
+  //   // warehouse_manager: '/warehouse-dashboard',
+  //   // logistics_manager: '/logistics-dashboard',
     
-  };
+  // };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -70,24 +70,41 @@ const RegisterPage = () => {
     }
 
     try {
+      // ================================ changes done here =================
+      if (formData.password !== formData.confirmPassword) {
+        alert("Passwords do not match");
+        return;
+      }
       setLoading(true);
+// =======================================================================
+      // const response = await axios.post(
+      //   "http://localhost:8080/api/auth/register",
+      //   {
+      //     firstName: formData.firstName,
+      //     lastName: formData.lastName,
+      //     email: formData.email,
+      //     phone: formData.phone,
+      //     password: formData.password,
+      //     confirmPassword:formData.confirmPassword,
+      //     address: formData.address,
+      //     companyName: formData.companyName,
+      //     role: formData.role,
+      //   },
+      // );
+// =================================================================
+      const response = await authApi.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        address: formData.address,
+        companyName: formData.companyName,
+        role: formData.role,
+      });
 
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/register",
-        {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-          confirmPassword:formData.confirmPassword,
-          address: formData.address,
-          companyName: formData.companyName,
-          role: formData.role,
-        },
-      );
-
-      console.log("Registration Success:", response.data);
+      // console.log("Registration Success:", response.data);
 
       alert("Account created successfully!");
 
@@ -240,7 +257,7 @@ const RegisterPage = () => {
               {/* Password */}
               <div className="mb-4">
                 <label
-                  htmlFor="confirmPassword"
+                  htmlFor="confirm Password"
                   className="block text-sm font-semibold text-slate-800 mb-1"
                 >
                   confirmPassword

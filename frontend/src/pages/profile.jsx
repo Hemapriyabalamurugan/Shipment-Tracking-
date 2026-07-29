@@ -30,15 +30,28 @@ import {
 import { toast } from "sonner";
 
 export function ProfilePage() {
-  const { user, updateProfile } = useAuth();
+  // =================================================
+  // const { user, updateProfile } = useAuth();
+  // const [form, setForm] = useState({
+  //   name: user.name,
+  //   email: user.email,
+  //   phone: user.phone ?? "",
+  //   company: user.company ?? "",
+  //   jobTitle: user.jobTitle ?? "",
+  //   location: user.location ?? "",
+  // });
+
   const [form, setForm] = useState({
-    name: user.name,
+    name: user.name ?? `${user.firstName} ${user.lastName}`,
     email: user.email,
     phone: user.phone ?? "",
-    company: user.company ?? "",
+    company: user.company ?? user.companyName ?? "",
     jobTitle: user.jobTitle ?? "",
     location: user.location ?? "",
   });
+  // =====================================================
+
+  
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -67,15 +80,21 @@ export function ProfilePage() {
           <CardContent className="flex flex-col items-center pt-6 text-center">
             <div className="relative">
               <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                <AvatarFallback className="bg-primary text-2xl font-bold text-primary-foreground">
+                {/* <AvatarFallback className="bg-primary text-2xl font-bold text-primary-foreground">
                   {initials(user.name)}
+                </AvatarFallback> */}
+                <AvatarFallback className="bg-primary text-2xl font-bold text-primary-foreground">
+                  {initials(user.name ?? `${user.firstName} ${user.lastName}`)}
                 </AvatarFallback>
               </Avatar>
               <button className="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card shadow-md transition hover:bg-muted">
                 <Camera className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
-            <h2 className="mt-4 text-lg font-bold">{user.name}</h2>
+            {/* <h2 className="mt-4 text-lg font-bold">{user.name}</h2> */}
+            <h2 className="mt-4 text-lg font-bold">
+              {user.name ?? `${user.firstName} ${user.lastName}`}
+            </h2>
             <p className="text-sm text-muted-foreground">{user.jobTitle}</p>
             <Badge variant="secondary" className="mt-2">
               {ROLE_LABELS[user.role]}

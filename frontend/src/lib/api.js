@@ -96,7 +96,7 @@ export const authApi = {
   //     return null;
   //   }
   // },
-  
+
   // async me() {
   // try {
   //   const raw = localStorage.getItem(STORAGE_KEY);
@@ -117,38 +117,44 @@ export const authApi = {
   // }
   //},
   async me() {
-  try {
-    const token = localStorage.getItem("shiptrack.token");
+    
+    try {
+      const token = localStorage.getItem("shiptrack.token");
 
-    // console.log("shiptrack.token =", token);
+      // console.log("shiptrack.token =", token);
 
-    if (!token) {
+      if (!token) {
+        return null;
+      }
+
+      const response = await api.get("/auth/me");
+     
+      return {
+        id: response.data.id,
+        name: `${response.data.firstName} ${response.data.lastName}`.trim(),
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        email: response.data.email,
+        role: response.data.role.toLowerCase(),
+        phone: response.data.phone,
+      };
+    } catch (error) {
+      console.error("authApi.me error =", error);
+
+      localStorage.removeItem("shiptrack.token");
+      localStorage.removeItem("shiptrack.session");
+      localStorage.removeItem("refreshToken");
+
       return null;
     }
+  },
+  // ==========================================
+  async register(payload) {
+    const response = await api.post("/auth/register", payload);
+    return response.data;
+  },
+  // ===============================================
 
-    const response = await api.get("/auth/me");
-
-    // console.log("authApi.me response =", response.data);
-
-    return {
-      id: response.data.id,
-      email: response.data.email,
-      role: response.data.role.toLowerCase(),
-      firstName: response.data.firstName,
-      lastName: response.data.lastName,
-      phone: response.data.phone,
-    };
-  } catch (error) {
-    console.error("authApi.me error =", error);
-
-    localStorage.removeItem("shiptrack.token");
-    localStorage.removeItem("shiptrack.session");
-    localStorage.removeItem("refreshToken");
-
-    return null;
-  }
-},
-  
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(STORAGE_KEY);
@@ -167,14 +173,12 @@ export const authApi = {
 // --- Shipments ---
 export const shipmentsApi = {
   async list() {
-    await latency();
-    return clone(db.shipments);
+    const response = await api.get("/shipments");
+    return response.data;
   },
   async getById(id) {
-    await latency();
-    return clone(
-      db.shipments.find((s) => s.id === id || s.trackingNumber === id),
-    );
+    const response = await api.get(`/shipments/${id}`);
+    return response.data;
   },
   async getByTracking(trackingNumber) {
     await latency();
@@ -185,54 +189,105 @@ export const shipmentsApi = {
     );
   },
   async getByCustomer(customerId) {
-    await latency();
-    return clone(db.shipments.filter((s) => s.customerId === customerId));
+    const response = await api.get(`/shipments?customerId=${customerId}`);
+    return response.data;
   },
+  async getTracking(id) {
+    const response = await api.get(`/shipments/${id}/tracking`);
+    return response.data;
+  },
+  async getNavigation(id) {
+    const response = await api.get(`/shipments/${id}/navigation`);
+    return response.data;
+  },
+  async getHubs() {
+    const response = await api.get("/shipments/hubs");
+    return response.data;
+  },
+  // async getByCustomer(customerId) {
+  //   await latency();
+  //   return clone(db.shipments.filter((s) => s.customerId === customerId));
+  // },
+  // async create(payload) {
+  //   await latency();
+  //   const newShipment = {
+  //     id: `shp-${Date.now()}`,
+  //     trackingNumber: `STP-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${Math.random()
+  //       .toString(36)
+  //       .slice(2, 6)
+  //       .toUpperCase()}`,
+  //     status: "pending",
+  //     mode: payload.mode ?? "road",
+  //     priority: payload.priority ?? "standard",
+  //     origin: payload.origin,
+  //     destination: payload.destination,
+  //     carrier: payload.carrier ?? "ShipTrack Express",
+  //     service: payload.service ?? "Ground Economy",
+  //     customer: payload.customer ?? "Unknown",
+  //     customerId: payload.customerId ?? "u-business",
+  //     weightKg: payload.weightKg ?? 0,
+  //     pieces: payload.pieces ?? 1,
+  //     declaredValue: payload.declaredValue ?? 0,
+  //     estimatedDelivery: payload.estimatedDelivery ?? new Date().toISOString(),
+  //     pickupAt: new Date().toISOString(),
+  //     currentLocation: {
+  //       lat: payload.origin.lat,
+  //       lng: payload.origin.lng,
+  //       name: payload.origin.name,
+  //     },
+  //     progress: 0,
+  //     events: [
+  //       {
+  //         id: `ev-${Date.now()}`,
+  //         status: "pending",
+  //         label: "Shipment created",
+  //         description: "Shipment booked in system",
+  //         location: payload.origin.name,
+  //         lat: payload.origin.lat,
+  //         lng: payload.origin.lng,
+  //         timestamp: new Date().toISOString(),
+  //         completed: true,
+  //       },
+  //     ],
+  //     createdAt: new Date().toISOString(),
+  //   };
+  //   db.shipments.unshift(newShipment);
+  //   return clone(newShipment);
+  // },
   async create(payload) {
-    await latency();
-    const newShipment = {
-      id: `shp-${Date.now()}`,
-      trackingNumber: `STP-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${Math.random()
-        .toString(36)
-        .slice(2, 6)
-        .toUpperCase()}`,
-      status: "pending",
-      mode: payload.mode ?? "road",
-      priority: payload.priority ?? "standard",
-      origin: payload.origin,
-      destination: payload.destination,
-      carrier: payload.carrier ?? "ShipTrack Express",
-      service: payload.service ?? "Ground Economy",
-      customer: payload.customer ?? "Unknown",
-      customerId: payload.customerId ?? "u-business",
-      weightKg: payload.weightKg ?? 0,
-      pieces: payload.pieces ?? 1,
-      declaredValue: payload.declaredValue ?? 0,
-      estimatedDelivery: payload.estimatedDelivery ?? new Date().toISOString(),
-      pickupAt: new Date().toISOString(),
-      currentLocation: {
-        lat: payload.origin.lat,
-        lng: payload.origin.lng,
-        name: payload.origin.name,
+    const response = await api.post("/shipments", payload);
+    return response.data;
+  },
+
+  accept: async (id, operatorId) => {
+    const response = await api.post(`/shipments/${id}/accept`, {
+      operatorId,
+    });
+
+    return response.data;
+  },
+
+  updateStatus: async (id, status) => {
+    const response = await api.put(`/shipments/${id}/status`, null, {
+      params: {
+        status,
       },
-      progress: 0,
-      events: [
-        {
-          id: `ev-${Date.now()}`,
-          status: "pending",
-          label: "Shipment created",
-          description: "Shipment booked in system",
-          location: payload.origin.name,
-          lat: payload.origin.lat,
-          lng: payload.origin.lng,
-          timestamp: new Date().toISOString(),
-          completed: true,
-        },
-      ],
-      createdAt: new Date().toISOString(),
-    };
-    db.shipments.unshift(newShipment);
-    return clone(newShipment);
+    });
+
+    return response.data;
+  },
+  async reachNextHub(id) {
+    const response = await api.put(`/shipments/${id}/reach-next-hub`);
+    return response.data;
+  },
+  async createPod(formData) {
+    const response = await api.post("/pod", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
   },
 };
 
@@ -253,22 +308,65 @@ export const driversApi = {
 };
 
 // --- Notifications ---
+// export const notificationsApi = {
+//   async list() {
+//     await latency();
+//     return clone(db.notifications);
+//   },
+//   async markRead(id) {
+//     await latency(100, 250);
+//     db.notifications = db.notifications.map((n) =>
+//       n.id === id ? { ...n, read: true } : n,
+//     );
+//     return clone(db.notifications);
+//   },
+//   async markAllRead() {
+//     await latency(100, 250);
+//     db.notifications = db.notifications.map((n) => ({ ...n, read: true }));
+//     return clone(db.notifications);
+//   },
+// };
 export const notificationsApi = {
   async list() {
-    await latency();
-    return clone(db.notifications);
+    const user = await authApi.me();
+
+    const response = await api.get(`/notifications/user/${user.id}`);
+
+    return response.data.map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+
+      read: notification.isRead,
+
+      timestamp: notification.createdAt,
+
+      type: "shipment",
+
+      severity: notification.priority === "HIGH" ? "warning" : "info",
+
+      shipmentId: notification.shipmentId,
+    }));
   },
+
   async markRead(id) {
-    await latency(100, 250);
-    db.notifications = db.notifications.map((n) =>
-      n.id === id ? { ...n, read: true } : n,
-    );
-    return clone(db.notifications);
+    const response = await api.put(`/notifications/${id}/read`);
+
+    return response.data;
   },
+
+ 
+  
   async markAllRead() {
-    await latency(100, 250);
-    db.notifications = db.notifications.map((n) => ({ ...n, read: true }));
-    return clone(db.notifications);
+    const user = await authApi.me();
+
+    const unread = await api.get(`/notifications/user/${user.id}/unread`);
+
+    await Promise.all(
+      unread.data.map((n) => api.put(`/notifications/${n.id}/read`)),
+    );
+
+    return true;
   },
 };
 
@@ -354,14 +452,44 @@ export const invoicesApi = {
 };
 
 // --- Analytics ---
+
+
+// this is for specific business client 
 export const analyticsApi = {
   async get() {
-    await latency();
-    return clone(db.analytics);
+    const response = await api.get("/analytics/admin/dashboard");
+    return response.data;
   },
+
+  async getBusinessDashboard(businessClientId) {
+    const response = await api.get(
+      `/analytics/business/${businessClientId}/dashboard`,
+    );
+    return response.data;
+  },
+
   async activity() {
     await latency(150, 350);
     return clone(db.activityFeed);
+  },
+
+  async exportPdf() {
+    const response = await api.get("/analytics/admin/dashboard/pdf", {
+      responseType: "blob",
+    });
+
+    return response.data;
+  },
+
+  async exportBusinessPdf(businessClientId) {
+    const response = await api.get(
+      `/analytics/business/${businessClientId}/dashboard/pdf`,
+      {
+        responseType: "blob",
+      },
+    );
+
+    return response.data;
   },
 };
 
@@ -392,10 +520,21 @@ export const auditLogsApi = {
 };
 
 // --- Admin: ETA Predictions ---
+// export const etaPredictionsApi = {
+//   async list() {
+//     await latency();
+//     return clone(db.etaPredictions);
+//   },
+// };
 export const etaPredictionsApi = {
   async list() {
-    await latency();
-    return clone(db.etaPredictions);
+    try {
+      const res = await api.get("/analytics/eta");
+      if (Array.isArray(res.data)) return res.data;
+      return [];
+    } catch {
+      return [];
+    }
   },
 };
 
@@ -409,16 +548,18 @@ export const routesApi = {
 
 // --- Admin: POD ---
 export const podApi = {
+  // async list() {
+  //   await latency();
+  //   return clone(db.podRecords);
+  // },
   async list() {
-    await latency();
-    return clone(db.podRecords);
-  },
-  async verify(id) {
-    await latency();
-    const rec = db.podRecords.find((p) => p.id === id);
-    if (!rec) throw new Error("POD record not found");
-    rec.status = "verified";
-    return clone(rec);
+  const response = await api.get("/pod");
+  return response.data;
+},
+  async verify(id, businessClientId) {
+    const response = await api.put(`/pod/${id}/verify/${businessClientId}`);
+
+    return response.data;
   },
 };
 

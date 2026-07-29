@@ -1,25 +1,41 @@
-
 import { cn, formatDateTime } from "@/lib/utils";
 import { STATUS_META } from "@/types";
 import { Check } from "lucide-react";
 
-export function TrackingTimeline({ events }) {
+// export function TrackingTimeline({ events }) {
+//   const sorted = [...events].sort(
+//     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+//   );
+export function TrackingTimeline({ events = [] }) {
   const sorted = [...events].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
   );
+
+  if (sorted.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground">
+        No tracking history available yet.
+      </div>
+    );
+  }
 
   return (
     <ol className="relative space-y-6">
       {sorted.map((event, i) => {
-        const meta = STATUS_META[event.status];
+        // const meta = STATUS_META[event.status];
+        const meta = STATUS_META[event.status] ?? {
+          label: event.status,
+          bg: "bg-muted text-muted-foreground",
+          dot: "bg-slate-400",
+        };
         const isLast = i === 0;
         return (
-          <li key={event.id} className="relative flex gap-4">
+          <li key={i} className="relative flex gap-4">
             {i < sorted.length - 1 && (
               <span
                 className={cn(
                   "absolute left-[15px] top-8 h-[calc(100%+0px)] w-0.5",
-                  event.completed ? "bg-primary/30" : "bg-border",
+                  true ? "bg-primary/30" : "bg-border",
                 )}
                 aria-hidden="true"
               />
@@ -27,14 +43,15 @@ export function TrackingTimeline({ events }) {
             <span
               className={cn(
                 "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-4 ring-card",
-                event.completed
+                // event.completed
+                true
                   ? isLast
                     ? "bg-primary text-white"
                     : "bg-primary/15 text-primary"
                   : "bg-muted text-muted-foreground",
               )}
             >
-              {event.completed ? (
+              {true ? (
                 isLast ? (
                   <Check className="h-4 w-4" />
                 ) : (
@@ -52,7 +69,7 @@ export function TrackingTimeline({ events }) {
                     isLast ? "text-foreground" : "text-foreground/80",
                   )}
                 >
-                  {event.label}
+                  {event.title}
                 </p>
                 <span
                   className={cn(
@@ -67,7 +84,7 @@ export function TrackingTimeline({ events }) {
                 {event.description}
               </p>
               <p className="text-xs text-muted-foreground/80">
-                {event.location} · {formatDateTime(event.timestamp)}
+                {event.location} · {formatDateTime(event.time)}
               </p>
             </div>
           </li>

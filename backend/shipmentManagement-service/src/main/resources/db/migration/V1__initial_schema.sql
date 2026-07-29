@@ -404,11 +404,7 @@ CREATE TABLE shipments
 
     package_weight_kg           DECIMAL(10,2),
 
---     package_length_cm           DECIMAL(10,2),
---
---     package_width_cm            DECIMAL(10,2),
---
---     package_height_cm           DECIMAL(10,2),
+
 
     declared_value              DECIMAL(12,2),
 
@@ -492,18 +488,6 @@ CREATE TABLE shipments
 
     ----------------------------------------------------
 
---     CONSTRAINT chk_package_type
---     CHECK
---     (
---         package_type IN
---         (
---             'DOCUMENT',
---             'BOX',
---             'PARCEL',
---             'PALLET'
---         )
---         OR package_type IS NULL
---     ),
 
     CONSTRAINT chk_priority
     CHECK

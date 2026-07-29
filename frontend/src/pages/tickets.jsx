@@ -58,11 +58,15 @@ export function TicketsPage() {
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
 
-  const isCustomer = user.role === "customer";
-  const visible = isCustomer
-    ? tickets?.filter((t) => t.customerId === user.id)
-    : tickets;
-
+  const isCustomer = user?.role === "customer";
+  // const visible = isCustomer
+  //   ? tickets?.filter((t) => t.customerId === user.id)
+  //   : tickets;
+const visible = isCustomer
+  ? tickets?.filter(
+      (t) => t.customerId === user.id || t.customerEmail === user.email,
+    )
+  : tickets;
   const filtered = visible?.filter((t) => {
     if (filter !== "all" && t.status !== filter) return false;
     if (query) {

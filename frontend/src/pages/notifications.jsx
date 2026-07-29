@@ -21,6 +21,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+
+
+
 const typeIcon = {
   shipment: Package,
   alert: AlertTriangle,
@@ -40,9 +43,36 @@ export function NotificationsPage() {
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const [filter, setFilter] = useState("all");
+  // const queryClient = useQueryClient();
 
   const unread = notifications?.filter((n) => !n.read) ?? [];
   const filtered = filter === "unread" ? unread : (notifications ?? []);
+// ======================================================================
+// useEffect(() => {
+//   let cleanup = null;
+
+//   async function connect() {
+//     const user = await authApi.me();
+
+//     if (!user) return;
+
+//     connectNotificationSocket(user.id, () => {
+//       queryClient.invalidateQueries({
+//         queryKey: queryKeys.notifications,
+//       });
+//     });
+
+//     cleanup = () => disconnectNotificationSocket();
+//   }
+
+//   connect();
+
+//   return () => {
+//     if (cleanup) cleanup();
+//   };
+// }, [queryClient]);
+  // =====================================================================
+
 
   return (
     <div className="space-y-6 animate-fade-in">

@@ -362,13 +362,17 @@ import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { Mail, Lock, ShieldCheck } from "lucide-react";
 
+import { useAuth } from "@/context/auth-context";
+
 export default function LoginPage() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
-
+  // changes done here
+  const { refreshUser } = useAuth();
+  // changes done here
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -444,10 +448,10 @@ export default function LoginPage() {
          token: response.data.token,
        }),
       );
-      console.log(
-        "AFTER SAVE TOKEN =",
-        localStorage.getItem("shiptrack.token"),
-      );
+      // console.log(
+      //   "AFTER SAVE TOKEN =",
+      //   localStorage.getItem("shiptrack.token"),
+      // );
       // console.log(JSON.parse(localStorage.getItem("shiptrack.session")));
 
       // ========================================================================
@@ -456,32 +460,57 @@ export default function LoginPage() {
 
       // console.log("TOKEN:", response.data.token);
       // console.log("ROLE:", response.data.role);
-// =================================================================================
+      // =================================================================================
+      await refreshUser();
       const role = response.data.role;
 
+      // switch (role) {
+      //   case "ADMIN":
+      //     window.location.href = ("/app/admin/dashboard");
+      //     break;
+
+      //   case "CUSTOMER":
+      //     window.location.href=("/app/customer/dashboard");
+      //     break;
+
+      //   case "BUSINESS_CLIENT":
+      //     window.location.href = "/app/business_client/dashboard";
+      //     break;
+
+      //   case "LOGISTICS_OPERATOR":
+      //     window.location.href = "/app/logistics_operator/dashboard";
+      //     break;
+
+      //   case "SUPPORT_AGENT":
+      //     window.location.href = "/app/support_agent/dashboard";
+      //     break;
+
+      //   default:
+      //     window.location.href = "/";
+      // }
       switch (role) {
         case "ADMIN":
-          window.location.href = ("/app/admin/dashboard");
+          navigate("/app/admin/dashboard", { replace: true });
           break;
 
         case "CUSTOMER":
-          window.location.href=("/app/customer/dashboard");
+          navigate("/app/customer/dashboard", { replace: true });
           break;
 
         case "BUSINESS_CLIENT":
-          window.location.href = "/app/business_client/dashboard";
+          navigate("/app/business_client/dashboard", { replace: true });
           break;
 
         case "LOGISTICS_OPERATOR":
-          window.location.href = "/app/logistics_operator/dashboard";
+          navigate("/app/logistics_operator/dashboard", { replace: true });
           break;
 
         case "SUPPORT_AGENT":
-          window.location.href = "/app/support_agent/dashboard";
+          navigate("/app/support_agent/dashboard", { replace: true });
           break;
 
         default:
-          window.location.href = "/";
+          navigate("/", { replace: true });
       }
     } catch (error) {
       console.error(error);

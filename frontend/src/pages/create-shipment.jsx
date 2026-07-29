@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCreateShipment } from "@/lib/hooks";
 import { useAuth } from "@/context/auth-context";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { shipmentsApi } from "@/lib/api";
 import {
   Select,
   SelectContent,
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { cn, formatCurrency } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -25,223 +26,211 @@ import {
   Check,
   MapPin,
   Truck,
-  Plane,
-  Ship,
-  Train,
   FileText,
   Boxes,
   Sparkles,
+  User,
 } from "lucide-react";
 
 const STEPS = [
-  { id: 0, label: "Shipment Details", icon: Package },
-  { id: 1, label: "Origin & Destination", icon: MapPin },
-  { id: 2, label: "Service & Priority", icon: Truck },
-  { id: 3, label: "Review & Confirm", icon: Check },
+  { id: 0, label: "Package Information", icon: Package },
+  { id: 1, label: "Sender Information", icon: User },
+  { id: 2, label: "Receiver Information", icon: MapPin },
+  { id: 3, label: "Shipment Information", icon: Truck },
 ];
 
-const MODES = [
-  {
-    value: "road",
-    label: "Road Freight",
-    icon: Truck,
-    desc: "2-5 business days",
-    baseCost: 180,
-  },
-  {
-    value: "air",
-    label: "Air Freight",
-    icon: Plane,
-    desc: "1-2 business days",
-    baseCost: 520,
-  },
-  // {
-  //   value: "ocean",
-  //   label: "Ocean Freight",
-  //   icon: Ship,
-  //   desc: "7-14 business days",
-  //   baseCost: 340,
-  // },
-  {
-    value: "rail",
-    label: "Rail Freight",
-    icon: Train,
-    desc: "4-7 business days",
-    baseCost: 240,
-  },
+const PACKAGE_TYPES = [
+  { value: "BOX", label: "Box" },
+  { value: "DOCUMENT", label: "Document" },
+  { value: "PARCEL", label: "Parcel" },
+  { value: "PALLET", label: "Pallet" },
+  { value: "CRATE", label: "Crate" },
+];
+
+const SHIPMENT_TYPES = [
+  { value: "STANDARD", label: "Standard", baseCost: 200 },
+  { value: "EXPRESS", label: "Express", baseCost: 350 },
+  { value: "SAME_DAY", label: "Same Day", baseCost: 500 },
+  { value: "OVERNIGHT", label: "Overnight", baseCost: 450 },
 ];
 
 const PRIORITIES = [
-  {
-    value: "standard",
-    label: "Standard",
-    multiplier: 1,
-    class: "border-muted",
-  },
-  {
-    value: "express",
-    label: "Express",
-    multiplier: 1.5,
-    class: "border-warning/40",
-  },
-  {
-    value: "critical",
-    label: "Critical",
-    multiplier: 2,
-    class: "border-destructive/40",
-  },
+  { value: "LOW", label: "Low", multiplier: 1 },
+  { value: "NORMAL", label: "Normal", multiplier: 1.2 },
+  { value: "HIGH", label: "High", multiplier: 1.5 },
+  { value: "URGENT", label: "Urgent", multiplier: 2 },
 ];
-
-const CITIES = [
-  {
-    name: "Mumbai",
-    lat: 19.076,
-    lng: 72.8777,
-    address: "Andheri East, Mumbai, Maharashtra 400069",
-  },
-  {
-    name: "Delhi",
-    lat: 28.6139,
-    lng: 77.209,
-    address: "Connaught Place, New Delhi, Delhi 110001",
-  },
-  {
-    name: "Bengaluru",
-    lat: 12.9716,
-    lng: 77.5946,
-    address: "MG Road, Bengaluru, Karnataka 560001",
-  },
-  {
-    name: "Hyderabad",
-    lat: 17.385,
-    lng: 78.4867,
-    address: "Hitech City, Hyderabad, Telangana 500081",
-  },
-  {
-    name: "Chennai",
-    lat: 13.0827,
-    lng: 80.2707,
-    address: "Guindy, Chennai, Tamil Nadu 600032",
-  },
-  {
-    name: "Kolkata",
-    lat: 22.5726,
-    lng: 88.3639,
-    address: "Salt Lake City, Kolkata, West Bengal 700091",
-  },
-  {
-    name: "Pune",
-    lat: 18.5204,
-    lng: 73.8567,
-    address: "Hinjewadi, Pune, Maharashtra 411057",
-  },
-  {
-    name: "Ahmedabad",
-    lat: 23.0225,
-    lng: 72.5714,
-    address: "SG Highway, Ahmedabad, Gujarat 380015",
-  },
-  {
-    name: "Jaipur",
-    lat: 26.9124,
-    lng: 75.7873,
-    address: "Vaishali Nagar, Jaipur, Rajasthan 302021",
-  },
-  {
-    name: "Lucknow",
-    lat: 26.8467,
-    lng: 80.9462,
-    address: "Hazratganj, Lucknow, Uttar Pradesh 226001",
-  },
-];
-
-
-const INITIAL = {
-  description: "",
-  weightKg: 100,
-  pieces: 1,
-  declaredValue: 1000,
-  originCity: "Mumbai",
-  originAddress: "Andheri East, Mumbai, Maharashtra 400069",
-  destinationCity: "Delhi",
-  destinationAddress: "Connaught Place, New Delhi, Delhi 110001",
-  mode: "road",
-  priority: "standard",
-  carrier: "ShipTrack Express",
-};
-
 
 export function CreateShipmentPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createShipment = useCreateShipment();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState(INITIAL);
+  const [hubs, setHubs] = useState([]);
 
-  const selectedMode = MODES.find((m) => m.value === form.mode);
-  const selectedPriority = PRIORITIES.find((p) => p.value === form.priority);
-  const estimatedCost = Math.round(
-    selectedMode.baseCost * selectedPriority.multiplier * (form.weightKg / 100),
+  useEffect(() => {
+    const loadHubs = async () => {
+      try {
+        const data = await shipmentsApi.getHubs();
+        setHubs(data);
+      } catch (err) {
+        console.error("Failed to load hubs", err);
+      }
+    };
+
+    loadHubs();
+  }, []);
+  useEffect(() => {
+   
+  }, [hubs]);
+
+  // Pre-fill sender from user – fixed line
+  const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
+
+  const defaultSenderName = user?.companyName ?? user?.company ?? fullName;
+  const defaultSenderPhone = user?.phone ?? "";
+  const defaultSenderEmail = user?.email ?? "";
+
+  const [form, setForm] = useState({
+    // Package
+    packageDescription: "",
+    packageType: "BOX",
+    packageWeightKg: "",
+    pieces: "",
+    declaredValue: "",
+    fragile: false,
+    insured: false,
+
+    // Sender
+    senderName: defaultSenderName,
+    senderPhone: defaultSenderPhone,
+    senderEmail: defaultSenderEmail,
+    senderAddress: "",
+    senderCity: "",
+    senderState: "",
+    senderPostalCode: "",
+    senderCountry: "INDIA",
+
+    // Receiver
+    receiverName: "",
+    receiverPhone: "",
+    receiverEmail: "",
+    receiverAddress: "",
+    receiverCity: "",
+    receiverState: "",
+    receiverPostalCode: "",
+    receiverCountry: "INDIA",
+
+    // Shipment
+    shipmentType: "STANDARD",
+    priority: "NORMAL",
+    estimatedDeliveryAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10),
+  });
+
+  const selectedShipmentType = SHIPMENT_TYPES.find(
+    (s) => s.value === form.shipmentType
   );
-  const origin = CITIES.find((c) => c.name === form.originCity);
-  const destination = CITIES.find((c) => c.name === form.destinationCity);
+  const selectedPriority = PRIORITIES.find(
+    (p) => p.value === form.priority
+  );
+
+  const estimatedCost = Math.round(
+    (selectedShipmentType?.baseCost ?? 0) *
+(selectedPriority?.multiplier ?? 1)*
+      Math.max(form.packageWeightKg / 10, 1),
+  );
 
   const update = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleCityChange = (field, city) => {
-    const c = CITIES.find((city2) => city2.name === city);
-    setForm((prev) => ({
-      ...prev,
-      [field]: city,
-      [field === "originCity" ? "originAddress" : "destinationAddress"]:
-        c.address,
-    }));
+  const canProceed = () => {
+    if (step === 0) {
+      return (
+        form.packageDescription.trim() !== "" &&
+        form.packageWeightKg > 0 &&
+        form.pieces > 0
+      );
+    }
+    if (step === 1) {
+      return (
+        form.senderName.trim() !== "" &&
+        form.senderPhone.trim() !== "" &&
+        form.senderAddress.trim() !== ""
+      );
+    }
+    if (step === 2) {
+      return (
+        form.receiverName.trim() !== "" &&
+        form.receiverPhone.trim() !== "" &&
+        form.receiverAddress.trim() !== ""
+      );
+    }
+    if (step === 3) {
+      return form.shipmentType && form.priority;
+    }
+    return true;
   };
 
   const handleSubmit = async () => {
-    await createShipment.mutateAsync({
-      origin: {
-        name: origin.name,
-        address: form.originAddress,
-        lat: origin.lat,
-        lng: origin.lng,
-      },
-      destination: {
-        name: destination.name,
-        address: form.destinationAddress,
-        lat: destination.lat,
-        lng: destination.lng,
-      },
-      mode: form.mode,
-      priority: form.priority,
-      carrier: form.carrier,
-      service: selectedMode.label,
-      customer: user.company ?? user.name,
-      customerId: user.id,
-      weightKg: form.weightKg,
-      pieces: form.pieces,
-      declaredValue: form.declaredValue,
-      estimatedDelivery: new Date(
-        Date.now() + 3 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-    });
-    toast.success("Shipment created successfully", {
-      description: `Cost: ${formatCurrency(estimatedCost)} · ${selectedMode.label}`,
-    });
-    navigate("/app/shipments");
-  };
+    if (!user?.id) {
+      toast.error("User not authenticated");
+      return;
+    }
+    if (!form.declaredValue || Number(form.declaredValue) <= 0) {
+      toast.error("Declared value must be greater than zero.");
+      return;
+    }
 
-  const canProceed = () => {
-    if (step === 0) return form.weightKg > 0 && form.pieces > 0;
-    if (step === 1)
-      return (
-        form.originCity &&
-        form.destinationCity &&
-        form.originCity !== form.destinationCity
-      );
-    return true;
+    const payload = {
+      customerId: user.id,
+
+      senderName: form.senderName,
+      senderPhone: form.senderPhone,
+      senderEmail: form.senderEmail,
+      senderAddress: form.senderAddress,
+      senderCity: form.senderCity,
+      senderState: form.senderState,
+      senderPostalCode: form.senderPostalCode,
+      senderCountry: form.senderCountry,
+
+      receiverName: form.receiverName,
+      receiverPhone: form.receiverPhone,
+      receiverEmail: form.receiverEmail,
+      receiverAddress: form.receiverAddress,
+      receiverCity: form.receiverCity,
+      receiverState: form.receiverState,
+      receiverPostalCode: form.receiverPostalCode,
+      receiverCountry: form.receiverCountry,
+
+      packageType: form.packageType,
+      packageDescription: form.packageDescription,
+      packageWeightKg: form.packageWeightKg,
+      declaredValue: form.declaredValue,
+      fragile: form.fragile,
+      insured: form.insured,
+      codAmount: 0,
+
+      shipmentType: form.shipmentType,
+      priority: form.priority,
+      estimatedDeliveryAt: new Date(
+        `${form.estimatedDeliveryAt}T00:00:00`,
+      ).toISOString(),
+    };
+
+   try {
+     await createShipment.mutateAsync(payload);
+
+     toast.success("Shipment created successfully", {
+       description: `Cost: ${formatCurrency(estimatedCost)} · ${selectedShipmentType?.label}`,
+     });
+
+     navigate("/app/shipments");
+   } catch (error) {
+     toast.error(error?.response?.data?.message || "Invalid user.");
+   }
   };
 
   return (
@@ -309,35 +298,59 @@ export function CreateShipmentPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardContent className="p-6">
+            {/* Step 0: Package Information */}
             {step === 0 && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-semibold">Shipment Details</h3>
+                  <h3 className="text-lg font-semibold">Package Information</h3>
                   <p className="text-sm text-muted-foreground">
-                    Tell us what you're shipping
+                    Tell us about the package you're shipping
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="desc">Description</Label>
+                  <Label htmlFor="packageDescription">
+                    Package Description
+                  </Label>
                   <Textarea
-                    id="desc"
-                    value={form.description}
-                    onChange={(e) => update("description", e.target.value)}
-                    placeholder="e.g. Electronics components for distribution"
+                    id="packageDescription"
+                    value={form.packageDescription}
+                    onChange={(e) =>
+                      update("packageDescription", e.target.value)
+                    }
+                    placeholder="e.g. Electronics, documents, etc."
                     rows={2}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="packageType">Package Type</Label>
+                  <Select
+                    value={form.packageType}
+                    onValueChange={(v) => update("packageType", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PACKAGE_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor="weight">Weight (kg)</Label>
+                    <Label htmlFor="packageWeightKg">Weight (kg)</Label>
                     <Input
-                      id="weight"
+                      id="packageWeightKg"
                       type="number"
-                      value={form.weightKg}
+                      value={form.packageWeightKg}
                       onChange={(e) =>
-                        update("weightKg", Number(e.target.value))
+                        update("packageWeightKg", Number(e.target.value))
                       }
-                      min={1}
+                      min={0.1}
+                      step="0.1"
                     />
                   </div>
                   <div className="space-y-2">
@@ -351,261 +364,385 @@ export function CreateShipmentPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="value">Declared Value (₹)</Label>
+                    <Label htmlFor="declaredValue">Declared Value (₹)</Label>
                     <Input
-                      id="value"
+                      id="declaredValue"
                       type="number"
                       value={form.declaredValue}
                       onChange={(e) =>
                         update("declaredValue", Number(e.target.value))
                       }
-                      min={0}
+                      min={1}
                     />
                   </div>
+                </div>
+                <div className="flex flex-col gap-4 sm:flex-row sm:gap-8">
+                  {/* <div className="flex items-center gap-3">
+                    <Switch
+                      id="fragile"
+                      checked={form.fragile}
+                      onCheckedChange={(checked) => update("fragile", checked)}
+                    />
+                    <Label htmlFor="fragile" className="font-normal">
+                      Fragile
+                    </Label>
+                  </div> */}
+                  {/* <div className="flex items-center gap-3">
+                    <Switch
+                      id="insured"
+                      checked={form.insured}
+                      onCheckedChange={(checked) => update("insured", checked)}
+                    />
+                    <Label htmlFor="insured" className="font-normal">
+                      Insured
+                    </Label>
+                  </div> */}
                 </div>
               </div>
             )}
 
+            {/* Step 1: Sender Information */}
             {step === 1 && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-semibold">
-                    Origin & Destination
-                  </h3>
+                  <h3 className="text-lg font-semibold">Sender Information</h3>
                   <p className="text-sm text-muted-foreground">
-                    Where is it going?
+                    Who is sending this package?
                   </p>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Origin City</Label>
+                    <Label htmlFor="senderName">Full Name</Label>
+                    <Input
+                      id="senderName"
+                      value={form.senderName}
+                      onChange={(e) =>
+                        update("senderName", e.target.value.toUpperCase())
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="senderPhone">Phone</Label>
+                    <Input
+                      id="senderPhone"
+                      value={form.senderPhone}
+                      onChange={(e) => update("senderPhone", e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="senderEmail">Email</Label>
+                  <Input
+                    id="senderEmail"
+                    type="email"
+                    value={form.senderEmail}
+                    onChange={(e) => update("senderEmail", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="senderAddress">Address</Label>
+                  <Input
+                    id="senderAddress"
+                    value={form.senderAddress}
+                    onChange={(e) => update("senderAddress", e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="senderCity">City</Label>
                     <Select
-                      value={form.originCity}
-                      onValueChange={(v) => handleCityChange("originCity", v)}
+                      value={form.senderCity}
+                      onValueChange={(value) => {
+                        const hub = hubs.find((h) => h.city === value);
+
+                        update("senderCity", hub.city);
+                        update("senderState", hub.state);
+                        update("senderPostalCode", hub.pincode);
+                      }}
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Select City" />
                       </SelectTrigger>
+
                       <SelectContent>
-                        {CITIES.map((c) => (
-                          <SelectItem key={c.name} value={c.name}>
-                            {c.name}
+                        {hubs.map((hub) => (
+                          <SelectItem key={hub.id} value={hub.city}>
+                            {hub.city}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Destination City</Label>
-                    <Select
-                      value={form.destinationCity}
-                      onValueChange={(v) =>
-                        handleCityChange("destinationCity", v)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CITIES.map((c) => (
-                          <SelectItem key={c.name} value={c.name}>
-                            {c.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="senderState">State</Label>
+                    <Input
+                      id="senderState"
+                      value={form.senderState}
+                      onChange={(e) => update("senderState", e.target.value)}
+                      disabled
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="origin-addr">Origin Address</Label>
+                    <Label htmlFor="senderPostalCode">Postal Code</Label>
                     <Input
-                      id="origin-addr"
-                      value={form.originAddress}
-                      onChange={(e) => update("originAddress", e.target.value)}
+                      id="senderPostalCode"
+                      value={form.senderPostalCode}
+                      onChange={(e) =>
+                        update("senderPostalCode", e.target.value)
+                      }
+                      disabled
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dest-addr">Destination Address</Label>
+                    <Label htmlFor="senderCountry">Country</Label>
                     <Input
-                      id="dest-addr"
-                      value={form.destinationAddress}
-                      onChange={(e) =>
-                        update("destinationAddress", e.target.value)
-                      }
+                      id="senderCountry"
+                      value={form.senderCountry}
+                      onChange={(e) => update("senderCountry", e.target.value)}
                     />
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {form.originCity} → {form.destinationCity}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Route distance will be calculated automatically
-                    </p>
                   </div>
                 </div>
               </div>
             )}
 
+            {/* Step 2: Receiver Information */}
             {step === 2 && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-semibold">Service & Priority</h3>
+                  <h3 className="text-lg font-semibold">
+                    Receiver Information
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Choose how fast and how to ship
+                    Who is receiving this package?
                   </p>
                 </div>
-                <div className="space-y-2">
-                  <Label>Transport Mode</Label>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {MODES.map((m) => {
-                      const ModeIcon = m.icon;
-                      const selected = form.mode === m.value;
-                      return (
-                        <button
-                          key={m.value}
-                          onClick={() => update("mode", m.value)}
-                          className={cn(
-                            "flex items-center gap-3 rounded-xl border p-4 text-left transition",
-                            selected
-                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                              : "border-border hover:bg-muted/30",
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "flex h-10 w-10 items-center justify-center rounded-lg",
-                              selected
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted text-muted-foreground",
-                            )}
-                          >
-                            <ModeIcon className="h-5 w-5" />
-                          </span>
-                          <div>
-                            <p className="text-sm font-semibold">{m.label}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {m.desc} · {formatCurrency(m.baseCost)}+
-                            </p>
-                          </div>
-                          {selected && (
-                            <Check className="ml-auto h-4 w-4 text-primary" />
-                          )}
-                        </button>
-                      );
-                    })}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="receiverName">Full Name</Label>
+                    <Input
+                      id="receiverName"
+                      value={form.receiverName}
+                      onChange={(e) =>
+                        update("receiverName", e.target.value.toUpperCase())
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="receiverPhone">Phone</Label>
+                    <Input
+                      id="receiverPhone"
+                      value={form.receiverPhone}
+                      onChange={(e) => update("receiverPhone", e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Priority Level</Label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {PRIORITIES.map((p) => {
-                      const selected = form.priority === p.value;
-                      return (
-                        <button
-                          key={p.value}
-                          onClick={() => update("priority", p.value)}
-                          className={cn(
-                            "rounded-xl border p-4 text-center transition",
-                            selected
-                              ? cn(
-                                  p.class,
-                                  "ring-1 ring-primary/20 bg-primary/5",
-                                )
-                              : "border-border hover:bg-muted/30",
-                          )}
-                        >
-                          <p className="text-sm font-semibold">{p.label}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {p.multiplier === 1
-                              ? "Base price"
-                              : `${p.multiplier}x price`}
-                          </p>
-                        </button>
-                      );
-                    })}
+                  <Label htmlFor="receiverEmail">Email</Label>
+                  <Input
+                    id="receiverEmail"
+                    type="email"
+                    value={form.receiverEmail}
+                    onChange={(e) => update("receiverEmail", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="receiverAddress">Address</Label>
+                  <Input
+                    id="receiverAddress"
+                    value={form.receiverAddress}
+                    onChange={(e) => update("receiverAddress", e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="senderCity">City</Label>
+                    <Select
+                      value={form.receiverCity}
+                      onValueChange={(value) => {
+                        const hub = hubs.find((h) => h.city === value);
+
+                        update("receiverCity", hub.city);
+                        update("receiverState", hub.state);
+                        update("receiverPostalCode", hub.pincode);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select City" />
+                      </SelectTrigger>
+
+                      <SelectContent>
+                        {hubs.map((hub) => (
+                          <SelectItem key={hub.id} value={hub.city}>
+                            {hub.city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="receiverState">State</Label>
+                    <Input
+                      id="receiverState"
+                      value={form.receiverState}
+                      onChange={(e) => update("receiverState", e.target.value)}
+                      disabled
+                    />
                   </div>
                 </div>
-                {/* <div className="space-y-2">
-                  <Label>Carrier</Label>
-                  <Select
-                    value={form.carrier}
-                    onValueChange={(v) => update("carrier", v)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ShipTrack Express">
-                        ShipTrack Express
-                      </SelectItem>
-                      <SelectItem value="SkyCargo">SkyCargo</SelectItem>
-                      <SelectItem value="ColdChain Logistics">
-                        ColdChain Logistics
-                      </SelectItem>
-                      <SelectItem value="Continental Rail">
-                        Continental Rail
-                      </SelectItem>
-                      <SelectItem value="Pacific Maritime">
-                        Pacific Maritime
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div> */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="receiverPostalCode">Postal Code</Label>
+                    <Input
+                      id="receiverPostalCode"
+                      value={form.receiverPostalCode}
+                      onChange={(e) =>
+                        update("receiverPostalCode", e.target.value)
+                      }
+                      disabled
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="receiverCountry">Country</Label>
+                    <Input
+                      id="receiverCountry"
+                      value={form.receiverCountry}
+                      onChange={(e) =>
+                        update("receiverCountry", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* Step 3: Shipment Information + Review */}
             {step === 3 && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-lg font-semibold">Review & Confirm</h3>
+                  <h3 className="text-lg font-semibold">
+                    Shipment Information
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    Verify your shipment details before booking
+                    Choose service type, priority, and delivery date
                   </p>
                 </div>
-                <div className="space-y-3">
-                  <ReviewRow
-                    label="Description"
-                    value={form.description || "—"}
-                  />
-                  <ReviewRow label="Weight" value={`${form.weightKg} kg`} />
-                  <ReviewRow label="Pieces" value={String(form.pieces)} />
-                  <ReviewRow
-                    label="Declared Value"
-                    value={formatCurrency(form.declaredValue)}
-                  />
-                  <ReviewRow
-                    label="Origin"
-                    value={`${form.originCity} — ${form.originAddress}`}
-                  />
-                  <ReviewRow
-                    label="Destination"
-                    value={`${form.destinationCity} — ${form.destinationAddress}`}
-                  />
-                  <ReviewRow label="Mode" value={selectedMode.label} />
-                  <ReviewRow label="Priority" value={selectedPriority.label} />
-                  <ReviewRow label="Carrier" value={form.carrier} />
-                </div>
-                <div className="rounded-xl border border-success/30 bg-success/5 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-success">
-                      <Sparkles className="h-4 w-4" />
-                      Estimated Cost
-                    </span>
-                    <span className="text-2xl font-bold text-success">
-                      {formatCurrency(estimatedCost)}
-                    </span>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="shipmentType">Shipment Type</Label>
+                    <Select
+                      value={form.shipmentType}
+                      onValueChange={(v) => update("shipmentType", v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SHIPMENT_TYPES.map((t) => (
+                          <SelectItem key={t.value} value={t.value}>
+                            {t.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Final cost calculated after booking confirmation
-                  </p>
+                  <div className="space-y-2">
+                    <Label htmlFor="priority">Priority</Label>
+                    <Select
+                      value={form.priority}
+                      onValueChange={(v) => update("priority", v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRIORITIES.map((p) => (
+                          <SelectItem key={p.value} value={p.value}>
+                            {p.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="estimatedDeliveryAt">
+                      Estimated Delivery Date
+                    </Label>
+                    <Input
+                      id="estimatedDeliveryAt"
+                      type="date"
+                      value={form.estimatedDeliveryAt}
+                      onChange={(e) =>
+                        update("estimatedDeliveryAt", e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Review Card */}
+                <div className="mt-6">
+                  <h4 className="text-sm font-semibold text-muted-foreground mb-3">
+                    Review Your Shipment
+                  </h4>
+                  <div className="space-y-3">
+                    <ReviewRow
+                      label="Package"
+                      value={form.packageDescription || "—"}
+                    />
+                    <ReviewRow label="Sender" value={form.senderName} />
+                    <ReviewRow label="Receiver" value={form.receiverName} />
+                    <ReviewRow
+                      label="Shipment Type"
+                      value={selectedShipmentType?.label}
+                    />
+                    <ReviewRow
+                      label="Priority"
+                      value={selectedPriority?.label}
+                    />
+                    <ReviewRow
+                      label="Estimated Delivery"
+                      value={new Date(
+                        form.estimatedDeliveryAt,
+                      ).toLocaleDateString()}
+                    />
+                    <ReviewRow
+                      label="Declared Value"
+                      value={formatCurrency(form.declaredValue)}
+                    />
+                    <ReviewRow
+                      label="Weight"
+                      value={`${form.packageWeightKg} kg`}
+                    />
+                    <ReviewRow label="Pieces" value={String(form.pieces)} />
+                    <ReviewRow
+                      label="Fragile"
+                      value={form.fragile ? "Yes" : "No"}
+                    />
+                    <ReviewRow
+                      label="Insured"
+                      value={form.insured ? "Yes" : "No"}
+                    />
+                  </div>
+                  <div className="rounded-xl border border-success/30 bg-success/5 p-4 mt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-2 text-sm font-semibold text-success">
+                        <Sparkles className="h-4 w-4" />
+                        Estimated Cost
+                      </span>
+                      <span className="text-2xl font-bold text-success">
+                        {formatCurrency(estimatedCost)}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Final cost calculated after booking confirmation
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
 
+            {/* Navigation Buttons */}
             <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
               <Button
                 variant="outline"
@@ -626,7 +763,7 @@ export function CreateShipmentPage() {
               ) : (
                 <Button
                   onClick={handleSubmit}
-                  disabled={createShipment.isPending}
+                  disabled={createShipment.isPending || !canProceed()}
                 >
                   <Check className="mr-1.5 h-4 w-4" />
                   {createShipment.isPending ? "Creating..." : "Confirm & Book"}
@@ -636,6 +773,7 @@ export function CreateShipmentPage() {
           </CardContent>
         </Card>
 
+        {/* Sidebar Summary */}
         <div className="space-y-4">
           <Card className="sticky top-4">
             <CardHeader>
@@ -645,15 +783,28 @@ export function CreateShipmentPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              <SummaryRow label="Sender" value={form.senderName || "—"} />
+              <SummaryRow label="Receiver" value={form.receiverName || "—"} />
               <SummaryRow
-                label="Route"
-                value={`${form.originCity.split(",")[0]} → ${form.destinationCity.split(",")[0]}`}
+                label="Package Type"
+                value={
+                  PACKAGE_TYPES.find((t) => t.value === form.packageType)
+                    ?.label || "—"
+                }
               />
-              <SummaryRow label="Mode" value={selectedMode.label} />
-              <SummaryRow label="Priority" value={selectedPriority.label} />
-              <SummaryRow label="Weight" value={`${form.weightKg} kg`} />
-              <SummaryRow label="Pieces" value={String(form.pieces)} />
-              <SummaryRow label="Carrier" value={form.carrier} />
+              <SummaryRow label="Weight" value={`${form.packageWeightKg} kg`} />
+              <SummaryRow
+                label="Declared Value"
+                value={formatCurrency(form.declaredValue)}
+              />
+              <SummaryRow
+                label="Shipment Type"
+                value={selectedShipmentType?.label || "—"}
+              />
+              <SummaryRow
+                label="Priority"
+                value={selectedPriority?.label || "—"}
+              />
               <div className="border-t border-border pt-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">

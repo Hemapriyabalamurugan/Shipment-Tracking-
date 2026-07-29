@@ -139,7 +139,7 @@ public class Shipment {
     private String priority;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status",nullable = false)
     private ShipmentStatus status;
 
     @Column(name = "delivery_attempts")
@@ -183,4 +183,6 @@ public class Shipment {
 
     @Column(name = "updated_at", insertable = false)
     private LocalDateTime updatedAt;
+
+
 }

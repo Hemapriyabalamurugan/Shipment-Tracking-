@@ -63,7 +63,7 @@ public class ProofOfDelivery {
     private Long shipmentId;
 
     @Column(name = "signature_data")
-    private String signatureData;
+    private String signatureUrl;;
 
     @Column(name = "recipient_name")
     private String recipientName;

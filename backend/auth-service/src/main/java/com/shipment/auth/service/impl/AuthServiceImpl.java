@@ -93,8 +93,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
+                .firstName(request.getFirstName().trim().toUpperCase())
+                .lastName(request.getLastName().trim().toUpperCase())
                 .email(request.getEmail().trim().toLowerCase())
                 .phone(request.getPhone())
                 .address(request.getAddress())
@@ -711,10 +711,31 @@ public class AuthServiceImpl implements AuthService {
                         new IllegalArgumentException("User not found"));
 
         return UserProfileResponse.builder()
+                .id(user.getId())
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .phone(user.getPhone())
+//                .companyName(user.getCompanyName())
+                .build();
+    }
+
+    @Override
+    public UserProfileResponse getUserById(Long id) {
+
+        User user = userRepository
+                .findById(id)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("User not found"));
+
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .phone(user.getPhone())
                 .build();
     }
 }

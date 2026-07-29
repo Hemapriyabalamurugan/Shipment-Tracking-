@@ -132,4 +132,14 @@ public class AuthController {
                 authService.getCurrentUser(email)
         );
     }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<UserProfileResponse> getUserById(
+            @PathVariable Long id
+    ) {
+
+        return ResponseEntity.ok(
+                authService.getUserById(id)
+        );
+    }
 }

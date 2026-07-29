@@ -1,6 +1,20 @@
 
 import { useAuth } from "@/context/auth-context";
-import { useShipments, useNotifications } from "@/lib/hooks";
+import { ChevronDown } from "lucide-react";
+// import { useShipments, useNotifications } from "@/lib/hooks";
+import {
+  useShipments,
+  useNotifications,
+  useAcceptShipment,
+  useUpdateShipmentStatus,
+} from "@/lib/hooks";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StatCard } from "@/components/shared/stat-card";
 import { LoadingState } from "@/components/shared/states";
 import {
@@ -30,68 +44,83 @@ import {
   Activity,
 } from "lucide-react";
 
+
 const STATUS_FLOW = [
   {
-    key: "pending",
-    label: "Pending",
+    key: "CREATED",
+    label: "Created",
     icon: Clock,
     class: "bg-muted text-muted-foreground",
   },
   {
-    key: "picked_up",
+    key: "PICKED_UP",
     label: "Picked Up",
     icon: Package,
     class: "bg-primary/10 text-primary",
   },
   {
-    key: "in_transit",
+    key: "IN_TRANSIT",
     label: "In Transit",
     icon: Truck,
     class: "bg-chart-6/10 text-chart-6",
   },
   {
-    key: "out_for_delivery",
+    key: "OUT_FOR_DELIVERY",
     label: "Out for Delivery",
     icon: Navigation,
     class: "bg-warning/15 text-warning",
   },
   {
-    key: "delivered",
+    key: "DELIVERED",
     label: "Delivered",
     icon: CheckCircle2,
     class: "bg-success/10 text-success",
   },
   {
-    key: "failed",
-    label: "Failed",
+    key: "FAILED_DELIVERY",
+    label: "Failed Delivery",
+    icon: XCircle,
+    class: "bg-destructive/10 text-destructive",
+  },
+  {
+    key: "CANCELLED",
+    label: "Cancelled",
     icon: XCircle,
     class: "bg-destructive/10 text-destructive",
   },
 ];
-
 export default function OperatorDashboard() {
   const { user } = useAuth();
   const shipments = useShipments();
   const notifications = useNotifications();
+  const acceptShipment = useAcceptShipment();
+  const updateShipmentStatus = useUpdateShipmentStatus();
   const isLoading = shipments.isLoading;
 
   const assigned = shipments.data ?? [];
   const pending = assigned.filter(
-    (s) => s.status === "pending" || s.status === "picked_up",
+    (s) => s.status === "CREATED" || s.status === "PICKED_UP",
   );
+
   const active = assigned.filter(
-    (s) => s.status === "in_transit" || s.status === "out_for_delivery",
+    (s) => s.status === "IN_TRANSIT" || s.status === "OUT_FOR_DELIVERY",
   );
-  const delivered = assigned.filter((s) => s.status === "delivered");
+
+  const delivered = assigned.filter((s) => s.status === "DELIVERED");
+
   const failed = assigned.filter(
-    (s) => s.status === "failed" || s.status === "exception",
+    (s) => s.status === "FAILED_DELIVERY" || s.status === "CANCELLED",
   );
   const recentNotifications = notifications.data?.slice(0, 5) ?? [];
 
   if (isLoading) {
     return (
       <div className="space-y-6 animate-fade-in">
-        <OperatorHeader userName={user.name} activeCount={0} />
+        
+        <OperatorHeader
+  userName={user.name ?? user.firstName}
+  activeCount={0}
+/>
         <LoadingState />
       </div>
     );
@@ -100,8 +129,11 @@ export default function OperatorDashboard() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* <OperatorHeader userName={user.name} activeCount={active.length} /> */}
-      <OperatorHeader userName={user.name} activeCount={active.length} />//
-
+      <OperatorHeader
+        userName={user.name ?? user.firstName}
+        activeCount={active.length}
+      />
+      
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label="Active Deliveries"
@@ -129,7 +161,6 @@ export default function OperatorDashboard() {
           iconClass="bg-destructive/10 text-destructive"
         />
       </div>
-
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader className="pb-3">
@@ -156,7 +187,13 @@ export default function OperatorDashboard() {
               </div>
             ) : (
               [...active, ...pending].map((s) => (
-                <AssignmentCard key={s.id} shipment={s} />
+                <AssignmentCard
+                  key={s.id}
+                  shipment={s}
+                  acceptShipment={acceptShipment}
+                  updateShipmentStatus={updateShipmentStatus}
+                  operatorId={user.id}
+                />
               ))
             )}
           </CardContent>
@@ -209,7 +246,6 @@ export default function OperatorDashboard() {
           </CardContent>
         </Card>
       </div>
-
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-sm">
@@ -240,7 +276,7 @@ export default function OperatorDashboard() {
                       {s.trackingNumber}
                     </Link>
                     <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                      {s.origin.name} → {s.destination.name}
+                      {s.senderCity} → {s.receiverCity}
                     </p>
                   </div>
                   <span className="flex items-center gap-1 text-xs font-medium text-success">
@@ -311,15 +347,92 @@ function OperatorHeader({ userName, activeCount }) {
   );
 }
 
-function AssignmentCard({ shipment }) {
-  const isActive =
-    shipment.status === "in_transit" || shipment.status === "out_for_delivery";
-  const isPending =
-    shipment.status === "pending" || shipment.status === "picked_up";
-  const statusMeta =
-    STATUS_FLOW.find((s) => s.key === shipment.status) ?? STATUS_FLOW[0];
-  const StatusIcon = statusMeta.icon;
+function AssignmentCard({ shipment, acceptShipment, updateShipmentStatus,operatorId }) {
+const isActive =
+  shipment.status === "PICKED_UP" ||
+  shipment.status === "IN_TRANSIT" ||
+  shipment.status === "OUT_FOR_DELIVERY";
 
+   const statusMeta =
+     STATUS_FLOW.find((s) => s.key === shipment.status) ?? STATUS_FLOW[0];
+
+   const StatusIcon = statusMeta.icon;
+
+  const canAccept = shipment.status === "CREATED";
+  const canUpdateStatus =
+    shipment.status !== "CREATED" &&
+    shipment.status !== "DELIVERED" &&
+    shipment.status !== "FAILED_DELIVERY" &&
+    shipment.status !== "CANCELLED";
+  
+function getNextStatuses(status) {
+  switch (status) {
+    case "PICKED_UP":
+      return [
+        {
+          value: "IN_TRANSIT",
+          label: "In Transit",
+        },
+      ];
+
+    case "IN_TRANSIT":
+      return [
+        {
+          value: "OUT_FOR_DELIVERY",
+          label: "Out For Delivery",
+        },
+      ];
+
+    case "OUT_FOR_DELIVERY":
+      return [
+        {
+          value: "DELIVERED",
+          label: "Delivered",
+        },
+        {
+          value: "FAILED_DELIVERY",
+          label: "Failed Delivery",
+        },
+      ];
+
+    default:
+       return [];
+   }
+  }
+
+  function getProgress(status) {
+    switch (status) {
+      case "CREATED":
+        return 10;
+
+      case "PICKED_UP":
+        return 30;
+
+      case "IN_TRANSIT":
+        return 60;
+
+      case "OUT_FOR_DELIVERY":
+        return 85;
+
+      case "DELIVERED":
+        return 100;
+
+      case "FAILED_DELIVERY":
+        return 100;
+
+      case "CANCELLED":
+        return 0;
+
+      default:
+        return 0;
+    }
+  }
+
+  const progress = getProgress(shipment.status);
+
+const nextStatuses = getNextStatuses(shipment.status);
+
+// const nextStatus = getNextStatus(shipment.status);
   return (
     // <Link
     //   to={`/app/shipments/${shipment.id}`}
@@ -341,7 +454,7 @@ function AssignmentCard({ shipment }) {
               {shipment.trackingNumber}
             </p>
             <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-              {shipment.origin.name} → {shipment.destination.name}
+              {shipment.senderCity} → {shipment.receiverCity}
             </p>
           </div>
         </div>
@@ -356,38 +469,67 @@ function AssignmentCard({ shipment }) {
       </div>
 
       <div className="mt-2.5 flex items-center gap-3 text-[11px] text-muted-foreground">
-        <span className="flex items-center gap-1">
+        {/* <span className="flex items-center gap-1">
           <MapPin className="h-3 w-3" /> {shipment.currentLocation.name}
-        </span>
+        </span> */}
         <span>
           ETA:{" "}
           <span className="font-medium text-foreground">
-            {relativeDay(shipment.estimatedDelivery)}
+            {relativeDay(shipment.estimatedDeliveryAt)}
           </span>
         </span>
         <span>
-          Progress:{" "}
-          <span className="font-medium text-foreground">
-            {shipment.progress}%
-          </span>
+          Progress:
+          <span className="font-medium text-foreground">{progress}%</span>
         </span>
       </div>
 
       <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
         <div
+          // className={cn(
+          //   "h-full rounded-full",
+          //   shipment.status === "delivered"
+          //     ? "bg-success"
+          //     : shipment.status === "failed"
+          //       ? "bg-destructive"
+          //       : shipment.status === "out_for_delivery"
+          //         ? "bg-warning"
+          //         : "bg-primary",
+          // )}
+          // style={{ width: `${shipment.progress}%` }}
           className={cn(
             "h-full rounded-full",
-            shipment.status === "delivered"
+            shipment.status === "DELIVERED"
               ? "bg-success"
-              : shipment.status === "failed"
+              : shipment.status === "FAILED_DELIVERY"
                 ? "bg-destructive"
-                : shipment.status === "out_for_delivery"
+                : shipment.status === "OUT_FOR_DELIVERY"
                   ? "bg-warning"
                   : "bg-primary",
           )}
-          style={{ width: `${shipment.progress}%` }}
+          style={{ width: `${progress}%` }}
         />
       </div>
+      {canAccept && (
+        // =========================================================
+
+        // =========================================================
+        <div className="mt-3">
+          <Button
+            onClick={() => {
+              acceptShipment.mutate({
+                id: shipment.id,
+                operatorId,
+              });
+            }}
+            disabled={acceptShipment.isPending}
+          >
+            Accept Shipment
+          </Button>
+        </div>
+      )}
+
+      
 
       {isActive && (
         <div className="mt-2.5 flex items-center gap-2">
@@ -397,37 +539,18 @@ function AssignmentCard({ shipment }) {
             variant="outline"
             className="h-7 text-[11px]"
           >
-            <Link to={`/app/shipments/${shipment.id}`}>
+            {/* ================================================== */}
+            {/* <Link to={`/app/shipments/${shipment.id}`}> */}
+            <Link to={`/app/operator/navigation/${shipment.id}`}>
+              {/* ================================================= */}
               <Navigation className="mr-1 h-3 w-3" />
               Navigate
             </Link>
           </Button>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="h-7 text-[11px]"
-          >
-            <Link to="/app/pod">
-              <Camera className="mr-1 h-3 w-3" />
-              Upload Photo
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="h-7 text-[11px]"
-          >
-            <Link to="/app/pod">
-              <PenLine className="mr-1 h-3 w-3" />
-              Signature
-            </Link>
-          </Button>
+          
         </div>
-  )
-  }
-  </>
+      )}
+    </>
     // </Link>
   );
 }

@@ -53,7 +53,14 @@ export default function SupportDashboard() {
 
   const open = tickets.data?.filter((t) => t.status === "open") ?? [];
   const resolved = tickets.data?.filter((t) => t.status === "resolved") ?? [];
-  const myTickets = tickets.data?.filter((t) => t.assignee === user.name) ?? [];
+  // const myTickets = tickets.data?.filter((t) => t.assignee === user.name) ?? [];
+  const myTickets =
+    tickets.data?.filter(
+      (t) =>
+        t.assignee === (user.name ?? user.firstName) ||
+        t.assigneeId === user.id,
+    ) ?? [];
+  // ============================================================
   const exceptions =
     shipments.data?.filter((s) =>
       ["delayed", "exception"].includes(s.status),
@@ -75,7 +82,7 @@ export default function SupportDashboard() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Support Dashboard"
-        description={`Welcome, ${user.name} — here's your support queue`} /////
+        description={`Welcome, ${user.name ?? user.firstName} — here's your support queue`} /////
         actions={
           <Button asChild>
             <Link to="/app/tickets">

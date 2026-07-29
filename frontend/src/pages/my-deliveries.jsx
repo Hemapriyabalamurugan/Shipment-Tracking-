@@ -164,7 +164,7 @@ function DeliveryCard({ shipment, pod }) {
                 <StatusBadge status={shipment.status} size="sm" />
               </div>
               <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                {shipment.origin.name} → {shipment.destination.name}
+                {shipment.senderCity} → {shipment.receiverCity}
               </p>
             </div>
             <div className="text-right">
@@ -180,7 +180,7 @@ function DeliveryCard({ shipment, pod }) {
               >
                 {isDelivered
                   ? "Delivered"
-                  : relativeDay(shipment.estimatedDelivery)}
+                  : relativeDay(shipment.estimatedDeliveryAt)}
               </p>
               <p className="text-[11px] text-muted-foreground">
                 {shipment.carrier}
@@ -206,12 +206,12 @@ function DeliveryCard({ shipment, pod }) {
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
+            {/* <span className="flex items-center gap-1.5">
               <MapPin className="h-3 w-3" /> {shipment.currentLocation.name}
-            </span>
+            </span> */}
             <span className="flex items-center gap-1.5">
               <Clock className="h-3 w-3" />{" "}
-              {formatDateTime(shipment.estimatedDelivery)}
+              {formatDateTime(shipment.estimatedDeliveryAt)}
             </span>
             {shipment.pieces > 1 && (
               <span className="flex items-center gap-1.5">

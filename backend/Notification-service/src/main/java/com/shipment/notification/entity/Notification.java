@@ -16,7 +16,7 @@ public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;
+    private Long id;
 //
 //    private Long userId;
 //
@@ -64,4 +64,6 @@ public class Notification {
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+    @Column(name = "event_type")
+    private String eventType;
 }

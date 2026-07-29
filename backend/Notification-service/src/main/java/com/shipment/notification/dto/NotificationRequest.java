@@ -15,4 +15,5 @@ public class NotificationRequest {
 
     private String message;
     private String priority;
+    private String eventType;
 }

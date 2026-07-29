@@ -51,17 +51,33 @@ export function PodPage() {
   const { user } = useAuth();
   const [filter, setFilter] = useState("all");
 
-  const canVerify = user?.role === "admin";
-  const canUpload = user?.role === "operator";
+  const canVerify = user?.role === "business_client";
+  const canUpload = user?.role === "logistics_operator";
 
-  const filtered =
-    records?.filter((r) => filter === "all" || r.status === filter) ?? [];
-  const verified = records?.filter((r) => r.status === "verified") ?? [];
-  const pending = records?.filter((r) => r.status === "pending") ?? [];
-  const missing = records?.filter((r) => r.status === "missing") ?? [];
+const filtered =
+  records?.filter(
+    (r) => filter === "all" || r.verificationStatus.toLowerCase() === filter,
+  ) ?? [];
+
+const verified =
+  records?.filter((r) => r.verificationStatus === "VERIFIED") ?? [];
+
+const pending =
+  records?.filter((r) => r.verificationStatus === "PENDING") ?? [];
+
+const missing = [];
+
+  // const handleVerify = async (id) => {
+  //   await verify.mutateAsync(id);
+  //   toast.success("POD verified successfully");
+  // };
 
   const handleVerify = async (id) => {
-    await verify.mutateAsync(id);
+    await verify.mutateAsync({
+      id,
+      businessClientId: user.id,
+    });
+
     toast.success("POD verified successfully");
   };
 
@@ -121,7 +137,9 @@ export function PodPage() {
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((rec) => {
-            const StatusIcon = statusMeta[rec.status].icon;
+            // const StatusIcon = statusMeta[rec.status].icon;
+            const status = rec.verificationStatus.toLowerCase();
+            const StatusIcon = statusMeta[status].icon;
             return (
               <Card key={rec.id} className="transition hover:shadow-md">
                 <CardContent className="p-5">
@@ -130,32 +148,34 @@ export function PodPage() {
                       <span
                         className={cn(
                           "flex h-10 w-10 items-center justify-center rounded-lg",
-                          statusMeta[rec.status].class,
+                          statusMeta[status].class,
                         )}
                       >
                         <StatusIcon className="h-5 w-5" />
                       </span>
                       <div>
                         <p className="font-mono text-sm font-semibold">
+                          {/* {rec.trackingNumber} */}
                           {rec.trackingNumber}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {rec.recipient}
+                          {/* {rec.recipient} */}
+                          {rec.recipientName}
                         </p>
                       </div>
                     </div>
                     <span
                       className={cn(
                         "inline-flex rounded-md px-2 py-0.5 text-[11px] font-medium",
-                        statusMeta[rec.status].class,
+                        statusMeta[status].class,
                       )}
                     >
-                      {statusMeta[rec.status].label}
+                      {statusMeta[status].label}
                     </span>
                   </div>
 
-                  <div className="mt-4 flex h-24 items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
-                    {rec.status === "verified" ? (
+                  {/* <div className="mt-4 flex h-24 items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
+                    {rec.verificationStatus === "VERIFIED" ? (
                       <div className="flex flex-col items-center gap-1 text-success">
                         <PenLine className="h-6 w-6" />
                         <span className="text-xs font-medium">
@@ -168,6 +188,19 @@ export function PodPage() {
                         <span className="text-xs">No signature captured</span>
                       </div>
                     )}
+                  </div> */}
+                  <div className="mt-4 space-y-3">
+                    <img
+                      src={rec.photoUrl}
+                      alt="Proof of Delivery"
+                      className="h-40 w-full rounded-lg border object-cover"
+                    />
+
+                    <img
+                      src={rec.signatureUrl}
+                      alt="Recipient Signature"
+                      className="h-20 w-full rounded-lg border bg-white object-contain"
+                    />
                   </div>
 
                   <div className="mt-4 space-y-2 text-sm">
@@ -182,18 +215,18 @@ export function PodPage() {
                         Delivery time
                       </span>
                       <span className="font-medium">
-                        {formatDateTime(rec.deliveryTime)}
+                        {formatDateTime(rec.capturedAt)}
                       </span>
                     </div>
                   </div>
 
-                  {rec.notes && (
+                  {rec.deliveryNotes && (
                     <p className="mt-3 rounded-lg bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                      {rec.notes}
+                      {rec.deliveryNotes}
                     </p>
                   )}
 
-                  {rec.status === "pending" && canVerify && (
+                  {rec.verificationStatus === "PENDING" && canVerify && (
                     <div className="mt-4 flex gap-2">
                       <Button
                         onClick={() => handleVerify(rec.id)}
@@ -217,7 +250,7 @@ export function PodPage() {
                     </div>
                   )}
 
-                  {rec.status === "pending" && canVerify && (
+                  {rec.verificationStatus === "PENDING" && canVerify && (
                     <div className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-warning/5 py-2 text-xs font-medium text-warning">
                       <Clock className="h-3.5 w-3.5" />
                       Awaiting verification
@@ -231,10 +264,10 @@ export function PodPage() {
                     </div>
                   )} */}
 
-                  {rec.status === "verified" && (
+                  {rec.verificationStatus === "VERIFIED" && (
                     <div className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-success/5 py-2 text-xs font-medium text-success">
                       <Check className="h-3.5 w-3.5" />
-                      Verified {timeAgo(rec.deliveryTime)}
+                      Verified {timeAgo(rec.verifiedAt)}
                     </div>
                   )}
                 </CardContent>

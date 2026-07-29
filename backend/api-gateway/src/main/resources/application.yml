@@ -87,8 +87,13 @@ spring:
           predicates:
             - Path=/api/shipments/**
 
+        - id: navigation-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/navigation/**
+
         - id: analytics-service
-          uri: lb://ANALYTICS-REPORTING-SERVICE
+          uri: lb://ANALYTICS-SERVICE
           predicates:
             - Path=/api/analytics/**
 

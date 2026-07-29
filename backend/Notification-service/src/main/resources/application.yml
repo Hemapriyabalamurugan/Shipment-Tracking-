@@ -1,17 +1,10 @@
 server:
   port: 8083
 
-#spring:
-#  application
-#    name=Notification-service
-#
-#  datasource:
-#    url: jdbc:postgresql://localhost:5432/ShiptrackPro
-#    username: postgres
-#    password: manoj123!@#
+
 spring:
   application:
-    name= Notification-service
+    name: Notification-service
 
   datasource:
     url: jdbc:postgresql://localhost:5432/ShiptrackPro
@@ -26,8 +19,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: your-email@gmail.com
-    password: your-app-password
+    username: catjilarajput@gmail.com
+    password: ttgt euqi epnx wynl
 
     properties:
       mail:

@@ -1,6 +1,6 @@
 
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import {  useSearchParams } from "react-router-dom";
 import { useShipments, useMyShipments } from "@/lib/hooks";
 import { useAuth } from "@/context/auth-context";
 import { PageHeader } from "@/components/shared/page-header";
@@ -29,21 +29,36 @@ const statusFilters = [
 ];
 
 export function ShipmentsPage() {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const allShipments = useShipments();
-  const myShipments = useMyShipments(user.id);
+  const myShipments = useMyShipments(user?.id);
   const [params] = useSearchParams();
+  
   const initialQuery = params.get("q") ?? "";
   const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState("all");
   const [mode, setMode] = useState("all");
 
-  const isCustomerScoped = user.role === "business" || user.role === "customer";
-  const shipments = isCustomerScoped ? myShipments.data : allShipments.data;
-  const isLoading = isCustomerScoped
-    ? myShipments.isLoading
-    : allShipments.isLoading;
+  const isCustomerScoped = user?.role === "business_client" || user.role === "customer";
+  // const shipments = isCustomerScoped ? myShipments.data : allShipments.data;
+  const shipments = isCustomerScoped
+    ? (myShipments.data ?? [])
+    : (allShipments.data ?? []);
+  // const isLoading = isCustomerScoped
+  //   ? myShipments.isLoading
+  //   : allShipments.isLoading;
+  const isLoading =
+    authLoading ||
+    (isCustomerScoped ? myShipments.isLoading : allShipments.isLoading);
+  
+if (authLoading) {
+  return <LoadingState />;
+}
 
+if (!user) {
+  return null;
+}
   const filtered = useMemo(() => {
     if (!shipments) return [];
     return shipments.filter((s) => {
@@ -92,7 +107,7 @@ export function ShipmentsPage() {
         }
       />
 
-      <Card className="p-4">
+      {/* <Card className="p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -103,7 +118,7 @@ export function ShipmentsPage() {
               className="pl-9"
             />
           </div>
-          {/* <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <Select value={mode} onValueChange={setMode}>
               <SelectTrigger className="w-[140px]">
                 <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />
@@ -117,16 +132,16 @@ export function ShipmentsPage() {
                 <SelectItem value="rail">Rail</SelectItem>
               </SelectContent>
             </Select>
-          </div> */}
+          </div>
         </div>
 
         {/* ============================================================================================================================= */}
-        {/* <Tabs value={status} onValueChange={setStatus}  className="mt-4"> */}
+        {/* <Tabs value={status} onValueChange={setStatus}  className="mt-4">
         <Tabs
           value={status}
           onValueChange={(value) => {
             setStatus(value);
-            navigate("/app/shipments"); // Change this to your details route
+            // navigate("/app/shipments"); // Change this to your details route
           }}
           className="mt-4"
         >
@@ -137,8 +152,8 @@ export function ShipmentsPage() {
               </TabsTrigger>
             ))}
           </TabsList>
-        </Tabs>
-      </Card>
+        </Tabs> */}
+      {/* </Card> */} 
 
       {isLoading ? (
         <LoadingState />
