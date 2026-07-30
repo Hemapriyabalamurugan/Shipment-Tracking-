@@ -665,7 +665,7 @@ export function CreateShipmentPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label htmlFor="estimatedDeliveryAt">
                       Estimated Delivery Date
                     </Label>
@@ -677,7 +677,7 @@ export function CreateShipmentPage() {
                         update("estimatedDeliveryAt", e.target.value)
                       }
                     />
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Review Card */}
@@ -700,12 +700,12 @@ export function CreateShipmentPage() {
                       label="Priority"
                       value={selectedPriority?.label}
                     />
-                    <ReviewRow
+                    {/* <ReviewRow
                       label="Estimated Delivery"
                       value={new Date(
                         form.estimatedDeliveryAt,
                       ).toLocaleDateString()}
-                    />
+                    /> */}
                     <ReviewRow
                       label="Declared Value"
                       value={formatCurrency(form.declaredValue)}
@@ -715,14 +715,14 @@ export function CreateShipmentPage() {
                       value={`${form.packageWeightKg} kg`}
                     />
                     <ReviewRow label="Pieces" value={String(form.pieces)} />
-                    <ReviewRow
+                    {/* <ReviewRow
                       label="Fragile"
                       value={form.fragile ? "Yes" : "No"}
                     />
                     <ReviewRow
                       label="Insured"
                       value={form.insured ? "Yes" : "No"}
-                    />
+                    /> */}
                   </div>
                   <div className="rounded-xl border border-success/30 bg-success/5 p-4 mt-4">
                     <div className="flex items-center justify-between">

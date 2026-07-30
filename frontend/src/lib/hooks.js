@@ -242,6 +242,22 @@ export function useRoutes() {
     queryFn: routesApi.list,
   });
 }
+// ==================================
+export function useFindRoute(originHubId, destinationHubId) {
+  return useQuery({
+    queryKey: ["route-finder", originHubId, destinationHubId],
+    queryFn: () => shipmentsApi.findRoute(originHubId, destinationHubId),
+    enabled: !!originHubId && !!destinationHubId,
+  });
+}
+
+export function useHubs() {
+  return useQuery({
+    queryKey: ["hubs"],
+    queryFn: () => shipmentsApi.getHubs(),
+  });
+}
+// =============================================================
 export function usePodRecords() {
   return useQuery({
     queryKey: queryKeys.podRecords,

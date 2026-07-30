@@ -4,6 +4,8 @@ package com.shipment.shipmentmanagement.controller;
 
 import com.shipment.shipmentmanagement.dto.*;
 import com.shipment.shipmentmanagement.entity.Shipment;
+import com.shipment.shipmentmanagement.service.DeliveryForecastService;
+import com.shipment.shipmentmanagement.service.EtaService;
 import com.shipment.shipmentmanagement.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,10 @@ import com.shipment.shipmentmanagement.service.RouteService;
 import com.shipment.shipmentmanagement.dto.HubDropdownResponse;
 
 import java.util.List;
+import com.shipment.shipmentmanagement.dto.EtaResponse;
+import com.shipment.shipmentmanagement.dto.DeliveryForecastResponse;
+
+
 
 @RestController
 @RequestMapping("/api/shipments")
@@ -20,6 +26,9 @@ public class ShipmentController {
 
     private final ShipmentService shipmentService;
     private final RouteService routeService;
+    private final EtaService etaService;
+
+    private final DeliveryForecastService deliveryForecastService;
 
     @PostMapping
     public Shipment saveShipment(@RequestBody Shipment shipment) {
@@ -148,5 +157,25 @@ public class ShipmentController {
     @GetMapping("/hubs")
     public List<HubDropdownResponse> getAllHubs() {
         return shipmentService.getAllHubs();
+    }
+
+    @GetMapping("/{shipmentId}/eta")
+    public EtaResponse getEta(
+            @PathVariable Long shipmentId
+    ) {
+
+        return etaService.calculateEta(
+                shipmentId
+        );
+    }
+
+    @GetMapping("/{shipmentId}/forecast")
+    public DeliveryForecastResponse getForecast(
+            @PathVariable Long shipmentId
+    ) {
+
+        return deliveryForecastService.generateForecast(
+                shipmentId
+        );
     }
 }

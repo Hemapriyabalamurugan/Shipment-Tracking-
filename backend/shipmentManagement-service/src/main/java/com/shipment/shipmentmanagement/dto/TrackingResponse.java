@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.time.LocalDateTime;
+
 
 @Getter
 @Setter
@@ -34,4 +36,14 @@ public class TrackingResponse {
     private List<TrackingHistoryDto> trackingHistory;
 
     private int progressPercentage;
+
+    private Integer remainingDistanceKm;
+
+    private Integer estimatedHours;
+
+    private Integer estimatedMinutes;
+
+    private LocalDateTime estimatedArrival;
+
+    private DeliveryForecastResponse deliveryForecast;
 }

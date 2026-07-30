@@ -276,6 +276,12 @@ export const shipmentsApi = {
 
     return response.data;
   },
+
+  async updateJourney(payload) {
+    const response = await api.post("/journey/update", payload);
+    return response.data;
+  },
+
   async reachNextHub(id) {
     const response = await api.put(`/shipments/${id}/reach-next-hub`);
     return response.data;
@@ -288,6 +294,17 @@ export const shipmentsApi = {
     });
 
     return response.data;
+  },
+// ==========================================================
+  getHubs: async () => {
+    const { data } = await api.get("/hubs");
+    return data;
+  },
+  findRoute: async (originHubId, destinationHubId) => {
+    const { data } = await api.get(
+      `/routes/find?originHubId=${originHubId}&destinationHubId=${destinationHubId}`,
+    );
+    return data;
   },
 };
 

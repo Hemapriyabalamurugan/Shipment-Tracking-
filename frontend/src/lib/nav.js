@@ -50,7 +50,7 @@ export const NAV_BY_ROLE = {
           badge: "shipments",
         },
         { label: "Tracking", to: "/app/track", icon: MapPin },
-        { label: "ETA Prediction", to: "/app/eta-prediction", icon: Clock },
+        // { label: "ETA Prediction", to: "/app/eta-prediction", icon: Clock },
         { label: "Route Management", to: "/app/routes", icon: Route },
         {
           label: "Proof of Delivery",
@@ -71,7 +71,7 @@ export const NAV_BY_ROLE = {
         //   to: "/app/notifications",
         //   icon: MessageSquare,
         // },
-        { label: "Reports", to: "/app/reports", icon: FileText },
+        // { label: "Reports", to: "/app/reports", icon: FileText },
         // {
         //   label: "System Monitoring",
         //   to: "/app/system-monitoring",

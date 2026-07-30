@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 
 import java.util.*;
 import java.util.List;
+import com.shipment.shipmentmanagement.dto.EtaResponse;
+import com.shipment.shipmentmanagement.dto.DeliveryForecastResponse;
+
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +35,9 @@ public class RouteService {
     private final HubConnectionRepository hubConnectionRepository;
     private final ShipmentRouteRepository shipmentRouteRepository;
     private final ShipmentRepository shipmentRepository;
+    private final EtaService etaService;
 
+    private final DeliveryForecastService deliveryForecastService;
 
     public Hub findHubByCity(String city) {
 
@@ -374,6 +379,16 @@ public class RouteService {
         }
 ////        ===============================================================
 
+        EtaResponse eta =
+                etaService.calculateEta(
+                        shipment.getId()
+                );
+
+        DeliveryForecastResponse forecast =
+                deliveryForecastService.generateForecast(
+                        shipment.getId()
+                );
+
         return TrackingResponse.builder()
                 .trackingNumber(
                         shipment.getTrackingNumber()
@@ -381,6 +396,7 @@ public class RouteService {
                 .shipmentStatus(
                         shipment.getStatus().name()
                 )
+
                 .origin(origin)
                 .destination(destination)
                 .currentLocation(currentHub)
@@ -389,6 +405,22 @@ public class RouteService {
                 .remainingHubs(remaining)
                 .progressPercentage(progress)
                 .trackingHistory(history)
+                .trackingHistory(history)
+                .remainingDistanceKm(
+                        eta.getRemainingDistanceKm()
+                )
+                .estimatedHours(
+                        eta.getEstimatedHours()
+                )
+                .estimatedMinutes(
+                        eta.getEstimatedMinutes()
+                )
+                .estimatedArrival(
+                        eta.getEstimatedArrival()
+                )
+                .deliveryForecast(
+                        forecast
+                )
                 .build();
     }
 

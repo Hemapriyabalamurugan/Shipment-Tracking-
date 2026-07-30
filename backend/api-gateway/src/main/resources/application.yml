@@ -92,6 +92,21 @@ spring:
           predicates:
             - Path=/api/navigation/**
 
+        - id: journey-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/journey/**
+
+        - id: route-finder-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/routes/**
+
+        - id: hub-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/hubs/**
+
         - id: analytics-service
           uri: lb://ANALYTICS-SERVICE
           predicates:

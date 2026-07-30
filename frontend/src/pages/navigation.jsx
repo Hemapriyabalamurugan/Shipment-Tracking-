@@ -41,7 +41,18 @@ export default function OperatorNavigationPage() {
   const sigRef = useRef(null);
   const signaturePad = useRef(null);
 
-  
+ 
+
+  const [trafficCondition, setTrafficCondition] = useState("LOW");
+  const [weatherCondition, setWeatherCondition] = useState("CLEAR");
+  const [roadCondition, setRoadCondition] = useState("GOOD");
+  const [remarks, setRemarks] = useState("");
+
+  const TRAFFIC_OPTIONS = ["LOW", "MODERATE", "HEAVY"];
+
+  const WEATHER_OPTIONS = ["CLEAR", "RAIN", "FOG", "STORM"];
+
+  const ROAD_OPTIONS = ["GOOD", "UNDER_CONSTRUCTION", "ACCIDENT", "BLOCKED"];
 
 
     let statusOptions = [];
@@ -57,7 +68,7 @@ export default function OperatorNavigationPage() {
     }
 
    
-  //   const [selectedStatus, setSelectedStatus] = useState("");
+  
   if (isLoading) {
     return <div className="p-6">Loading...</div>;
   }
@@ -99,6 +110,85 @@ export default function OperatorNavigationPage() {
       </div>
 
       <div className="space-y-6">
+        {/* newline added */}
+
+        <div className="rounded-xl border bg-white p-6 shadow-sm space-y-4">
+          <h3 className="text-lg font-semibold">Journey Update</h3>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <Label>Traffic</Label>
+
+              <Select
+                value={trafficCondition}
+                onValueChange={setTrafficCondition}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {TRAFFIC_OPTIONS.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item.replaceAll("_", " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Weather</Label>
+
+              <Select
+                value={weatherCondition}
+                onValueChange={setWeatherCondition}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {WEATHER_OPTIONS.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item.replaceAll("_", " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Road</Label>
+
+              <Select value={roadCondition} onValueChange={setRoadCondition}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {ROAD_OPTIONS.map((item) => (
+                    <SelectItem key={item} value={item}>
+                      {item.replaceAll("_", " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label>Remarks</Label>
+
+            <Input
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              placeholder="Optional remarks"
+            />
+          </div>
+        </div>
+
+        {/* ==================================================== */}
         <div className="flex justify-center gap-10">
           <div className="flex items-end gap-3">
             <div className="w-64">
@@ -129,8 +219,26 @@ export default function OperatorNavigationPage() {
               Update
             </Button>
           </div>
-          <Button
+          {/* <Button
             onClick={() => reachNextHub.mutate(Number(id))}
+            disabled={currentStatus === "DELIVERED"}
+            className="bg-green-600"
+          >
+            Confirm Reached Hub
+          </Button> */}
+
+          <Button
+            onClick={async () => {
+              await shipmentsApi.updateJourney({
+                shipmentId: Number(id),
+                trafficCondition,
+                weatherCondition,
+                roadCondition,
+                remarks,
+              });
+
+              reachNextHub.mutate(Number(id));
+            }}
             disabled={currentStatus === "DELIVERED"}
             className="bg-green-600"
           >
@@ -142,40 +250,6 @@ export default function OperatorNavigationPage() {
           <div className="rounded-xl border bg-white p-6 shadow-sm space-y-6">
             <h3 className="text-lg font-semibold">Proof of Delivery</h3>
 
-            {/* <div className="space-y-2">
-              <Label>Upload POD Image</Label>
-
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setPodImage(e.target.files?.[0])}
-              />
-            </div> */}
-            {/* <div className="space-y-2">
-              <Label>Proof of Delivery (POD)</Label>
-
-              <input
-                id="pod-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => setPodImage(e.target.files?.[0])}
-              />
-
-              <label htmlFor="pod-upload">
-                <Button
-                  type="button"
-                  className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
-                  asChild
-                >
-                  <span>Upload POD Image</span>
-                </Button>
-              </label>
-
-              {podImage && (
-                <p className="text-sm text-green-600 mt-2">✓ {podImage.name}</p>
-              )}
-            </div> */}
             <div className="space-y-3">
               {/* <Label>Proof of Delivery (POD)</Label> */}
 
@@ -286,40 +360,8 @@ export default function OperatorNavigationPage() {
             </div>
 
             <div className="flex items-end gap-3">
-              {/* <div className="w-72">
-                <Select
-                  value={selectedStatus}
-                  onValueChange={setSelectedStatus}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    {statusOptions.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status.replaceAll("_", " ")}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div> */}
-
               <Button
                 disabled={!customerName || !podImage}
-                // onClick={() => {
-                //   const signature = sigRef.current
-                //     .getTrimmedCanvas()
-                //     .toDataURL("image/png");
-
-                //   updateStatus.mutate({
-                //     id: Number(id),
-                //     status: selectedStatus,
-                //     customerName,
-                //     podImage,
-                //     signature,
-                //   });
-                // }}
                 onClick={async () => {
                   const signature = signaturePad.current.toDataURL();
 
@@ -343,8 +385,7 @@ export default function OperatorNavigationPage() {
                   );
 
                   formData.append("photo", podImage);
-console.log("Photo size:", podImage.size);
-console.log("Signature length:", signature.length);
+
                   await shipmentsApi.createPod(formData);
 
                   updateStatus.mutate({
