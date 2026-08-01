@@ -204,56 +204,7 @@ export const shipmentsApi = {
     const response = await api.get("/shipments/hubs");
     return response.data;
   },
-  // async getByCustomer(customerId) {
-  //   await latency();
-  //   return clone(db.shipments.filter((s) => s.customerId === customerId));
-  // },
-  // async create(payload) {
-  //   await latency();
-  //   const newShipment = {
-  //     id: `shp-${Date.now()}`,
-  //     trackingNumber: `STP-${Math.random().toString(36).slice(2, 6).toUpperCase()}-${Math.random()
-  //       .toString(36)
-  //       .slice(2, 6)
-  //       .toUpperCase()}`,
-  //     status: "pending",
-  //     mode: payload.mode ?? "road",
-  //     priority: payload.priority ?? "standard",
-  //     origin: payload.origin,
-  //     destination: payload.destination,
-  //     carrier: payload.carrier ?? "ShipTrack Express",
-  //     service: payload.service ?? "Ground Economy",
-  //     customer: payload.customer ?? "Unknown",
-  //     customerId: payload.customerId ?? "u-business",
-  //     weightKg: payload.weightKg ?? 0,
-  //     pieces: payload.pieces ?? 1,
-  //     declaredValue: payload.declaredValue ?? 0,
-  //     estimatedDelivery: payload.estimatedDelivery ?? new Date().toISOString(),
-  //     pickupAt: new Date().toISOString(),
-  //     currentLocation: {
-  //       lat: payload.origin.lat,
-  //       lng: payload.origin.lng,
-  //       name: payload.origin.name,
-  //     },
-  //     progress: 0,
-  //     events: [
-  //       {
-  //         id: `ev-${Date.now()}`,
-  //         status: "pending",
-  //         label: "Shipment created",
-  //         description: "Shipment booked in system",
-  //         location: payload.origin.name,
-  //         lat: payload.origin.lat,
-  //         lng: payload.origin.lng,
-  //         timestamp: new Date().toISOString(),
-  //         completed: true,
-  //       },
-  //     ],
-  //     createdAt: new Date().toISOString(),
-  //   };
-  //   db.shipments.unshift(newShipment);
-  //   return clone(newShipment);
-  // },
+ 
   async create(payload) {
     const response = await api.post("/shipments", payload);
     return response.data;
@@ -296,7 +247,7 @@ export const shipmentsApi = {
     return response.data;
   },
 // ==========================================================
-  getHubs: async () => {
+  getRouteHubs: async () => {
     const { data } = await api.get("/hubs");
     return data;
   },
@@ -471,17 +422,68 @@ export const invoicesApi = {
 // --- Analytics ---
 
 
-// this is for specific business client 
+// this is for specific business client
+// export const analyticsApi = {
+//   async get() {
+//     const response = await api.get("/analytics/admin/dashboard");
+//     return response.data;
+//   },
+
+//   async getBusinessDashboard(businessClientId) {
+//     const response = await api.get(
+//       `/analytics/business/${businessClientId}/dashboard`,
+//     );
+//     return response.data;
+//   },
+
+//   async activity() {
+//     await latency(150, 350);
+//     return clone(db.activityFeed);
+//   },
+
+//   async exportPdf() {
+//     const response = await api.get("/analytics/admin/dashboard/pdf", {
+//       responseType: "blob",
+//     });
+
+//     return response.data;
+//   },
+
+//   async exportBusinessPdf(businessClientId) {
+//     const response = await api.get(
+//       `/analytics/business/${businessClientId}/dashboard/pdf`,
+//       {
+//         responseType: "blob",
+//       },
+//     );
+
+//     return response.data;
+//   },
+// };
+
 export const analyticsApi = {
-  async get() {
-    const response = await api.get("/analytics/admin/dashboard");
+  async get(startDate, endDate) {
+    const response = await api.get("/analytics/admin/dashboard", {
+      params: {
+        startDate,
+        endDate,
+      },
+    });
+
     return response.data;
   },
 
-  async getBusinessDashboard(businessClientId) {
+  async getBusinessDashboard(businessClientId, startDate, endDate) {
     const response = await api.get(
       `/analytics/business/${businessClientId}/dashboard`,
+      {
+        params: {
+          startDate,
+          endDate,
+        },
+      },
     );
+
     return response.data;
   },
 
@@ -490,18 +492,26 @@ export const analyticsApi = {
     return clone(db.activityFeed);
   },
 
-  async exportPdf() {
+  async exportPdf(startDate, endDate) {
     const response = await api.get("/analytics/admin/dashboard/pdf", {
+      params: {
+        startDate,
+        endDate,
+      },
       responseType: "blob",
     });
 
     return response.data;
   },
 
-  async exportBusinessPdf(businessClientId) {
+  async exportBusinessPdf(businessClientId, startDate, endDate) {
     const response = await api.get(
       `/analytics/business/${businessClientId}/dashboard/pdf`,
       {
+        params: {
+          startDate,
+          endDate,
+        },
         responseType: "blob",
       },
     );

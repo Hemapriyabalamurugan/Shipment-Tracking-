@@ -11,6 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+// ========================================
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
+// =============================================
 import { Plane, Ship, Train, Truck, ArrowRight } from "lucide-react";
 
 const modeIcon = {
@@ -20,12 +25,39 @@ const modeIcon = {
  
 };
 
+// =================================================================
+// const [search, setSearch] = useState("");
+
+// const filteredShipments = useMemo(() => {
+//   const keyword = search.trim().toLowerCase();
+
+//   if (!keyword) return shipments;
+
+//   return shipments.filter((s) =>
+//     s.trackingNumber?.toLowerCase().includes(keyword),
+//   );
+// }, [shipments, search]);
+// ===================================================================
+
 export function ShipmentTable({
   shipments,
   emptyLabel = "No shipments found",
   showCustomer = true,
 }) {
-  if (shipments.length === 0) {
+const [search, setSearch] = useState("");
+
+const filteredShipments = useMemo(() => {
+  const keyword = search.trim().toLowerCase();
+
+  if (!keyword) return shipments;
+
+  return shipments.filter((s) =>
+    s.trackingNumber?.toLowerCase().includes(keyword),
+  );
+}, [shipments, search]);
+
+  // if (shipments.length === 0) {
+  if (filteredShipments.length === 0 && !search) {
     return (
       <div className="rounded-xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">
         {emptyLabel}
@@ -34,80 +66,97 @@ export function ShipmentTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-card scrollbar-thin">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className="w-[160px]">Tracking #</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="hidden md:table-cell">Route</TableHead>
-            {showCustomer && (
-              <TableHead className="hidden lg:table-cell">Customer</TableHead>
-            )}
-            <TableHead className="hidden md:table-cell">ETA</TableHead>
-            <TableHead className="hidden sm:table-cell">Priority</TableHead>
-            <TableHead className="w-10" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {shipments.map((s) => {
-            // const ModeIcon = modeIcon[s.mode];
-            const ModeIcon =  Truck;
-            return (
-              <TableRow key={s.id} className="group">
-                <TableCell>
-                  <Link
-                    to={`/app/shipments/${s.id}`}
-                    className="flex items-center gap-2.5"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground transition group-hover:bg-primary/10 group-hover:text-primary">
-                      <ModeIcon className="h-4 w-4" />
-                    </span>
-                    <span className="flex flex-col">
-                      <span className="font-mono text-xs font-semibold text-foreground">
-                        {s.trackingNumber}
+    // ==============================================================
+    <>
+      <div className="mb-4">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search tracking number..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value.toUpperCase())}
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-border bg-card scrollbar-thin">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableHead className="w-[160px]">Tracking #</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="hidden md:table-cell">Route</TableHead>
+              {showCustomer && (
+                <TableHead className="hidden lg:table-cell">Customer</TableHead>
+              )}
+              <TableHead className="hidden md:table-cell">ETA</TableHead>
+              <TableHead className="hidden sm:table-cell">Priority</TableHead>
+              <TableHead className="w-10" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {/* {shipments.map((s) => { */}
+            {filteredShipments.map((s) => {
+              // const ModeIcon = modeIcon[s.mode];
+              const ModeIcon = Truck;
+              return (
+                <TableRow key={s.id} className="group">
+                  <TableCell>
+                    <Link
+                      to={`/app/shipments/${s.id}`}
+                      className="flex items-center gap-2.5"
+                    >
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground transition group-hover:bg-primary/10 group-hover:text-primary">
+                        <ModeIcon className="h-4 w-4" />
                       </span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {"ShipTrack"}
+                      <span className="flex flex-col">
+                        <span className="font-mono text-xs font-semibold text-foreground">
+                          {s.trackingNumber}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {"ShipTrack"}
+                        </span>
                       </span>
-                    </span>
-                  </Link>
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={s.status} size="sm" />
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="max-w-[120px] truncate text-foreground">
-                      {s.senderCity}
-                    </span>
-                    <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
-                    <span className="max-w-[120px] truncate text-foreground">
-                      {s.receiverCity}
-                    </span>
-                  </div>
-                </TableCell>
-                {showCustomer && (
-                  <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
-                    {s.senderName}
+                    </Link>
                   </TableCell>
-                )}
-                <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
-                  {relativeDay(s.estimatedDeliveryAt)}
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <PriorityBadge priority={s.priority} />
-                </TableCell>
-                <TableCell>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+                  <TableCell>
+                    <StatusBadge status={s.status} size="sm" />
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="max-w-[120px] truncate text-foreground">
+                        {s.senderCity}
+                      </span>
+                      <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+                      <span className="max-w-[120px] truncate text-foreground">
+                        {s.receiverCity}
+                      </span>
+                    </div>
+                  </TableCell>
+                  {showCustomer && (
+                    <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
+                      {s.senderName}
+                    </TableCell>
+                  )}
+                  <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                    {relativeDay(s.estimatedDeliveryAt)}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <PriorityBadge priority={s.priority} />
+                  </TableCell>
+                  <TableCell>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
+  
 }
 
 export function ShipmentListItem({ shipment }) {

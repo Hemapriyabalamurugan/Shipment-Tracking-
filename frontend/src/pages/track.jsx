@@ -103,7 +103,7 @@ export function TrackPage() {
                 Track <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </form>
-{/* ===================================================================== */}
+            {/* ===================================================================== */}
             {/* <p className="text-center text-xs text-muted-foreground">
               Try: STP-9F4K-8821 · STP-2H7M-4410 · STP-5C2P-7733
             </p> */}
@@ -112,7 +112,7 @@ export function TrackPage() {
         </div>
       </Card>
 
-      {submitted && trackQuery.isLoading && (
+      {submitted && loading && (
         <Card>
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
             Searching for {submitted}…
@@ -120,7 +120,7 @@ export function TrackPage() {
         </Card>
       )}
 
-      {submitted && !trackQuery.isLoading && !shipment && (
+      {submitted && !loading && !tracking && (
         <Card>
           <CardContent className="py-10 text-center">
             <p className="text-sm font-semibold text-foreground">
@@ -142,12 +142,12 @@ export function TrackPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-mono text-lg font-bold">
-                      {shipment.trackingNumber}
+                      {tracking.trackingNumber}
                     </p>
-                    <StatusBadge status={shipment.status} />
+                    <StatusBadge status={tracking.status} />
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {shipment.origin.name} → {shipment.destination.name}
+                    {tracking.origin.name} → {tracking.destination.name}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -156,11 +156,11 @@ export function TrackPage() {
                       <Clock className="h-3 w-3" /> ETA
                     </p>
                     <p className="text-sm font-semibold">
-                      {relativeDay(shipment.estimatedDelivery)}
+                      {relativeDay(tracking.estimatedDelivery)}
                     </p>
                   </div>
                   <Button
-                    onClick={() => navigate(`/app/shipments/${shipment.id}`)}
+                    onClick={() => navigate(`/app/shipments/${tracking.id}`)}
                   >
                     Full details <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Button>
@@ -170,12 +170,12 @@ export function TrackPage() {
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full gradient-brand"
-                  style={{ width: `${shipment.progress}%` }}
+                  style={{ width: `${tracking.progress}%` }}
                 />
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground">
-                {shipment.progress}% complete · currently at{" "}
-                {shipment.currentLocation.name}
+                {tracking.progress}% complete · currently at{" "}
+                {tracking.currentLocation.name}
               </p>
             </CardContent>
           </Card>
@@ -203,7 +203,7 @@ export function TrackPage() {
                 <CardTitle className="text-sm">Status Updates</CardTitle>
               </CardHeader>
               <CardContent>
-                <TrackingTimeline events={shipment.events} />
+                <TrackingTimeline events={tracking.events} />
               </CardContent>
             </Card>
           </div>

@@ -25,4 +25,16 @@ public class RouteFinderController {
                 destinationHubId
         );
     }
+
+//    adding somthing new from moulika
+//@GetMapping("/hubs")
+//public List<HubResponseDTO> getAllHubs() {
+//    return routeFinderService.getAllHubs();
+//}
+//
+////same here also from moulika
+//@GetMapping("/network")
+//public NetworkGraphDTO getNetwork() {
+//    return routeFinderService.getNetwork();
+//}
 }

@@ -17,24 +17,7 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-//
-//    private Long userId;
-//
-//    private Long shipmentId;
-//
-//    private String channel;
-//
-//    private String title;
-//
-//    private String message;
-//
-//    private Boolean isRead;
-//
-//    private LocalDateTime readAt;
-//
-//    private LocalDateTime sentAt;
-//
-//    private LocalDateTime createdAt;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 

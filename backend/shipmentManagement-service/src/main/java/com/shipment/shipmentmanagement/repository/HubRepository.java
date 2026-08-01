@@ -11,4 +11,8 @@ public interface HubRepository extends JpaRepository<Hub, Long> {
     Optional<Hub> findByCityIgnoreCase(String city);
 
     List<Hub> findByActiveTrueOrderByCityAsc();
+
+//    additional moulika
+//Optional<Hub> findByIdAndActiveTrue(Long id);
+
 }

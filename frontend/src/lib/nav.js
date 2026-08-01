@@ -49,7 +49,7 @@ export const NAV_BY_ROLE = {
           icon: Package,
           badge: "shipments",
         },
-        { label: "Tracking", to: "/app/track", icon: MapPin },
+        // { label: "Tracking", to: "/app/track", icon: MapPin },
         // { label: "ETA Prediction", to: "/app/eta-prediction", icon: Clock },
         { label: "Route Management", to: "/app/routes", icon: Route },
         {
@@ -132,12 +132,12 @@ export const NAV_BY_ROLE = {
         },
         { label: "Create Shipment", to: "/app/create-shipment", icon: Upload },
         // { label: "Bulk Upload", to: "/app/bulk-upload", icon: Upload },
-        {
-          label: "Shipment History",
-          to: "/app/shipment-history",
-          icon: History,
-        },
-        { label: "Tracking", to: "/app/track", icon: MapPin },
+        // {
+        //   label: "Shipment History",
+        //   to: "/app/shipment-history",
+        //   icon: History,
+        // },
+        // { label: "Tracking", to: "/app/track", icon: MapPin },
         {
           label: "Proof of Delivery",
           to: "/app/pod",
@@ -165,7 +165,7 @@ export const NAV_BY_ROLE = {
       label: "Personal",
       items: [
         { label: "Dashboard", to: "/app/customer/dashboard", icon: LayoutDashboard },
-        { label: "Track Shipment", to: "/app/track", icon: MapPin },
+        // { label: "Track Shipment", to: "/app/track", icon: MapPin },
         { label: "My Deliveries", to: "/app/deliveries", icon: Package },
         {
           label: "Notifications",

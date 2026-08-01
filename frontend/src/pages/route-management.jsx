@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Route, MapPinned, Map, Navigation } from "lucide-react";
+import { Route, MapPinned, Map, Navigation,ArrowDownUp } from "lucide-react";
 
 import { useHubs, useFindRoute } from "@/lib/hooks";
 
@@ -132,7 +132,7 @@ const eta = route ? `${route.estimatedHours}h ${route.estimatedMinutes}m` : "-";
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-1">
         <Card className="lg:col-span-2 overflow-hidden p-0">
           <div className="border-b border-border p-4 space-y-4">
             <div>
@@ -157,6 +157,19 @@ const eta = route ? `${route.estimatedHours}h ${route.estimatedMinutes}m` : "-";
                   ))}
                 </SelectContent>
               </Select>
+              {/*  ======================================================================from moulika*/}
+                {/* <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                        const temp = originHubId;
+                        setOriginHubId(destinationHubId);
+                        setDestinationHubId(temp);
+                    }}
+                >
+                    <ArrowDownUp className="h-4 w-4" />
+                </Button> */}
+              {/*  ================================================================================*/}
 
               <Select
                 value={destinationHubId}
@@ -209,40 +222,109 @@ const eta = route ? `${route.estimatedHours}h ${route.estimatedMinutes}m` : "-";
             />
           </div>
         </Card>
-
+        {/*================================================================*/}
         <div className="space-y-3 max-h-[480px] overflow-y-auto scrollbar-thin">
-          {route && (
-            <Card>
-              <CardContent className="p-5">
+         {route && (
+           <Card>
+             <CardContent className="p-5">
                 <CardTitle className="mb-4">Route Details</CardTitle>
 
-                <div className="space-y-4">
+               <div className="space-y-4">
                   {route?.route?.map((hub, index) => (
                     <div key={hub.hubId} className="flex flex-col items-center">
                       <div className="w-full rounded-lg border p-3">
                         <div className="font-semibold">{hub.hubName}</div>
 
-                        <div className="text-xs text-muted-foreground">
-                          {hub.city}
-                        </div>
-                      </div>
+                      <div className="text-xs text-muted-foreground">
+                         {hub.city}
+                       </div>
+                     </div>
 
-                      {index !== route.route.length - 1 && (
-                        <div className="flex flex-col items-center py-2">
-                          <div className="h-8 border-l-2 border-dashed border-primary" />
+                     {index !== route.route.length - 1 && (
+                       <div className="flex flex-col items-center py-2">
+                         <div className="h-8 border-l-2 border-dashed border-primary" />
 
-                          <div className="text-xs font-medium text-primary">
-                            {hub.distanceToNextKm} km
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                         <div className="text-xs font-medium text-primary">
+                           {hub.distanceToNextKm} km
+                         </div>
+                       </div>
+                     )}
+                   </div>
+                 ))}
+               </div>
+             </CardContent>
+           </Card>
           )}
         </div>
+
+
+      {/*    ========================== from moulika*/}
+          {/* Calculated Route Results Section */}
+          {/* {route && ( */}
+               {/* <div className="glass-card result-card"> */}
+                  {/* Total Distance & Route Banner */}
+                  {/* <div className="summary-banner">
+                      <div>
+                          <div className="banner-subtitle">Calculated Shortest Route (Dijkstra Algorithm)</div>
+                          <div className="banner-title">
+                              {route.sourceHub.city} <ArrowRight className="inline-icon" size={20} /> {route.destinationHub.city}
+                          </div>
+                      </div>
+
+                      <div className="distance-badge">
+                          <span className="distance-val">{route.totalDistanceKm}</span>
+                          <span className="distance-unit">km Total Distance</span>
+                      </div>
+                  </div> */}
+
+                  {/* Logistics Metrics Grid */}
+                  {/* <div className="vehicle-metrics-grid">
+                      <div className="metric-card">
+                          <div className="metric-icon vehicle-icon">
+                              <Truck size={20} />
+                          </div>
+                          <div className="metric-info">
+                              <span className="metric-label">Vehicle Selected</span>
+                              <span className="metric-value">{route.selectedVehicle || vehicleType}</span>
+                          </div>
+                      </div>
+
+                      <div className="metric-card">
+                          <div className="metric-icon time-icon">
+                              <Clock size={20} />
+                          </div>
+                          <div className="metric-info">
+                              <span className="metric-label">Est. Travel Time</span>
+                              <span className="metric-value">{route.estimatedTravelTime}</span>
+                          </div>
+                      </div>
+
+                      <div className="metric-card">
+                          <div className={`metric-icon ${isNotRecommended ? 'warning-status-icon' : 'success-status-icon'}`}>
+                              {isNotRecommended ? <AlertOctagon size={20} /> : <ShieldCheck size={20} />}
+                          </div>
+                          <div className="metric-info">
+                              <span className="metric-label">Vehicle Suitability</span>
+                              <span className={`status-tag ${isNotRecommended ? 'not-recommended' : 'recommended'}`}>
+                  {isNotRecommended ? 'Not Recommended' : 'Recommended'}
+                </span>
+                          </div>
+                      </div>
+                  </div> */}
+
+                  {/* Recommendation Warning Banner */}
+                  {/* {isNotRecommended && (
+                      <div className="warning-recommendation-banner">
+                          <AlertTriangle className="warning-icon" size={22} />
+                          <div className="warning-content">
+                              <h4 className="warning-title">Vehicle Distance Warning</h4>
+                              <p className="warning-message">{routeResult.vehicleMessage}</p>
+                          </div>
+                      </div>
+                  )} */}
+              {/* // </div> */}
+          {/* // )} */}
+      {/*    ============================================================*/}
       </div>
     </div>
   );

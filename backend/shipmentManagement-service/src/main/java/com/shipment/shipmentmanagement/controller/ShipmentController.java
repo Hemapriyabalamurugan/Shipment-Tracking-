@@ -16,8 +16,8 @@ import com.shipment.shipmentmanagement.dto.HubDropdownResponse;
 import java.util.List;
 import com.shipment.shipmentmanagement.dto.EtaResponse;
 import com.shipment.shipmentmanagement.dto.DeliveryForecastResponse;
-
-
+import java.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @RestController
 @RequestMapping("/api/shipments")
@@ -59,24 +59,24 @@ public class ShipmentController {
         return "Shipment deleted successfully";
     }
 
-    @GetMapping("/analytics/summary")
-    public ShipmentAnalyticsDto getShipmentAnalytics() {
-        return shipmentService.getShipmentAnalytics();
-    }
-
-    @GetMapping("/analytics/customer/{customerId}")
-    public CustomerShipmentAnalyticsDto getCustomerAnalytics(
-            @PathVariable Long customerId
-    ) {
-        return shipmentService.getCustomerAnalytics(customerId);
-    }
-
-    @GetMapping("/analytics/business/{businessClientId}")
-    public BusinessShipmentAnalyticsDto getBusinessAnalytics(
-            @PathVariable Long businessClientId
-    ) {
-        return shipmentService.getBusinessAnalytics(businessClientId);
-    }
+//    @GetMapping("/analytics/summary")
+//    public ShipmentAnalyticsDto getShipmentAnalytics() {
+//        return shipmentService.getShipmentAnalytics();
+//    }
+//
+//    @GetMapping("/analytics/customer/{customerId}")
+//    public CustomerShipmentAnalyticsDto getCustomerAnalytics(
+//            @PathVariable Long customerId
+//    ) {
+//        return shipmentService.getCustomerAnalytics(customerId);
+//    }
+//
+//    @GetMapping("/analytics/business/{businessClientId}")
+//    public BusinessShipmentAnalyticsDto getBusinessAnalytics(
+//            @PathVariable Long businessClientId
+//    ) {
+//        return shipmentService.getBusinessAnalytics(businessClientId);
+//    }
     @GetMapping("/customer/{customerId}")
     public List<Shipment> getShipmentsByCustomer(
             @PathVariable Long customerId
@@ -176,6 +176,40 @@ public class ShipmentController {
 
         return deliveryForecastService.generateForecast(
                 shipmentId
+        );
+    }
+
+    @GetMapping("/analytics/range")
+    public List<ShipmentAnalyticsDataResponse> getAllShipmentsForAnalyticsByDateRange(
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime startDate,
+
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime endDate
+    ) {
+        return shipmentService.getAllShipmentsForAnalyticsByDateRange(
+                startDate,
+                endDate
+        );
+    }
+
+    @GetMapping("/analytics/business/{businessClientId}/shipments/range")
+    public List<ShipmentAnalyticsDataResponse> getBusinessShipmentsForAnalyticsByDateRange(
+            @PathVariable Long businessClientId,
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime startDate,
+
+            @RequestParam
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime endDate
+    ) {
+        return shipmentService.getBusinessShipmentsForAnalyticsByDateRange(
+                businessClientId,
+                startDate,
+                endDate
         );
     }
 }

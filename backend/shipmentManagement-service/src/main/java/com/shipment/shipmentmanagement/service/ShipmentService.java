@@ -552,7 +552,7 @@ public Shipment acceptShipment(Long shipmentId, Long operatorId) {
         request.setMessage(message);
         request.setPriority("NORMAL");
         request.setEventType(eventType);
-        request.setEventType("CREATED");
+//        request.setEventType("CREATED");
 
         notificationClient.createNotification(request);
     }
@@ -567,8 +567,11 @@ public Shipment acceptShipment(Long shipmentId, Long operatorId) {
                         new RuntimeException("Shipment not found"));
 
         shipment.setStatus(status);
+//        if (status == ShipmentStatus.DELIVERED) {
+//            shipment.setDeliveredAt(shipment.getEstimatedDeliveryAt());
+//        }
         if (status == ShipmentStatus.DELIVERED) {
-            shipment.setDeliveredAt(shipment.getEstimatedDeliveryAt());
+            shipment.setDeliveredAt(LocalDateTime.now());
         }
         Shipment updatedShipment =
                 shipmentRepository.save(shipment);
@@ -688,6 +691,8 @@ public Shipment acceptShipment(Long shipmentId, Long operatorId) {
                         .shipmentId(shipment.getId())
                         .businessClientId(shipment.getBusinessClientId())
                         .status(shipment.getStatus().name())
+                        .originCity(shipment.getSenderCity())
+                        .destinationCity(shipment.getReceiverCity())
                         .createdAt(shipment.getCreatedAt())
                         .pickedUpAt(shipment.getPickedUpAt())
                         .estimatedDeliveryAt(shipment.getEstimatedDeliveryAt())
@@ -706,6 +711,8 @@ public Shipment acceptShipment(Long shipmentId, Long operatorId) {
                         .shipmentId(shipment.getId())
                         .businessClientId(shipment.getBusinessClientId())
                         .status(shipment.getStatus().name())
+                        .originCity(shipment.getSenderCity())
+                        .destinationCity(shipment.getReceiverCity())
                         .createdAt(shipment.getCreatedAt())
                         .pickedUpAt(shipment.getPickedUpAt())
                         .estimatedDeliveryAt(shipment.getEstimatedDeliveryAt())
@@ -728,6 +735,10 @@ public Shipment acceptShipment(Long shipmentId, Long operatorId) {
                 .trackingNumber(shipment.getTrackingNumber())
                 .businessClientId(shipment.getBusinessClientId())
                 .status(shipment.getStatus().name())
+//                ==============================
+                .originCity(shipment.getSenderCity())
+                .destinationCity(shipment.getReceiverCity())
+//                ===========================================
                 .createdAt(shipment.getCreatedAt())
                 .pickedUpAt(shipment.getPickedUpAt())
                 .estimatedDeliveryAt(shipment.getEstimatedDeliveryAt())
@@ -744,6 +755,59 @@ public Shipment acceptShipment(Long shipmentId, Long operatorId) {
                         .city(hub.getCity())
                         .state(hub.getState())
                         .pincode(hub.getPincode())
+                        .build())
+                .toList();
+    }
+
+    public List<ShipmentAnalyticsDataResponse> getAllShipmentsForAnalyticsByDateRange(
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+
+        return shipmentRepository
+                .findByCreatedAtBetweenOrderByCreatedAtDesc(
+                        startDate,
+                        endDate
+                )
+                .stream()
+                .map(shipment -> ShipmentAnalyticsDataResponse.builder()
+                        .shipmentId(shipment.getId())
+                        .businessClientId(shipment.getBusinessClientId())
+                        .originCity(shipment.getSenderCity())
+                        .destinationCity(shipment.getReceiverCity())
+                        .status(shipment.getStatus().name())
+                        .createdAt(shipment.getCreatedAt())
+                        .pickedUpAt(shipment.getPickedUpAt())
+                        .estimatedDeliveryAt(shipment.getEstimatedDeliveryAt())
+                        .deliveredAt(shipment.getDeliveredAt())
+                        .build())
+                .toList();
+    }
+
+
+    public List<ShipmentAnalyticsDataResponse> getBusinessShipmentsForAnalyticsByDateRange(
+            Long businessClientId,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+
+        return shipmentRepository
+                .findByBusinessClientIdAndCreatedAtBetweenOrderByCreatedAtDesc(
+                        businessClientId,
+                        startDate,
+                        endDate
+                )
+                .stream()
+                .map(shipment -> ShipmentAnalyticsDataResponse.builder()
+                        .shipmentId(shipment.getId())
+                        .businessClientId(shipment.getBusinessClientId())
+                        .originCity(shipment.getSenderCity())
+                        .destinationCity(shipment.getReceiverCity())
+                        .status(shipment.getStatus().name())
+                        .createdAt(shipment.getCreatedAt())
+                        .pickedUpAt(shipment.getPickedUpAt())
+                        .estimatedDeliveryAt(shipment.getEstimatedDeliveryAt())
+                        .deliveredAt(shipment.getDeliveredAt())
                         .build())
                 .toList();
     }

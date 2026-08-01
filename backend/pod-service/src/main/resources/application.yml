@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/ShiptrackPro
     username: postgres
-    password: manoj123!@#
+    password:
 
   jpa:
     hibernate:

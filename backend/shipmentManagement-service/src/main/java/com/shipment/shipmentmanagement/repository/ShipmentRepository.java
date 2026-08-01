@@ -5,6 +5,7 @@ import com.shipment.shipmentmanagement.entity.enums.ShipmentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
@@ -42,6 +43,18 @@ List<Shipment> findByCustomerIdOrderByCreatedAtDesc(
 
     List<Shipment> findByStatusInOrderByCreatedAtDesc(
             List<ShipmentStatus> statuses
+    );
+
+
+    List<Shipment> findByCreatedAtBetweenOrderByCreatedAtDesc(
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    );
+
+    List<Shipment> findByBusinessClientIdAndCreatedAtBetweenOrderByCreatedAtDesc(
+            Long businessClientId,
+            LocalDateTime startDate,
+            LocalDateTime endDate
     );
 
 }

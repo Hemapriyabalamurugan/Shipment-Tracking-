@@ -7,6 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
 
+
+//additional moulika
+import org.springframework.data.jpa.repository.Query;
+
 public interface HubConnectionRepository
         extends JpaRepository<HubConnection, Long> {
 
@@ -16,4 +20,8 @@ public interface HubConnectionRepository
             Hub toHub
     );
 //    List<HubConnection> findAll();
+
+//    additional moulika
+//@Query("SELECT hc FROM HubConnection hc WHERE hc.fromHub.active = true AND hc.toHub.active = true")
+//List<HubConnection> findAllActiveConnections();
 }

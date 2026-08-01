@@ -466,7 +466,7 @@ export function ShipmentDetailPage() {
         <div className="space-y-4 lg:col-span-2">
           {/* Map */}
           <Card className="overflow-hidden">
-            <div className="relative h-[380px]">
+            <div className="relative h-[700px]">
               {/* =================================================== */}
               {/* <MapView
                 shipment={shipment}
@@ -474,7 +474,7 @@ export function ShipmentDetailPage() {
               /> */}
               <MapView
                 tracking={trackingData}
-                className="!rounded-none h-[380px]"
+                className="!rounded-none h-[700px]"
               />
               {/* ====================================================== */}
             </div>
@@ -519,6 +519,53 @@ export function ShipmentDetailPage() {
         {/* Right column */}
         <div className="space-y-4">
           {/* Shipment Details */}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Delivery Prediction</CardTitle>
+              <CardDescription>Live ETA and delivery forecast</CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <DetailRow
+                icon={Navigation}
+                label="Remaining Distance"
+                value={`${trackingData?.remainingDistanceKm ?? 0} km`}
+              />
+
+              <DetailRow
+                icon={Truck}
+                label="Estimated Travel Time"
+                value={`${trackingData?.estimatedHours ?? 0} hrs ${
+                  trackingData?.estimatedMinutes ?? 0
+                } mins`}
+              />
+
+              <DetailRow
+                icon={Calendar}
+                label="Estimated Arrival"
+                value={formatDateTime(trackingData?.estimatedArrival)}
+              />
+
+              <DetailRow
+                icon={Package}
+                label="Forecast"
+                value={trackingData?.deliveryForecast?.forecastStatus}
+              />
+
+              <DetailRow
+                icon={Package}
+                label="Confidence"
+                value={`${trackingData?.deliveryForecast?.confidencePercentage}%`}
+              />
+
+              <DetailRow
+                icon={Package}
+                label="Reason"
+                value={trackingData?.deliveryForecast?.reason}
+              />
+            </CardContent>
+          </Card>
           <Card>
             {/* <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -531,56 +578,6 @@ export function ShipmentDetailPage() {
             </CardHeader> */}
 
             {/* new thing added */}
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Delivery Prediction</CardTitle>
-                <CardDescription>
-                  Live ETA and delivery forecast
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <DetailRow
-                  icon={Navigation}
-                  label="Remaining Distance"
-                  value={`${trackingData?.remainingDistanceKm ?? 0} km`}
-                />
-
-                <DetailRow
-                  icon={Truck}
-                  label="Estimated Travel Time"
-                  value={`${trackingData?.estimatedHours ?? 0} hrs ${
-                    trackingData?.estimatedMinutes ?? 0
-                  } mins`}
-                />
-
-                <DetailRow
-                  icon={Calendar}
-                  label="Estimated Arrival"
-                  value={formatDateTime(trackingData?.estimatedArrival)}
-                />
-
-                <DetailRow
-                  icon={Package}
-                  label="Forecast"
-                  value={trackingData?.deliveryForecast?.forecastStatus}
-                />
-
-                <DetailRow
-                  icon={Package}
-                  label="Confidence"
-                  value={`${trackingData?.deliveryForecast?.confidencePercentage}%`}
-                />
-
-                <DetailRow
-                  icon={Package}
-                  label="Reason"
-                  value={trackingData?.deliveryForecast?.reason}
-                />
-              </CardContent>
-            </Card>
-
 
             {/* ==================================================== */}
             <CardHeader>

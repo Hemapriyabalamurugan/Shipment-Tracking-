@@ -61,6 +61,13 @@ public class NotificationService {
 
             if ("CUSTOMER".equals(user.getRole())) {
 
+
+                System.out.println("=================================");
+                System.out.println("Event Type = " + saved.getEventType());
+                System.out.println("Title = " + saved.getTitle());
+                System.out.println("User = " + user.getEmail());
+                System.out.println("=================================");
+
                 String templateName = null;
                 String subject = null;
 
@@ -72,7 +79,7 @@ public class NotificationService {
                     }
 
                     case "PICKED_UP" -> {
-                        templateName = "shipment-picked-up.html";
+                        templateName = "shipment-pickedup.html";
                         subject = "Shipment Picked Up";
                     }
 
@@ -82,7 +89,7 @@ public class NotificationService {
                     }
 
                     case "OUT_FOR_DELIVERY" -> {
-                        templateName = "shipment-out-for-delivery.html";
+                        templateName = "out-for-delivery.html";
                         subject = "Out For Delivery";
                     }
 
@@ -143,10 +150,17 @@ public class NotificationService {
                                     html,
                                     values);
 
-                    emailService.sendHtmlEmail(
-                            user.getEmail(),
-                            subject,
-                            html);
+                    try {
+                        emailService.sendHtmlEmail(
+                                user.getEmail(),
+                                subject,
+                                html);
+
+                        System.out.println("EMAIL SENT SUCCESSFULLY");
+                    } catch (Exception e) {
+                        System.out.println("EMAIL FAILED");
+                        e.printStackTrace();
+                    }
                 }
             }
 

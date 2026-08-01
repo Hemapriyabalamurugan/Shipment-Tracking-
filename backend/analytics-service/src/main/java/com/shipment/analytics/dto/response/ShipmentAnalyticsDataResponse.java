@@ -27,4 +27,9 @@ public class ShipmentAnalyticsDataResponse {
 
     private LocalDateTime deliveredAt;
 
+
+
+    private String originCity;
+    private String destinationCity;
+
 }

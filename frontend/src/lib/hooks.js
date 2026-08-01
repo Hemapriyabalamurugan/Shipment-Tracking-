@@ -164,10 +164,20 @@ export function useInvoices() {
     queryFn: invoicesApi.list,
   });
 }
-export function useAnalytics() {
+// export function useAnalytics() {
+//   return useQuery({
+//     queryKey: queryKeys.analytics,
+//     queryFn: analyticsApi.get,
+//   });
+// }
+
+export function useAnalytics(startDate, endDate) {
   return useQuery({
-    queryKey: queryKeys.analytics,
-    queryFn: analyticsApi.get,
+    queryKey: ["analytics", startDate, endDate],
+
+    queryFn: () => analyticsApi.get(startDate, endDate),
+
+    enabled: !!startDate && !!endDate,
   });
 }
 // export function useAnalytics() {
@@ -192,11 +202,21 @@ export function useActivity() {
   });
 }
 
-export function useBusinessAnalytics(businessClientId) {
+// export function useBusinessAnalytics(businessClientId) {
+//   return useQuery({
+//     queryKey: ["business-analytics", businessClientId],
+//     queryFn: () => analyticsApi.getBusinessDashboard(businessClientId),
+//     enabled: !!businessClientId,
+//   });
+// }
+export function useBusinessAnalytics(businessClientId, startDate, endDate) {
   return useQuery({
-    queryKey: ["business-analytics", businessClientId],
-    queryFn: () => analyticsApi.getBusinessDashboard(businessClientId),
-    enabled: !!businessClientId,
+    queryKey: ["business-analytics", businessClientId, startDate, endDate],
+
+    queryFn: () =>
+      analyticsApi.getBusinessDashboard(businessClientId, startDate, endDate),
+
+    enabled: !!businessClientId && !!startDate && !!endDate,
   });
 }
 
@@ -251,10 +271,16 @@ export function useFindRoute(originHubId, destinationHubId) {
   });
 }
 
+// export function useHubs() {
+//   return useQuery({
+//     queryKey: ["hubs"],
+//     queryFn: () => shipmentsApi.getHubs(),
+//   });
+// }
 export function useHubs() {
   return useQuery({
-    queryKey: ["hubs"],
-    queryFn: () => shipmentsApi.getHubs(),
+    queryKey: ["route-hubs"],
+    queryFn: () => shipmentsApi.getRouteHubs(),
   });
 }
 // =============================================================

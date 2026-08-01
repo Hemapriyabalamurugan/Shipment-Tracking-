@@ -18,4 +18,7 @@ public class HubResponse {
     private Double latitude;
 
     private Double longitude;
+
+//    additional moulika
+//private String state;
 }

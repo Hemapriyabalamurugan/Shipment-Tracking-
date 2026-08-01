@@ -24,6 +24,12 @@ public class RouteFinderServiceImpl implements RouteFinderService {
             Long destinationHubId
     ) {
 
+        if (originHubId.equals(destinationHubId)) {
+            throw new IllegalArgumentException(
+                    "Origin and destination cannot be the same."
+            );
+        }
+
         List<HubConnection> connections = hubConnectionRepository.findAll();
 
         Map<Long, List<HubConnection>> graph = new HashMap<>();
@@ -140,6 +146,11 @@ public class RouteFinderServiceImpl implements RouteFinderService {
                             .build()
             );
         }
+
+//        additional
+//        if (!distance.containsKey(destinationHubId)) {
+//            throw new RuntimeException("No route found.");
+//        }
 
         int totalDistance =
                 distance.get(destinationHubId);
