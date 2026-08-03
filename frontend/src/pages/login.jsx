@@ -1,368 +1,9 @@
-// import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import axios from "axios";
-// import { Mail, Lock, Shield } from "lucide-react";
-
-// export default function LoginPage() {
-
-// // it is previously here if you want can remove the upper one because before that email otp varification working
-//   const [otpSent, setOtpSent] = useState(false);
-
-//   const handleGetOtp = () => {
-//     // API call here
-//     setOtpSent(true);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
-//       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-//         {/* Logo / Title */}
-//         <div className="text-center mb-8">
-//           <h1 className="text-3xl font-bold text-slate-800">ShipTrackPro</h1>
-//           <p className="text-slate-500 mt-2">Sign in to your account</p>
-//         </div>
-
-//         <form className="space-y-5">
-//           {/* Email */}
-//           <div>
-//             <label className="block text-sm font-medium text-slate-700 mb-2">
-//               Email Address
-//             </label>
-
-//             <div className="relative">
-//               <Mail
-//                 size={18}
-//                 className="absolute left-3 top-3.5 text-slate-400"
-//               />
-
-//               <input
-//                 type="email"
-//                 placeholder="Enter your email"
-//                 className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               />
-//             </div>
-//           </div>
-
-//           {/* Password */}
-//           <div>
-//             <label className="block text-sm font-medium text-slate-700 mb-2">
-//               Password
-//             </label>
-
-//             <div className="relative">
-//               <Lock
-//                 size={18}
-//                 className="absolute left-3 top-3.5 text-slate-400"
-//               />
-
-//               <input
-//                 type="password"
-//                 placeholder="Enter your password"
-//                 className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               />
-//             </div>
-//           </div>
-
-//           {/* OTP */}
-//           <div>
-//             <label className="block text-sm font-medium text-slate-700 mb-2">
-//               OTP Verification
-//             </label>
-
-//             <div className="flex gap-3">
-//               <div className="relative flex-1">
-//                 <Shield
-//                   size={18}
-//                   className="absolute left-3 top-3.5 text-slate-400"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   placeholder="Enter OTP"
-//                   className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 />
-//               </div>
-
-//               <button
-//                 type="button"
-//                 onClick={handleGetOtp}
-//                 className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-//               >
-//                 Get OTP
-//               </button>
-//             </div>
-
-//             {otpSent && (
-//               <p className="text-green-600 text-sm mt-2 font-medium">
-//                 OTP sent to your mail ✓
-//               </p>
-//             )}
-//           </div>
-
-//           {/* Remember Me */}
-//           <div className="flex justify-between items-center text-sm">
-//             <label className="flex items-center gap-2">
-//               <input type="checkbox" />
-//               Remember me
-//             </label>
-
-//             <a href="#" className="text-blue-600 hover:text-blue-700">
-//               Forgot Password?
-//             </a>
-//           </div>
-
-//           {/* Login Button */}
-//           <button
-//             type="submit"
-//             className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-//           >
-//             Login
-//           </button>
-//         </form>
-
-//         {/* Footer */}
-//         <div className="text-center mt-6 text-sm text-slate-600">
-//           Don't have an account?{" "}
-//           <a
-//             href="/register"
-//             className="text-blue-600 font-medium hover:text-blue-700"
-//           >
-//             Register
-//           </a>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// import { useState } from "react";
-// import { useNavigate, Link } from "react-router-dom";
-// import axios from "axios";
-// import { Mail, Lock, Shield } from "lucide-react";
-
-// export default function LoginPage() {
-//   const navigate = useNavigate();
-
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [otp, setOtp] = useState("");
-
-//   const [otpSent, setOtpSent] = useState(false);
-//   const [loading, setLoading] = useState(false);
-
-//   // Send OTP
-//   const handleGetOtp = async () => {
-//     if (!email) {
-//       alert("Please enter your email first");
-//       return;
-//     }
-
-//     try {
-//       await axios.post("http://localhost:8080/api/auth/verify-email", {
-//         email,
-//       });
-
-//       setOtpSent(true);
-//     } catch (error) {
-//       console.error(error);
-//       alert("Failed to send OTP");
-//     }
-//   };
-
-//   // Login
-//   const handleLogin = async (e) => {
-//     e.preventDefault();
-
-//     try {
-//       setLoading(true);
-
-//       const response = await axios.post(
-//         "http://localhost:8080/api/auth/login",
-//         {
-//           email,
-//           password,
-//           otp,
-//         },
-//       );
-
-//       localStorage.setItem("token", response.data.token);
-
-//       localStorage.setItem("role", response.data.role);
-
-//       const role = response.data.role;
-
-//       switch (role) {
-//         case "ADMIN":
-//           navigate("/admin/dashboard");
-//           break;
-
-//         case "SUPPORT":
-//           navigate("/support/dashboard");
-//           break;
-
-//         case "LOGISTICS_OPERATOR":
-//           navigate("/operator/dashboard");
-//           break;
-
-//         case "BUSINESSCLIENT":
-//           navigate("/business/dashboard");
-//           break;
-
-//         case "CUSTOMER":
-//           navigate("/customer/dashboard");
-//           break;
-
-//         default:
-//           navigate("/");
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       alert("Invalid email, password, or OTP");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
-//       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-//         {/* Header */}
-//         <div className="text-center mb-8">
-//           <h1 className="text-3xl font-bold text-slate-800">ShipTrackPro</h1>
-//           <p className="text-slate-500 mt-2">Sign in to your account</p>
-//         </div>
-
-//         <form onSubmit={handleLogin} className="space-y-5">
-//           {/* Email */}
-//           <div>
-//             <label className="block text-sm font-medium text-slate-700 mb-2">
-//               Email Address
-//             </label>
-
-//             <div className="relative">
-//               <Mail
-//                 size={18}
-//                 className="absolute left-3 top-3.5 text-slate-400"
-//               />
-
-//               <input
-//                 type="email"
-//                 value={email}
-//                 onChange={(e) => setEmail(e.target.value)}
-//                 placeholder="Enter your email"
-//                 required
-//                 className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               />
-//             </div>
-//           </div>
-
-//           {/* Password */}
-//           <div>
-//             <label className="block text-sm font-medium text-slate-700 mb-2">
-//               Password
-//             </label>
-
-//             <div className="relative">
-//               <Lock
-//                 size={18}
-//                 className="absolute left-3 top-3.5 text-slate-400"
-//               />
-
-//               <input
-//                 type="password"
-//                 value={password}
-//                 onChange={(e) => setPassword(e.target.value)}
-//                 placeholder="Enter your password"
-//                 required
-//                 className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//               />
-//             </div>
-//           </div>
-
-//           {/* OTP Section */}
-//           <div>
-//             <label className="block text-sm font-medium text-slate-700 mb-2">
-//               OTP Verification
-//             </label>
-
-//             <div className="flex gap-3">
-//               <div className="relative flex-1">
-//                 <Shield
-//                   size={18}
-//                   className="absolute left-3 top-3.5 text-slate-400"
-//                 />
-
-//                 <input
-//                   type="text"
-//                   value={otp}
-//                   onChange={(e) => setOtp(e.target.value)}
-//                   placeholder="Enter OTP"
-//                   className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 />
-//               </div>
-
-//               <button
-//                 type="button"
-//                 onClick={handleGetOtp}
-//                 className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-//               >
-//                 Get OTP
-//               </button>
-//             </div>
-
-//             {otpSent && (
-//               <p className="text-green-600 text-sm mt-2 font-medium">
-//                 OTP sent to your mail ✓
-//               </p>
-//             )}
-//           </div>
-
-//           {/* Remember Me */}
-//           <div className="flex justify-between items-center text-sm">
-//             <label className="flex items-center gap-2">
-//               <input type="checkbox" />
-//               Remember me
-//             </label>
-
-//             <Link
-//               to="/forgot-password"
-//               className="text-blue-600 hover:text-blue-700"
-//             >
-//               Forgot Password?
-//             </Link>
-//           </div>
-
-//           {/* Login Button */}
-//           <button
-//             type="submit"
-//             disabled={loading}
-//             className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-blue-400"
-//           >
-//             {loading ? "Signing In..." : "Login"}
-//           </button>
-//         </form>
-
-//         {/* Footer */}
-//         <div className="text-center mt-6 text-sm text-slate-600">
-//           Don't have an account?{" "}
-//           <Link
-//             to="/register"
-//             className="text-blue-600 font-medium hover:text-blue-700"
-//           >
-//             Register
-//           </Link>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { Mail, Lock, ShieldCheck } from "lucide-react";
-
+import { Mail, Lock, ShieldCheck, ArrowRight, Truck, CheckCircle2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
+import { Logo } from "@/components/shared/logo";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -370,15 +11,16 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
-  // changes done here
   const { refreshUser } = useAuth();
-  // changes done here
+
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
 
     try {
       setLoading(true);
@@ -392,14 +34,12 @@ export default function LoginPage() {
       );
 
       setOtpSent(true);
-
       setSuccessMessage(
         response.data.message || "OTP has been sent to your email",
       );
     } catch (error) {
       console.error(error);
-
-      alert(error?.response?.data?.message || "Invalid email or password");
+      setErrorMessage(error?.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -407,6 +47,7 @@ export default function LoginPage() {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
 
     try {
       setLoading(true);
@@ -418,222 +59,238 @@ export default function LoginPage() {
           otp,
         },
       );
-      
-
-      // localStorage.setItem("token", response.data.token);
 
       localStorage.setItem("refreshToken", response.data.refreshToken);
-
-      //    changes done here
       localStorage.setItem("shiptrack.token", response.data.token);
-      
-      // localStorage.setItem("role", response.data.role);
 
-     const roleMap = {
-       ADMIN: "admin",
-       CUSTOMER: "customer",
-       BUSINESS_CLIENT: "business_client",
-       LOGISTICS_OPERATOR: "logistics_operator",
-       SUPPORT_AGENT: "support_agent",
-     };
+      const roleMap = {
+        ADMIN: "admin",
+        CUSTOMER: "customer",
+        BUSINESS_CLIENT: "business_client",
+        LOGISTICS_OPERATOR: "logistics_operator",
+        SUPPORT_AGENT: "support_agent",
+      };
 
-     localStorage.setItem(
-       "shiptrack.session",
-       JSON.stringify({
-         user: {
-           name: response.data.email,
-           email: response.data.email,
-           role: roleMap[response.data.role],
-         },
-         token: response.data.token,
-       }),
+      localStorage.setItem(
+        "shiptrack.session",
+        JSON.stringify({
+          user: {
+            name: response.data.email,
+            email: response.data.email,
+            role: roleMap[response.data.role],
+          },
+          token: response.data.token,
+        }),
       );
-      // console.log(
-      //   "AFTER SAVE TOKEN =",
-      //   localStorage.getItem("shiptrack.token"),
-      // );
-      // console.log(JSON.parse(localStorage.getItem("shiptrack.session")));
 
-      // ========================================================================
-
-      // window.location.href = `/app/${response.data.role.toLowerCase()}/dashboard`;
-
-      // console.log("TOKEN:", response.data.token);
-      // console.log("ROLE:", response.data.role);
-      // =================================================================================
       await refreshUser();
       const role = response.data.role;
 
-      // switch (role) {
-      //   case "ADMIN":
-      //     window.location.href = ("/app/admin/dashboard");
-      //     break;
-
-      //   case "CUSTOMER":
-      //     window.location.href=("/app/customer/dashboard");
-      //     break;
-
-      //   case "BUSINESS_CLIENT":
-      //     window.location.href = "/app/business_client/dashboard";
-      //     break;
-
-      //   case "LOGISTICS_OPERATOR":
-      //     window.location.href = "/app/logistics_operator/dashboard";
-      //     break;
-
-      //   case "SUPPORT_AGENT":
-      //     window.location.href = "/app/support_agent/dashboard";
-      //     break;
-
-      //   default:
-      //     window.location.href = "/";
-      // }
       switch (role) {
         case "ADMIN":
           navigate("/app/admin/dashboard", { replace: true });
           break;
-
         case "CUSTOMER":
           navigate("/app/customer/dashboard", { replace: true });
           break;
-
         case "BUSINESS_CLIENT":
           navigate("/app/business_client/dashboard", { replace: true });
           break;
-
         case "LOGISTICS_OPERATOR":
           navigate("/app/logistics_operator/dashboard", { replace: true });
           break;
-
         case "SUPPORT_AGENT":
           navigate("/app/support_agent/dashboard", { replace: true });
           break;
-
         default:
           navigate("/", { replace: true });
       }
     } catch (error) {
       console.error(error);
-
-      alert(error?.response?.data?.message || "Invalid OTP");
+      setErrorMessage(error?.response?.data?.message || "Invalid verification code");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-800">ShipTrackPro</h1>
+    <div className="flex min-h-screen w-full bg-slate-950 grid-bg">
+      {/* Left visual panel */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-gradient-to-br from-slate-900 via-slate-900/90 to-primary/20 border-r border-slate-800/80 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
 
-          <p className="text-slate-500 mt-2">Sign in to your account</p>
+        <div className="relative z-10">
+          <Logo variant="dark" />
         </div>
 
-        {!otpSent ? (
-          <form onSubmit={handleSendOtp} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Email Address
-              </label>
+        <div className="relative z-10 space-y-6 max-w-lg">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-semibold text-primary">
+            <Truck className="h-3.5 w-3.5 animate-pulse" />
+            Enterprise Logistics Platform
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white leading-tight">
+            Real-time tracking and intelligent fleet management.
+          </h1>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            Gain end-to-end operational visibility over your global shipments, automated ETAs, proof of delivery, and instant dispute resolution.
+          </p>
 
-              <div className="relative">
-                <Mail
-                  size={18}
-                  className="absolute left-3 top-3.5 text-slate-400"
-                />
-
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800">
+            <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+              Real-time Telemetry
             </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Password
-              </label>
-
-              <div className="relative">
-                <Lock
-                  size={18}
-                  className="absolute left-3 top-3.5 text-slate-400"
-                />
-
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+            <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+              Digital POD Verification
             </div>
+            <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+              Role-Based Security
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+              Automated Route Optimization
+            </div>
+          </div>
+        </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-blue-400"
+        <div className="relative z-10 text-xs text-slate-500">
+          © {new Date().getFullYear()} ShipTrackPro Inc. All rights reserved.
+        </div>
+      </div>
+
+      {/* Right Login Form Panel */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-md space-y-8 glass-dark p-8 sm:p-10 rounded-2xl border border-slate-800 shadow-2xl animate-fade-in">
+          <div className="space-y-2 text-center lg:text-left">
+            <div className="flex justify-center lg:hidden mb-4">
+              <Logo variant="dark" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight text-white">
+              {otpSent ? "Security Verification" : "Sign in to ShipTrackPro"}
+            </h2>
+            <p className="text-xs text-slate-400">
+              {otpSent
+                ? "Enter the 6-digit OTP code sent to your email address"
+                : "Enter your registered credentials to access your portal"}
+            </p>
+          </div>
+
+          {errorMessage && (
+            <div className="flex items-center gap-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 p-3.5 text-xs font-semibold text-rose-400 animate-fade-in">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {!otpSent ? (
+            <form onSubmit={handleSendOtp} className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@company.com"
+                    required
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    required
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 gradient-brand text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:opacity-95 transition disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    Sending OTP...
+                  </span>
+                ) : (
+                  <>
+                    Continue to OTP
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOtp} className="space-y-5">
+              <div className="flex items-center gap-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3.5 text-xs font-medium text-emerald-400">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>{successMessage}</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Verification OTP Code
+                </label>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-400" />
+                  <input
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
+                    required
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-4 py-2.5 text-xs font-mono tracking-widest text-white placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20 hover:bg-emerald-500 transition disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    Authenticating...
+                  </span>
+                ) : (
+                  "Verify & Complete Sign In"
+                )}
+              </button>
+            </form>
+          )}
+
+          <div className="text-center text-xs text-slate-400 pt-4 border-t border-slate-800/80">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="font-semibold text-primary hover:underline"
             >
-              {loading ? "Sending OTP..." : "Get OTP"}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOtp} className="space-y-5">
-            <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg p-3 text-sm">
-              {successMessage}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Enter OTP
-              </label>
-
-              <div className="relative">
-                <ShieldCheck
-                  size={18}
-                  className="absolute left-3 top-3.5 text-slate-400"
-                />
-
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Enter OTP"
-                  required
-                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition disabled:bg-green-400"
-            >
-              {loading ? "Verifying..." : "Verify OTP & Login"}
-            </button>
-          </form>
-        )}
-
-        <div className="text-center mt-6 text-sm text-slate-600">
-          Don't have an account?{" "}
-          <Link
-            to="/register"
-            className="text-blue-600 font-medium hover:text-blue-700"
-          >
-            Register
-          </Link>
+              Create Account
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+}

@@ -65,14 +65,20 @@ public ProofOfDelivery create(
         return service.getPendingVerification();
     }
 
-    @PutMapping("/{id}/verify/{businessClientId}")
-    public ProofOfDelivery verify(
-            @PathVariable Long id,
-            @PathVariable Long businessClientId
-    ) {
-
-        return service.verify(id, businessClientId);
-    }
+//    @PutMapping("/{id}/verify/{businessClientId}")
+//    public ProofOfDelivery verify(
+//            @PathVariable Long id,
+//            @PathVariable Long businessClientId
+//    ) {
+//
+//        return service.verify(id, businessClientId);
+//    }
+@PutMapping("/{id}/verify")
+public ProofOfDelivery verify(
+        @PathVariable Long id
+) {
+    return service.verify(id);
+}
 
     @GetMapping
     public List<ProofOfDeliveryResponse> getAll() {

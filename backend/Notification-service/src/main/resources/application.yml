@@ -7,9 +7,9 @@ spring:
     name: Notification-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/ShiptrackPro
-    username: postgres
-    password: 
+    url: ${SHIPTRACK_DB_URL}
+    username: ${SHIPTRACK_DB_USERNAME}
+    password: ${SHIPTRACK_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -17,10 +17,10 @@ spring:
       ddl-auto: validate
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: 
-    password: 
+    host: ${SHIPTRACK_EMAIL_HOST}
+    port: ${SHIPTRACK_EMAIL_PORT}
+    username: ${SHIPTRACK_EMAIL_USERNAME}
+    password: ${SHIPTRACK_EMAIL_PASSWORD}
 
     properties:
       mail:

@@ -28,4 +28,7 @@ public class ShipmentAnalyticsDataResponse {
 
     private LocalDateTime deliveredAt;
 
+    private Long customerId;
+    private Long driverId;
+
 }

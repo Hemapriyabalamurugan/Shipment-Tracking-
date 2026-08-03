@@ -6,14 +6,20 @@ spring:
     name: pod-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/ShiptrackPro
-    username: postgres
-    password:
+    url: ${SHIPTRACK_DB_URL}
+    username: ${SHIPTRACK_DB_USERNAME}
+    password: ${SHIPTRACK_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: validate
     show-sql: true
+
+cloudinary:
+  cloud-name: ${SHIPTRACK_CLOUDINARY_CLOUD_NAME}
+  api-key: ${SHIPTRACK_CLOUDINARY_API_KEY}
+  api-secret: ${SHIPTRACK_CLOUDINARY_API_SECRET}
 
 eureka:
   client:

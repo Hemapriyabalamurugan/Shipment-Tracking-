@@ -15,7 +15,7 @@ import com.shipment.shipmentmanagement.client.AuthClient;
 import com.shipment.shipmentmanagement.client.NotificationClient;
 import com.shipment.shipmentmanagement.entity.Hub;
 import com.shipment.shipmentmanagement.dto.TrackingResponse;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.time.Duration;
 @Service
@@ -74,6 +74,12 @@ public class ShipmentService {
         // Get logged-in Business Client
         UserProfileResponse currentUser =
                 authClient.getCurrentUser();
+
+        if (!"BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())) {
+            throw new RuntimeException(
+                    "Only business clients can create shipments."
+            );
+        }
 
         shipment.setBusinessClientId(
                 currentUser.getId()
@@ -141,26 +147,154 @@ public class ShipmentService {
 //==============================================================
 
 
-    public List<Shipment> getAllShipments() {
-        return shipmentRepository.findAllByOrderByCreatedAtDesc();
-    }
+//    public List<Shipment> getAllShipments() {
+//        return shipmentRepository.findAllByOrderByCreatedAtDesc();
+//    }
 //    public List<Shipment> getShipmentsByCustomer(Long customerId) {
 //        return shipmentRepository.findByCustomerId(customerId);
 //    }
-public List<Shipment> getShipmentsByCustomer(Long customerId) {
-    return shipmentRepository.findByCustomerIdOrderByCreatedAtDesc(
-            customerId
-    );
-}
+//    ========================================================================================
+//public List<Shipment> getAllShipments() {
+//
+//    // Get the currently logged-in user from Auth Service
+//    UserProfileResponse currentUser = authClient.getCurrentUser();
+//
+//    // Return only shipments created by this Business Client
+//    return shipmentRepository.findByBusinessClientId(
+//            currentUser.getId()
+//    );
+//}
+
+    public List<Shipment> getAllShipments() {
+
+        UserProfileResponse currentUser = authClient.getCurrentUser();
+
+        System.out.println("CURRENT USER ID = " + currentUser.getId());
+        System.out.println("CURRENT USER ROLE = [" + currentUser.getRole() + "]");
+        // ADMIN can see every shipment
+        if ("ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+            return shipmentRepository.findAllByOrderByCreatedAtDesc();
+        }
+
+        // BUSINESS CLIENT can see only their own shipments
+        if ("BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())) {
+            return shipmentRepository.findByBusinessClientId(
+                    currentUser.getId()
+            );
+        }
+
+        // OPERATOR can see:
+// 1. All CREATED shipments not yet accepted
+// 2. Shipments already assigned to this operator
+        if ("LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
+            return shipmentRepository.findShipmentsForOperator(
+                    currentUser.getId(),
+                    ShipmentStatus.CREATED
+            );
+        }
+
+        throw new RuntimeException(
+                "You are not authorized to access this shipment list."
+        );
+    }
+//    ===================================================================================================
+    public List<Shipment> getMyCustomerShipments() {
+
+        UserProfileResponse currentUser = authClient.getCurrentUser();
+
+        if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {
+            throw new RuntimeException(
+                    "Only customers can access their shipments."
+            );
+        }
+
+        return shipmentRepository.findByCustomerIdOrderByCreatedAtDesc(
+                currentUser.getId()
+        );
+    }
 
     // Get Shipment By Id
+//    public Shipment getShipmentById(Long id) {
+//        return shipmentRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Shipment not found with id: " ));
+//    }
     public Shipment getShipmentById(Long id) {
-        return shipmentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Shipment not found with id: " ));
+
+        UserProfileResponse currentUser = authClient.getCurrentUser();
+
+        Shipment shipment = shipmentRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Shipment not found with id: " + id));
+
+        // ADMIN can access every shipment
+        if ("ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+            return shipment;
+        }
+
+        // BUSINESS CLIENT can access only shipments created by them
+        if ("BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())) {
+
+            if (shipment.getBusinessClientId() != null
+                    && shipment.getBusinessClientId().equals(currentUser.getId())) {
+                return shipment;
+            }
+
+            throw new RuntimeException(
+                    "You are not authorized to access this shipment."
+            );
+        }
+
+        // CUSTOMER can access only their own shipment
+        if ("CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {
+
+            if (shipment.getCustomerId() != null
+                    && shipment.getCustomerId().equals(currentUser.getId())) {
+                return shipment;
+            }
+
+            throw new RuntimeException(
+                    "You are not authorized to access this shipment."
+            );
+        }
+
+        // OPERATOR:
+        // unaccepted CREATED shipment → all operators can view it
+        // accepted shipment → only assigned operator can view it
+        if ("LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
+
+            if (shipment.getStatus() == ShipmentStatus.CREATED
+                    && shipment.getDriverId() == null) {
+                return shipment;
+            }
+
+            if (shipment.getDriverId() != null
+                    && shipment.getDriverId().equals(currentUser.getId())) {
+                return shipment;
+            }
+
+            throw new RuntimeException(
+                    "This shipment is assigned to another operator."
+            );
+        }
+
+        throw new RuntimeException(
+                "You are not authorized to access this shipment."
+        );
     }
 
     // Update Shipment
     public Shipment updateShipment(Long id, Shipment shipmentDetails) {
+
+        UserProfileResponse currentUser = authClient.getCurrentUser();
+
+        if (!"BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())
+                && !"ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+
+            throw new RuntimeException(
+                    "Only business clients or admin can update shipment details."
+            );
+        }
+
 
         Shipment shipment = getShipmentById(id);
 
@@ -442,9 +576,23 @@ public ShipmentAnalyticsDto getShipmentAnalytics() {
 //        notificationClient.createNotification(customerNotification);
 //        return shipment;
 //    }
-public Shipment acceptShipment(Long shipmentId, Long operatorId) {
+@Transactional
+public Shipment acceptShipment(Long shipmentId) {
 
-    Shipment shipment = shipmentRepository.findById(shipmentId)
+    UserProfileResponse currentUser = authClient.getCurrentUser();
+
+    if (!"LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
+        throw new RuntimeException(
+                "Only operators can accept shipments."
+        );
+    }
+
+    Long operatorId = currentUser.getId();
+
+//    Shipment shipment = shipmentRepository.findById(shipmentId)
+//            .orElseThrow(() ->
+//                    new RuntimeException("Shipment not found"));
+    Shipment shipment = shipmentRepository.findWithLockById(shipmentId)
             .orElseThrow(() ->
                     new RuntimeException("Shipment not found"));
 
@@ -557,14 +705,45 @@ public Shipment acceptShipment(Long shipmentId, Long operatorId) {
         notificationClient.createNotification(request);
     }
 
+//    public Shipment updateShipmentStatus(
+//            Long shipmentId,
+//            ShipmentStatus status
+//    ) {
+//
+//        Shipment shipment = shipmentRepository.findById(shipmentId)
+//                .orElseThrow(() ->
+//                        new RuntimeException("Shipment not found"));
+//
+//        shipment.setStatus(status);
+
     public Shipment updateShipmentStatus(
             Long shipmentId,
             ShipmentStatus status
     ) {
 
+        UserProfileResponse currentUser = authClient.getCurrentUser();
+
+        if (!"LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
+            throw new RuntimeException(
+                    "Only operators can update shipment status."
+            );
+        }
+
         Shipment shipment = shipmentRepository.findById(shipmentId)
                 .orElseThrow(() ->
                         new RuntimeException("Shipment not found"));
+
+        if (shipment.getDriverId() == null) {
+            throw new RuntimeException(
+                    "This shipment has not been accepted by an operator."
+            );
+        }
+
+        if (!shipment.getDriverId().equals(currentUser.getId())) {
+            throw new RuntimeException(
+                    "This shipment is assigned to another operator."
+            );
+        }
 
         shipment.setStatus(status);
 //        if (status == ShipmentStatus.DELIVERED) {
@@ -735,6 +914,8 @@ public Shipment acceptShipment(Long shipmentId, Long operatorId) {
                 .trackingNumber(shipment.getTrackingNumber())
                 .businessClientId(shipment.getBusinessClientId())
                 .status(shipment.getStatus().name())
+                .customerId(shipment.getCustomerId())
+                .driverId(shipment.getDriverId())
 //                ==============================
                 .originCity(shipment.getSenderCity())
                 .destinationCity(shipment.getReceiverCity())

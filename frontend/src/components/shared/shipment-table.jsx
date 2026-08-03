@@ -1,5 +1,3 @@
-
-
 import { Link } from "react-router-dom";
 import { cn, formatDateTime, relativeDay } from "@/lib/utils";
 import { StatusBadge, PriorityBadge } from "./status-badge";
@@ -11,185 +9,183 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-// ========================================
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Plane, Train, Truck, Anchor, ArrowRight, PackageX } from "lucide-react";
 import { useMemo, useState } from "react";
-// =============================================
-import { Plane, Ship, Train, Truck, ArrowRight } from "lucide-react";
 
-const modeIcon = {
+const modeIconMap = {
   road: Truck,
   rail: Train,
   air: Plane,
- 
+  sea: Anchor,
+  ocean: Anchor,
 };
 
-// =================================================================
-// const [search, setSearch] = useState("");
-
-// const filteredShipments = useMemo(() => {
-//   const keyword = search.trim().toLowerCase();
-
-//   if (!keyword) return shipments;
-
-//   return shipments.filter((s) =>
-//     s.trackingNumber?.toLowerCase().includes(keyword),
-//   );
-// }, [shipments, search]);
-// ===================================================================
-
 export function ShipmentTable({
-  shipments,
+  shipments = [],
   emptyLabel = "No shipments found",
   showCustomer = true,
 }) {
-const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("");
 
-const filteredShipments = useMemo(() => {
-  const keyword = search.trim().toLowerCase();
+  const filteredShipments = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return shipments;
 
-  if (!keyword) return shipments;
+    return shipments.filter((s) =>
+      s.trackingNumber?.toLowerCase().includes(keyword) ||
+      s.senderCity?.toLowerCase().includes(keyword) ||
+      s.receiverCity?.toLowerCase().includes(keyword) ||
+      s.senderName?.toLowerCase().includes(keyword)
+    );
+  }, [shipments, search]);
 
-  return shipments.filter((s) =>
-    s.trackingNumber?.toLowerCase().includes(keyword),
-  );
-}, [shipments, search]);
-
-  // if (shipments.length === 0) {
-  if (filteredShipments.length === 0 && !search) {
+  if (shipments.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">
-        {emptyLabel}
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-card/50 p-12 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground mb-3">
+          <PackageX className="h-6 w-6" />
+        </div>
+        <p className="text-sm font-semibold text-foreground">{emptyLabel}</p>
+        <p className="text-xs text-muted-foreground mt-1">There are no active shipments to display right now.</p>
       </div>
     );
   }
 
   return (
-    // ==============================================================
-    <>
-      <div className="mb-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="relative w-full max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
           <Input
-            placeholder="Search tracking number..."
+            placeholder="Search tracking #, city, or sender..."
             value={search}
-            onChange={(e) => setSearch(e.target.value.toUpperCase())}
-            className="pl-9"
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 bg-card shadow-2xs"
           />
+        </div>
+        <div className="text-xs text-muted-foreground font-medium">
+          Showing <span className="font-bold text-foreground">{filteredShipments.length}</span> of {shipments.length}
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border bg-card scrollbar-thin">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableHead className="w-[160px]">Tracking #</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell">Route</TableHead>
-              {showCustomer && (
-                <TableHead className="hidden lg:table-cell">Customer</TableHead>
-              )}
-              <TableHead className="hidden md:table-cell">ETA</TableHead>
-              <TableHead className="hidden sm:table-cell">Priority</TableHead>
-              <TableHead className="w-10" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {/* {shipments.map((s) => { */}
-            {filteredShipments.map((s) => {
-              // const ModeIcon = modeIcon[s.mode];
-              const ModeIcon = Truck;
-              return (
-                <TableRow key={s.id} className="group">
-                  <TableCell>
-                    <Link
-                      to={`/app/shipments/${s.id}`}
-                      className="flex items-center gap-2.5"
-                    >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground transition group-hover:bg-primary/10 group-hover:text-primary">
-                        <ModeIcon className="h-4 w-4" />
-                      </span>
-                      <span className="flex flex-col">
-                        <span className="font-mono text-xs font-semibold text-foreground">
-                          {s.trackingNumber}
+      {filteredShipments.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border bg-card/40 p-8 text-center text-sm text-muted-foreground">
+          No shipments match "<span className="font-semibold text-foreground">{search}</span>"
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-border/70 bg-card shadow-card scrollbar-thin">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
+                <TableHead className="w-[180px]">Tracking #</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Route</TableHead>
+                {showCustomer && (
+                  <TableHead className="hidden lg:table-cell">Sender / Customer</TableHead>
+                )}
+                <TableHead className="hidden md:table-cell">ETA</TableHead>
+                <TableHead className="hidden sm:table-cell">Priority</TableHead>
+                <TableHead className="w-10" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredShipments.map((s) => {
+                const ModeIcon = modeIconMap[s.mode?.toLowerCase()] || Truck;
+                return (
+                  <TableRow key={s.id} className="group transition-colors hover:bg-muted/40">
+                    <TableCell>
+                      <Link
+                        to={`/app/shipments/${s.id}`}
+                        className="flex items-center gap-3"
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105 border border-primary/20">
+                          <ModeIcon className="h-4.5 w-4.5" />
                         </span>
-                        <span className="text-[11px] text-muted-foreground">
-                          {"ShipTrack"}
+                        <span className="flex flex-col">
+                          <span className="font-mono text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                            {s.trackingNumber}
+                          </span>
+                          <span className="text-[10px] uppercase font-semibold text-muted-foreground/70">
+                            {s.carrierName || "ShipTrack"}
+                          </span>
                         </span>
-                      </span>
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge status={s.status} size="sm" />
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="max-w-[120px] truncate text-foreground">
-                        {s.senderCity}
-                      </span>
-                      <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
-                      <span className="max-w-[120px] truncate text-foreground">
-                        {s.receiverCity}
-                      </span>
-                    </div>
-                  </TableCell>
-                  {showCustomer && (
-                    <TableCell className="hidden lg:table-cell text-xs text-muted-foreground">
-                      {s.senderName}
+                      </Link>
                     </TableCell>
-                  )}
-                  <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
-                    {relativeDay(s.estimatedDeliveryAt)}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <PriorityBadge priority={s.priority} />
-                  </TableCell>
-                  <TableCell>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
-    </>
+                    <TableCell>
+                      <StatusBadge status={s.status} size="sm" />
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex items-center gap-2 text-xs font-medium">
+                        <span className="max-w-[110px] truncate text-foreground">
+                          {s.senderCity || "Origin"}
+                        </span>
+                        <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground/60" />
+                        <span className="max-w-[110px] truncate text-foreground">
+                          {s.receiverCity || "Destination"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    {showCustomer && (
+                      <TableCell className="hidden lg:table-cell text-xs font-medium text-muted-foreground">
+                        {s.senderName || "—"}
+                      </TableCell>
+                    )}
+                    <TableCell className="hidden md:table-cell text-xs font-medium text-muted-foreground">
+                      {relativeDay(s.estimatedDeliveryAt)}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <PriorityBadge priority={s.priority || "standard"} />
+                    </TableCell>
+                    <TableCell>
+                      <Link to={`/app/shipments/${s.id}`}>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:text-primary" />
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
   );
-  
 }
 
 export function ShipmentListItem({ shipment }) {
-  const ModeIcon = Truck;
+  const ModeIcon = modeIconMap[shipment.mode?.toLowerCase()] || Truck;
   return (
     <Link
       to={`/app/shipments/${shipment.id}`}
       className={cn(
-        "flex items-center gap-3 rounded-xl border border-border bg-card p-3.5 transition hover:border-primary/30 hover:shadow-sm",
+        "flex items-center gap-3.5 rounded-xl border border-border/70 bg-card p-3.5 shadow-2xs transition-all duration-150 hover:border-primary/40 hover:shadow-card hover:-translate-y-0.5 group",
       )}
     >
-      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20 transition-transform group-hover:scale-105">
         <ModeIcon className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-sm font-semibold">
+          <span className="font-mono text-xs font-bold text-foreground group-hover:text-primary transition-colors">
             {shipment.trackingNumber}
           </span>
           <StatusBadge status={shipment.status} size="sm" />
         </div>
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-          {shipment.senderCity} → {shipment.receiverCity}
+        <p className="mt-1 truncate text-xs text-muted-foreground font-medium">
+          {shipment.senderCity || "Origin"} → {shipment.receiverCity || "Destination"}
         </p>
       </div>
-      <div className="text-right">
-        <p className="text-xs font-medium text-foreground">
+      <div className="text-right shrink-0">
+        <p className="text-xs font-semibold text-foreground">
           {relativeDay(shipment.estimatedDeliveryAt)}
         </p>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[10px] font-medium text-muted-foreground/80">
           {formatDateTime(shipment.estimatedDeliveryAt)}
         </p>
       </div>
     </Link>
   );
+}
+
 }

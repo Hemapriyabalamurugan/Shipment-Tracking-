@@ -15,6 +15,10 @@ export function useShipments() {
   return useQuery({
     queryKey: queryKeys.shipments,
     queryFn: shipmentsApi.list,
+    // Refresh shipment state every 3 seconds
+    refetchInterval: 3000,
+
+    refetchIntervalInBackground: true,
   });
 }
 export function useShipment(id) {
@@ -71,10 +75,23 @@ export function useDrivers() {
     queryFn: driversApi.list,
   });
 }
+// export function useNotifications() {
+//   return useQuery({
+//     queryKey: queryKeys.notifications,
+//     queryFn: notificationsApi.list,
+//   });
+// }
+
 export function useNotifications() {
   return useQuery({
     queryKey: queryKeys.notifications,
     queryFn: notificationsApi.list,
+
+    // Check for notification updates every 3 seconds
+    refetchInterval: 3000,
+
+    // Continue checking even when the browser tab is in background
+    refetchIntervalInBackground: true,
   });
 }
 export function useMarkNotificationRead() {
@@ -355,13 +372,36 @@ export function useDriverPerformance() {
 //     },
 //   });
 // }
+// export function useAcceptShipment() {
+//   const qc = useQueryClient();
+
+//   return useMutation({
+//     mutationFn: ({ id, operatorId }) => shipmentsApi.accept(id, operatorId),
+
+//     onSuccess: async () => {
+//       await qc.invalidateQueries({
+//         queryKey: queryKeys.shipments,
+//       });
+
+//       await qc.refetchQueries({
+//         queryKey: queryKeys.shipments,
+//       });
+
+//       await qc.invalidateQueries({
+//         queryKey: queryKeys.notifications,
+//       });
+//     },
+//   });
+// }
+
 export function useAcceptShipment() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, operatorId }) => shipmentsApi.accept(id, operatorId),
+    mutationFn: ({ id }) => shipmentsApi.accept(id),
 
     onSuccess: async () => {
+      // Refresh shipment data
       await qc.invalidateQueries({
         queryKey: queryKeys.shipments,
       });
@@ -370,7 +410,12 @@ export function useAcceptShipment() {
         queryKey: queryKeys.shipments,
       });
 
+      // Refresh operator notifications
       await qc.invalidateQueries({
+        queryKey: queryKeys.notifications,
+      });
+
+      await qc.refetchQueries({
         queryKey: queryKeys.notifications,
       });
     },

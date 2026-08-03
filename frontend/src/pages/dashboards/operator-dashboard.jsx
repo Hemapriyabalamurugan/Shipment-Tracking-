@@ -1,20 +1,10 @@
-
 import { useAuth } from "@/context/auth-context";
-import { ChevronDown } from "lucide-react";
-// import { useShipments, useNotifications } from "@/lib/hooks";
 import {
   useShipments,
   useNotifications,
   useAcceptShipment,
   useUpdateShipmentStatus,
 } from "@/lib/hooks";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { StatCard } from "@/components/shared/stat-card";
 import { LoadingState } from "@/components/shared/states";
 import {
@@ -35,60 +25,57 @@ import {
   XCircle,
   Clock,
   Navigation,
-  Camera,
-  PenLine,
-  MapPin,
   ArrowRight,
-  ClipboardCheck,
   Bell,
   Activity,
+  MapPin,
 } from "lucide-react";
-
 
 const STATUS_FLOW = [
   {
     key: "CREATED",
     label: "Created",
     icon: Clock,
-    class: "bg-muted text-muted-foreground",
+    class: "bg-slate-100 text-slate-700 border-slate-200",
   },
   {
     key: "PICKED_UP",
     label: "Picked Up",
     icon: Package,
-    class: "bg-primary/10 text-primary",
+    class: "bg-blue-50 text-blue-700 border-blue-200",
   },
   {
     key: "IN_TRANSIT",
     label: "In Transit",
     icon: Truck,
-    class: "bg-chart-6/10 text-chart-6",
+    class: "bg-indigo-50 text-indigo-700 border-indigo-200",
   },
   {
     key: "OUT_FOR_DELIVERY",
     label: "Out for Delivery",
     icon: Navigation,
-    class: "bg-warning/15 text-warning",
+    class: "bg-amber-50 text-amber-700 border-amber-200",
   },
   {
     key: "DELIVERED",
     label: "Delivered",
     icon: CheckCircle2,
-    class: "bg-success/10 text-success",
+    class: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
   {
     key: "FAILED_DELIVERY",
     label: "Failed Delivery",
     icon: XCircle,
-    class: "bg-destructive/10 text-destructive",
+    class: "bg-rose-50 text-rose-700 border-rose-200",
   },
   {
     key: "CANCELLED",
     label: "Cancelled",
     icon: XCircle,
-    class: "bg-destructive/10 text-destructive",
+    class: "bg-slate-100 text-slate-700 border-slate-200",
   },
 ];
+
 export default function OperatorDashboard() {
   const { user } = useAuth();
   const shipments = useShipments();
@@ -116,74 +103,74 @@ export default function OperatorDashboard() {
   if (isLoading) {
     return (
       <div className="space-y-6 animate-fade-in">
-        
         <OperatorHeader
-  userName={user.name ?? user.firstName}
-  activeCount={0}
-/>
-        <LoadingState />
+          userName={user.name ?? user.firstName}
+          activeCount={0}
+        />
+        <LoadingState label="Loading your delivery assignments..." />
       </div>
     );
   }
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* <OperatorHeader userName={user.name} activeCount={active.length} /> */}
       <OperatorHeader
         userName={user.name ?? user.firstName}
         activeCount={active.length}
       />
-      
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           label="Active Deliveries"
           value={active.length}
           icon={Navigation}
-          iconClass="bg-primary/10 text-primary"
-          trend={{ value: "live", direction: "neutral" }}
+          iconClass="bg-primary/10 text-primary border border-primary/20"
+          trend={{ value: "LIVE", direction: "neutral" }}
         />
         <StatCard
           label="Pending Pickup"
           value={pending.length}
           icon={Clock}
-          iconClass="bg-warning/15 text-warning"
+          iconClass="bg-amber-500/10 text-amber-600 border border-amber-500/20"
         />
         <StatCard
           label="Delivered Today"
           value={delivered.length}
           icon={CheckCircle2}
-          iconClass="bg-success/10 text-success"
+          iconClass="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
         />
         <StatCard
-          label="Failed"
+          label="Failed / Issues"
           value={failed.length}
           icon={XCircle}
-          iconClass="bg-destructive/10 text-destructive"
+          iconClass="bg-rose-500/10 text-rose-600 border border-rose-500/20"
         />
       </div>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader className="pb-3">
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2 shadow-card border-border/80">
+          <CardHeader className="pb-3 border-b border-border/50">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Package className="h-4 w-4 text-primary" />
-                My Assignments
+              <CardTitle className="flex items-center gap-2 text-base font-bold">
+                <Package className="h-4.5 w-4.5 text-primary" />
+                My Assignments & Dispatch Queue
               </CardTitle>
-              <Badge variant="secondary" className="text-[10px]">
-                {assigned.length} total
+              <Badge variant="secondary" className="text-xs font-semibold">
+                {assigned.length} Total
               </Badge>
             </div>
             <CardDescription className="text-xs">
-              Shipments assigned to you
+              Shipments currently assigned to your driver profile
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2.5 max-h-[520px] overflow-y-auto scrollbar-thin pt-0">
+          <CardContent className="space-y-3 max-h-[560px] overflow-y-auto scrollbar-thin p-5">
             {active.length === 0 && pending.length === 0 ? (
               <div className="flex flex-col items-center py-12 text-center">
-                <CheckCircle2 className="h-10 w-10 text-success/40" />
-                <p className="mt-2 text-sm text-muted-foreground">
-                  No active assignments
-                </p>
+                <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
+                  <CheckCircle2 className="h-6 w-6" />
+                </div>
+                <p className="text-sm font-bold text-foreground">All Clear!</p>
+                <p className="mt-1 text-xs text-muted-foreground">You currently have no pending active deliveries assigned.</p>
               </div>
             ) : (
               [...active, ...pending].map((s) => (
@@ -192,51 +179,50 @@ export default function OperatorDashboard() {
                   shipment={s}
                   acceptShipment={acceptShipment}
                   updateShipmentStatus={updateShipmentStatus}
-                  operatorId={user.id}
                 />
               ))
             )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="shadow-card border-border/80">
+          <CardHeader className="pb-3 border-b border-border/50">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Bell className="h-4 w-4 text-chart-6" />
-                Recent Updates
+              <CardTitle className="flex items-center gap-2 text-base font-bold">
+                <Bell className="h-4.5 w-4.5 text-chart-6" />
+                Recent Alerts
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="space-y-2 max-h-[520px] overflow-y-auto scrollbar-thin">
+          <CardContent className="space-y-2.5 max-h-[560px] overflow-y-auto scrollbar-thin p-4">
             {recentNotifications.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                No notifications
+              <p className="py-8 text-center text-xs text-muted-foreground">
+                No recent notifications
               </p>
             ) : (
               recentNotifications.map((n) => (
                 <div
                   key={n.id}
-                  className="flex items-start gap-2.5 rounded-lg border border-border p-2.5"
+                  className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-3 shadow-2xs transition hover:bg-muted/40"
                 >
                   <span
                     className={cn(
-                      "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md",
+                      "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border",
                       n.type === "success"
-                        ? "bg-success/10 text-success"
+                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
                         : n.type === "warning"
-                          ? "bg-warning/15 text-warning"
-                          : "bg-primary/10 text-primary",
+                          ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                          : "bg-primary/10 text-primary border-primary/20",
                     )}
                   >
                     <Activity className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold">{n.title}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">
+                    <p className="truncate text-xs font-bold text-foreground">{n.title}</p>
+                    <p className="truncate text-[11px] text-muted-foreground leading-relaxed mt-0.5">
                       {n.message}
                     </p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    <p className="mt-1 text-[10px] font-medium text-muted-foreground/70">
                       {timeAgo(n.timestamp)}
                     </p>
                   </div>
@@ -246,41 +232,42 @@ export default function OperatorDashboard() {
           </CardContent>
         </Card>
       </div>
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <CheckCircle2 className="h-4 w-4 text-success" />
+
+      <Card className="shadow-card border-border/80">
+        <CardHeader className="pb-3 border-b border-border/50">
+          <CardTitle className="flex items-center gap-2 text-base font-bold">
+            <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600" />
             Completed Today
           </CardTitle>
           <CardDescription className="text-xs">
-            Recently delivered shipments
+            Recently delivered shipments in your shift
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-4">
           {delivered.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              No deliveries completed yet
+            <p className="py-6 text-center text-xs text-muted-foreground">
+              No deliveries completed yet today
             </p>
           ) : (
-            <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
               {delivered.slice(0, 6).map((s) => (
                 <div
                   key={s.id}
-                  className="flex items-center justify-between rounded-lg border border-border p-3"
+                  className="flex items-center justify-between rounded-xl border border-border/70 bg-card p-3 shadow-2xs hover:border-emerald-500/40 transition"
                 >
                   <div className="min-w-0">
                     <Link
                       to={`/app/shipments/${s.id}`}
-                      className="font-mono text-xs font-semibold hover:underline"
+                      className="font-mono text-xs font-bold text-foreground hover:text-primary transition-colors"
                     >
                       {s.trackingNumber}
                     </Link>
-                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                    <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground">
                       {s.senderCity} → {s.receiverCity}
                     </p>
                   </div>
-                  <span className="flex items-center gap-1 text-xs font-medium text-success">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                    <CheckCircle2 className="h-3 w-3" />
                     Delivered
                   </span>
                 </div>
@@ -295,134 +282,75 @@ export default function OperatorDashboard() {
 
 function OperatorHeader({ userName, activeCount }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5">
-      <div className="absolute inset-0 grid-bg opacity-30" />
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-brand text-white shadow-lg shadow-primary/20">
+    <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-card">
+      <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between z-10">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-brand text-white shadow-md shadow-primary/25 border border-white/20">
             <Truck className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-              Operator Dashboard
+            <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl text-foreground">
+              Operator Console
             </h1>
-            <p className="text-sm text-muted-foreground">
-              {userName} — your delivery assignments at a glance
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Welcome, <span className="font-semibold text-foreground">{userName}</span> — manage your active route assignments
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div
             className={cn(
-              "flex items-center gap-2 rounded-lg border px-3 py-2",
+              "flex items-center gap-2 rounded-xl border px-3 py-1.5 shadow-2xs",
               activeCount > 0
-                ? "border-primary/30 bg-primary/5"
-                : "border-success/30 bg-success/5",
+                ? "border-primary/30 bg-primary/10 text-primary"
+                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600",
             )}
           >
             <span
               className={cn(
-                "flex h-2 w-2 animate-pulse-soft rounded-full",
-                activeCount > 0 ? "bg-primary" : "bg-success",
+                "flex h-2 w-2 rounded-full",
+                activeCount > 0 ? "bg-primary animate-ping" : "bg-emerald-500",
               )}
             />
-            <span
-              className={cn(
-                "text-xs font-semibold",
-                activeCount > 0 ? "text-primary" : "text-success",
-              )}
-            >
-              {activeCount > 0 ? `${activeCount} Active` : "All Clear"}
+            <span className="text-xs font-bold uppercase tracking-wider">
+              {activeCount > 0 ? `${activeCount} Active Deliveries` : "Queue Clear"}
             </span>
           </div>
-          <Button asChild variant="outline" size="sm">
-            {/* <Link to="/app/pod">
-              <ClipboardCheck className="mr-1.5 h-3.5 w-3.5" />
-              Submit POD
-            </Link> */}
-          </Button>
         </div>
       </div>
     </div>
   );
 }
 
-function AssignmentCard({ shipment, acceptShipment, updateShipmentStatus,operatorId }) {
-const isActive =
-  shipment.status === "PICKED_UP" ||
-  shipment.status === "IN_TRANSIT" ||
-  shipment.status === "OUT_FOR_DELIVERY";
+function AssignmentCard({ shipment, acceptShipment, updateShipmentStatus }) {
+  const isActive =
+    shipment.status === "PICKED_UP" ||
+    shipment.status === "IN_TRANSIT" ||
+    shipment.status === "OUT_FOR_DELIVERY";
 
-   const statusMeta =
-     STATUS_FLOW.find((s) => s.key === shipment.status) ?? STATUS_FLOW[0];
+  const statusMeta =
+    STATUS_FLOW.find((s) => s.key === shipment.status) ?? STATUS_FLOW[0];
 
-   const StatusIcon = statusMeta.icon;
-
+  const StatusIcon = statusMeta.icon;
   const canAccept = shipment.status === "CREATED";
-  const canUpdateStatus =
-    shipment.status !== "CREATED" &&
-    shipment.status !== "DELIVERED" &&
-    shipment.status !== "FAILED_DELIVERY" &&
-    shipment.status !== "CANCELLED";
-  
-function getNextStatuses(status) {
-  switch (status) {
-    case "PICKED_UP":
-      return [
-        {
-          value: "IN_TRANSIT",
-          label: "In Transit",
-        },
-      ];
-
-    case "IN_TRANSIT":
-      return [
-        {
-          value: "OUT_FOR_DELIVERY",
-          label: "Out For Delivery",
-        },
-      ];
-
-    case "OUT_FOR_DELIVERY":
-      return [
-        {
-          value: "DELIVERED",
-          label: "Delivered",
-        },
-        {
-          value: "FAILED_DELIVERY",
-          label: "Failed Delivery",
-        },
-      ];
-
-    default:
-       return [];
-   }
-  }
 
   function getProgress(status) {
     switch (status) {
       case "CREATED":
         return 10;
-
       case "PICKED_UP":
         return 30;
-
       case "IN_TRANSIT":
         return 60;
-
       case "OUT_FOR_DELIVERY":
         return 85;
-
       case "DELIVERED":
         return 100;
-
       case "FAILED_DELIVERY":
         return 100;
-
       case "CANCELLED":
         return 0;
-
       default:
         return 0;
     }
@@ -430,37 +358,30 @@ function getNextStatuses(status) {
 
   const progress = getProgress(shipment.status);
 
-const nextStatuses = getNextStatuses(shipment.status);
-
-// const nextStatus = getNextStatus(shipment.status);
   return (
-    // <Link
-    //   to={`/app/shipments/${shipment.id}`}
-    //   className="block rounded-lg border border-border p-3 transition hover:border-primary/40 hover:bg-muted/30"
-    // >
-    <>
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2.5">
+    <div className="rounded-xl border border-border/70 bg-card p-4 shadow-2xs space-y-3 transition-all hover:border-primary/40">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
           <span
             className={cn(
-              "flex h-9 w-9 items-center justify-center rounded-lg",
+              "flex h-9 w-9 items-center justify-center rounded-xl border shrink-0",
               statusMeta.class,
             )}
           >
-            <StatusIcon className="h-4 w-4" />
+            <StatusIcon className="h-4.5 w-4.5" />
           </span>
           <div className="min-w-0">
-            <p className="font-mono text-xs font-semibold">
+            <p className="font-mono text-xs font-bold text-foreground">
               {shipment.trackingNumber}
             </p>
-            <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+            <p className="mt-0.5 truncate text-xs text-muted-foreground font-medium">
               {shipment.senderCity} → {shipment.receiverCity}
             </p>
           </div>
         </div>
         <span
           className={cn(
-            "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium",
+            "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
             statusMeta.class,
           )}
         >
@@ -468,89 +389,62 @@ const nextStatuses = getNextStatuses(shipment.status);
         </span>
       </div>
 
-      <div className="mt-2.5 flex items-center gap-3 text-[11px] text-muted-foreground">
-        {/* <span className="flex items-center gap-1">
-          <MapPin className="h-3 w-3" /> {shipment.currentLocation.name}
-        </span> */}
-        <span>
-          ETA:{" "}
-          <span className="font-medium text-foreground">
-            {relativeDay(shipment.estimatedDeliveryAt)}
-          </span>
+      <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-2.5">
+        <span className="font-medium">
+          ETA: <span className="font-bold text-foreground">{relativeDay(shipment.estimatedDeliveryAt)}</span>
         </span>
-        <span>
-          Progress:
-          <span className="font-medium text-foreground">{progress}%</span>
-        </span>
+        <span className="font-semibold text-foreground">Progress: {progress}%</span>
       </div>
 
-      <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
+      <div className="h-1.5 overflow-hidden rounded-full bg-muted/80">
         <div
-          // className={cn(
-          //   "h-full rounded-full",
-          //   shipment.status === "delivered"
-          //     ? "bg-success"
-          //     : shipment.status === "failed"
-          //       ? "bg-destructive"
-          //       : shipment.status === "out_for_delivery"
-          //         ? "bg-warning"
-          //         : "bg-primary",
-          // )}
-          // style={{ width: `${shipment.progress}%` }}
           className={cn(
-            "h-full rounded-full",
+            "h-full rounded-full transition-all duration-300",
             shipment.status === "DELIVERED"
-              ? "bg-success"
+              ? "bg-emerald-500"
               : shipment.status === "FAILED_DELIVERY"
-                ? "bg-destructive"
+                ? "bg-rose-500"
                 : shipment.status === "OUT_FOR_DELIVERY"
-                  ? "bg-warning"
+                  ? "bg-amber-500"
                   : "bg-primary",
           )}
           style={{ width: `${progress}%` }}
         />
       </div>
-      {canAccept && (
-        // =========================================================
 
-        // =========================================================
-        <div className="mt-3">
+      {canAccept && (
+        <div className="pt-1">
           <Button
+            size="sm"
+            variant="brand"
+            className="w-full text-xs font-bold"
             onClick={() => {
               acceptShipment.mutate({
                 id: shipment.id,
-                operatorId,
               });
             }}
             disabled={acceptShipment.isPending}
           >
-            Accept Shipment
+            Accept Shipment Assignment
           </Button>
         </div>
       )}
 
-      
-
       {isActive && (
-        <div className="mt-2.5 flex items-center gap-2">
+        <div className="pt-1 flex items-center gap-2">
           <Button
             asChild
             size="sm"
             variant="outline"
-            className="h-7 text-[11px]"
+            className="w-full text-xs font-semibold"
           >
-            {/* ================================================== */}
-            {/* <Link to={`/app/shipments/${shipment.id}`}> */}
             <Link to={`/app/operator/navigation/${shipment.id}`}>
-              {/* ================================================= */}
-              <Navigation className="mr-1 h-3 w-3" />
-              Navigate
+              <Navigation className="mr-1.5 h-3.5 w-3.5 text-primary" />
+              Open Live Navigation
             </Link>
           </Button>
-          
         </div>
       )}
-    </>
-    // </Link>
+    </div>
   );
-}
+}

@@ -16,20 +16,20 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="delivery-service" />
+        <module name="analytics-service" />
         <module name="shipmentManagement" />
-        <module name="analytics-report-service" />
         <module name="pod" />
         <module name="auth" />
-        <module name="analytics-service" />
         <module name="Notification" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="analytics-report-service" target="25" />
       <module name="analytics-serviceee" target="25" />
       <module name="backend" target="25" />
-      <module name="tracking-service" target="25" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -45,7 +45,6 @@
       <module name="eureka-server" options="-parameters" />
       <module name="pod" options="-parameters" />
       <module name="shipmentManagement" options="-parameters" />
-      <module name="tracking-service" options="-parameters" />
     </option>
   </component>
 </project>

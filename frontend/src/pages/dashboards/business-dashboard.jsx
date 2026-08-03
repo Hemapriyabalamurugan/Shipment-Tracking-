@@ -1,11 +1,8 @@
-
 import { useAuth } from "@/context/auth-context";
-import { useMyShipments, useInvoices, useBusinessAnalytics } from "@/lib/hooks";
+import { useShipments, useInvoices, useBusinessAnalytics } from "@/lib/hooks";
 import { StatCard } from "@/components/shared/stat-card";
 import { ShipmentTable } from "@/components/shared/shipment-table";
-import { ChartTooltip } from "@/components/shared/brand-backdrop";
 import { LoadingState } from "@/components/shared/states";
-import { StatusBadge } from "@/components/shared/status-badge";
 import {
   Card,
   CardContent,
@@ -14,41 +11,21 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cn, formatCurrency, relativeDay } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import {
   Package,
-  IndianRupee ,
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
   Plus,
-  Clock,
   TrendingUp,
   Truck,
-  BarChart3,
 } from "lucide-react";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  PolarAngleAxis,
-  RadialBar,
-  RadialBarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
-export default  function BusinessDashboard() {
+export default function BusinessDashboard() {
   const { user } = useAuth();
-  const myShipments = useMyShipments(user.id);
+  const myShipments = useShipments();
   const invoices = useInvoices();
   const analytics = useBusinessAnalytics(user.id);
 
@@ -56,19 +33,13 @@ export default  function BusinessDashboard() {
     myShipments.isLoading || analytics.isLoading || invoices.isLoading;
 
   const allShipments = myShipments.data ?? [];
-  const delivered = allShipments.filter((s) => s.status === "delivered");
+  const delivered = allShipments.filter((s) => s.status === "DELIVERED" || s.status === "delivered");
   const inTransit = allShipments.filter((s) =>
-    ["in_transit", "out_for_delivery", "picked_up"].includes(s.status),
+    ["IN_TRANSIT", "OUT_FOR_DELIVERY", "PICKED_UP", "in_transit", "out_for_delivery", "picked_up"].includes(s.status),
   );
   const delayed = allShipments.filter((s) =>
-    ["delayed", "exception"].includes(s.status),
+    ["delayed", "exception", "FAILED_DELIVERY"].includes(s.status),
   );
-  const monthlyCost =
-    analytics.data?.businessCostTrend?.slice(-1)[0]?.cost ?? 0;
-
-  // Calculate average delivery time from business data
-  const avgDeliveryDays =
-    analytics.data?.businessDeliveryTime?.slice(-1)[0]?.avgDays ?? 2.3;
 
   if (isLoading) {
     return (
@@ -77,7 +48,7 @@ export default  function BusinessDashboard() {
           userName={user.name ?? user.firstName}
           company={user.company ?? user.companyName}
         />
-        <LoadingState />
+        <LoadingState label="Loading business dashboard metrics..." />
       </div>
     );
   }
@@ -85,139 +56,77 @@ export default  function BusinessDashboard() {
   return (
     <div className="space-y-6 animate-fade-in">
       <ExecutiveHeader
-        userName={user.name}
-        company={user.company}
+        userName={user.name ?? user.firstName}
+        company={user.company ?? user.companyName}
         delayedCount={delayed.length}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total Shipments"
-          value={allShipments.length}
+          value={formatNumber(allShipments.length)}
           icon={Package}
-          iconClass="bg-primary/10 text-primary"
-          // trend={{ value: "+12%", direction: "up", positive: true }}
-          // footer="this quarter"
+          iconClass="bg-primary/10 text-primary border border-primary/20"
+          footer="All client shipments"
         />
         <StatCard
           label="Delivered"
-          value={delivered.length}
+          value={formatNumber(delivered.length)}
           icon={CheckCircle2}
-          iconClass="bg-success/10 text-success"
+          iconClass="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
           trend={{
             value: `${Math.round((delivered.length / Math.max(allShipments.length, 1)) * 100)}%`,
             direction: "up",
             positive: true,
           }}
-          footer="success rate"
+          footer="Success rate"
         />
         <StatCard
           label="In Transit"
-          value={inTransit.length}
+          value={formatNumber(inTransit.length)}
           icon={Truck}
-          iconClass="bg-chart-6/10 text-chart-6"
-          trend={{ value: "live", direction: "neutral" }}
-          footer="active now"
+          iconClass="bg-chart-6/10 text-chart-6 border border-chart-6/20"
+          trend={{ value: "LIVE", direction: "neutral" }}
+          footer="Active dispatched"
         />
         <StatCard
-          label="Delayed"
-          value={delayed.length}
+          label="Exceptions / Delayed"
+          value={formatNumber(delayed.length)}
           icon={AlertTriangle}
           iconClass={
             delayed.length > 0
-              ? "bg-destructive/10 text-destructive"
+              ? "bg-rose-500/10 text-rose-600 border border-rose-500/20"
               : "bg-muted text-muted-foreground"
           }
           trend={{
-            value: delayed.length > 0 ? "action needed" : "all clear",
+            value: delayed.length > 0 ? "Action needed" : "All clear",
             direction: "neutral",
           }}
+          footer="Dispute / delay count"
         />
-       
-        {/* <StatCard
-          label="Avg Delivery Time"
-          value={`${avgDeliveryDays} days`}
-          icon={Clock}
-          iconClass="bg-chart-3/10 text-chart-3"
-          // trend={{ value: "-0.3d", direction: "down", positive: true }}
-          // footer="faster"
-        /> */}
       </div>
 
-      
-
-      
-
-      {/* <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Average Delivery Time</CardTitle>
-            <CardDescription>
-              Days from pickup to delivery — trending down
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={analytics.data?.businessDeliveryTime}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                />
-                <YAxis
-                  domain={[2, 4]}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
-                  tickFormatter={(v) => `${v}d`}
-                />
-                <Tooltip
-                  content={<ChartTooltip formatter={(v) => `${v} days`} />}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="avgDays"
-                  stroke="hsl(var(--chart-6))"
-                  strokeWidth={3}
-                  dot={{ r: 5, fill: "hsl(var(--chart-6))" }}
-                  name="Avg Days"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div> */}
-
-      <Card>
-        <CardHeader>
+      <Card className="shadow-card border-border/80">
+        <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>My Shipments</CardTitle>
-              <CardDescription>All your recent shipments</CardDescription>
+              <CardTitle className="text-base font-bold">Client Shipments</CardTitle>
+              <CardDescription className="text-xs">All outbound & inbound shipments linked to your business account</CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm">
-                
-              </Button>
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" className="text-xs font-semibold">
                 <Link to="/app/shipments">
-                  View all <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  View All ({allShipments.length}) <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-5">
           <ShipmentTable
             shipments={allShipments}
             showCustomer={false}
-            emptyLabel="No shipments yet"
+            emptyLabel="No shipments created yet"
           />
         </CardContent>
       </Card>
@@ -227,42 +136,41 @@ export default  function BusinessDashboard() {
 
 function ExecutiveHeader({ userName, company, delayedCount }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5">
-      <div className="absolute inset-0 grid-bg opacity-30" />
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-brand text-white shadow-lg shadow-primary/20">
+    <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-card">
+      <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between z-10">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-brand text-white shadow-md shadow-primary/25 border border-white/20">
             <TrendingUp className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-              Executive Dashboard
+            <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl text-foreground">
+              Business Portal
             </h1>
-            {/* <p className="text-sm text-muted-foreground">
-              {userName.split(" ")[0]} · {company ?? "Your Company"}
-            </p> */}
-            <p className="text-sm text-muted-foreground">
-              {userName || "User"} · {company ?? "Your Company"}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Welcome, <span className="font-semibold text-foreground">{userName || "Client"}</span> — {company ?? "ShipTrackPro Business Account"}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           {delayedCount !== undefined && delayedCount > 0 && (
-            <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2">
-              <AlertTriangle className="h-3.5 w-3.5 text-warning" />
-              <span className="text-xs font-semibold text-warning">
+            <div className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 shadow-2xs">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+              <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
                 {delayedCount} shipment(s) need attention
               </span>
             </div>
           )}
-          <Button asChild>
+          <Button asChild variant="brand" size="sm" className="font-bold text-xs">
             <Link to="/app/create-shipment">
-              <Plus className="mr-2 h-4 w-4" />
-              New Shipment
+              <Plus className="mr-1.5 h-4 w-4" />
+              Create Shipment
             </Link>
           </Button>
         </div>
       </div>
     </div>
   );
+}
+;
 }

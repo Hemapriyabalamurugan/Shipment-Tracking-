@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/context/auth-context";
 import {
   useShipments,
@@ -14,8 +13,6 @@ import {
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { ShipmentTable } from "@/components/shared/shipment-table";
-import { ChartTooltip } from "@/components/shared/brand-backdrop";
-import { MapView } from "@/components/shared/map-view";
 import { LoadingState } from "@/components/shared/states";
 import {
   Card,
@@ -25,44 +22,20 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { cn, formatNumber, timeAgo } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import {
   Package,
   Truck,
   Users,
-  Activity,
   ArrowRight,
-  Server,
-  Gauge,
   Radar,
   ClipboardCheck,
-  Bell,
-  CircleDot,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Cpu,
-  Database,
-  Network,
+  Server,
+  Activity as ActivityIcon,
+  ShieldCheck,
   Zap,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  Bar,
-  BarChart,
-} from "recharts";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -86,147 +59,139 @@ export default function AdminDashboard() {
     shipments.data?.filter((s) =>
       ["IN_TRANSIT", "OUT_FOR_DELIVERY", "PICKED_UP"].includes(s.status),
     ) ?? [];
-  const exceptions =
-    shipments.data?.filter((s) =>
-      ["delayed", "exception"].includes(s.status),
-    ) ?? [];
   const activeVehicles =
     vehicles.data?.filter((v) => v.status === "active") ?? [];
-  const driversOnline =
-    drivers.data?.filter((d) => d.status === "on_duty") ?? [];
   const pendingPod =
     podRecords.data?.filter(
       (p) => p.status === "pending" || p.status === "missing",
     ) ?? [];
   const totalUsers = team.data?.length ?? 0;
-  const notifMetrics = notificationMetrics.data ?? [];
-  const totalNotifSent = notifMetrics.reduce((s, n) => s + n.sent, 0);
-  const avgOpenRate = notifMetrics.length
-    ? notifMetrics.reduce((s, n) => s + n.openRate, 0) / notifMetrics.length
-    : 0;
-
-  const vehiclePoints =
-    vehicles.data
-      ?.filter((v) => v.status !== "offline")
-      .map((v) => ({
-        lat: v.lat,
-        lng: v.lng,
-        name: `${v.unit} · ${v.driver}`,
-        status: v.status,
-      })) ?? [];
 
   const operationalMs =
     microservices.data?.filter((m) => m.status === "operational").length ?? 0;
   const totalMs = microservices.data?.length ?? 0;
-  const degradedMs =
-    microservices.data?.filter(
-      (m) => m.status === "degraded" || m.status === "down",
-    ).length ?? 0;
-
-  
-
 
   if (isLoading) {
     return (
-      <div>
+      <div className="space-y-6">
         <PageHeader
           title="Command Center"
           description="Platform-wide operations & system health"
+          icon={Radar}
         />
-        <LoadingState />
+        <LoadingState label="Loading Command Center metrics..." />
       </div>
     );
   }
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5">
-        <div className="absolute inset-0 grid-bg opacity-30" />
-        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-brand text-white shadow-lg shadow-primary/20">
-              <Radar className="h-6 w-6" />
+      {/* Command Center Banner Header */}
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-card">
+        <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between z-10">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl gradient-brand text-white shadow-md shadow-primary/25 border border-white/20">
+              <Radar className="h-6 w-6 animate-spin-slow" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-                Command Center
-              </h1>
-
-              <p className="text-sm text-muted-foreground">
-                Welcome back, {user.firstName ?? user.name} — real-time
-                logistics operations overview
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl text-foreground">
+                  Command Center
+                </h1>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Systems Operational ({operationalMs}/{totalMs || 4})
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Welcome back, <span className="font-semibold text-foreground">{user.firstName ?? user.name}</span> — real-time logistics operations & fleet telemetry
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/app/routes">
+                <Zap className="mr-1.5 h-3.5 w-3.5 text-primary" />
+                Manage Routes
+              </Link>
+            </Button>
+            <Button asChild variant="brand" size="sm">
+              <Link to="/app/shipments">
+                View All Shipments
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Stat Cards */}
-      {/* <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"> */}
-      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
+      {/* Primary Stat Cards */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total Users"
           value={formatNumber(totalUsers)}
           icon={Users}
-          iconClass="bg-primary/10 text-primary"
-          // trend={{ value: "+142", direction: "up", positive: true }}
-          // footer="this month"
+          iconClass="bg-primary/10 text-primary border border-primary/20"
+          footer="Active registered accounts"
         />
         <StatCard
           label="Total Shipments"
           value={formatNumber(shipments.data?.length ?? 0)}
           icon={Package}
-          iconClass="bg-chart-6/10 text-chart-6"
-          // trend={{ value: "+12.4%", direction: "up", positive: true }}
-          // footer="vs last month"
+          iconClass="bg-chart-6/10 text-chart-6 border border-chart-6/20"
+          footer="All-time platform shipments"
         />
         <StatCard
           label="Active Deliveries"
           value={formatNumber(activeShipments.length)}
           icon={Truck}
-          iconClass="bg-success/10 text-success"
-          // trend={{ value: "live", direction: "neutral" }}
-          // footer="in transit now"
+          iconClass="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+          trend={{ value: "LIVE", direction: "up", positive: true }}
+          footer="In transit right now"
         />
-
         <StatCard
           label="Pending POD"
-          value={pendingPod.length}
+          value={formatNumber(pendingPod.length)}
           icon={ClipboardCheck}
-          iconClass="bg-warning/10 text-warning"
-          // trend={{ value: "awaiting", direction: "neutral" }}
-          // footer="proof of delivery"
+          iconClass="bg-amber-500/10 text-amber-600 border border-amber-500/20"
+          footer="Awaiting verification"
         />
       </div>
 
-      {/* {/* Activity Feed + Shipments */}
-      {/* <div className="grid grid-cols-1 gap-4 lg:grid-cols-3"> */}
-      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
-        <Card className="lg:col-span-2">
-          <CardHeader>
+      {/* Active Shipments Section */}
+      <div className="grid gap-6 grid-cols-1">
+        <Card className="shadow-card border-border/80">
+          <CardHeader className="border-b border-border/50 pb-4">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Active Shipments</CardTitle>
-                <CardDescription>
-                  Currently in transit across the network
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <ActivityIcon className="h-4.5 w-4.5 text-primary" />
+                  Active In-Transit Shipments
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Real-time monitor of packages currently dispatched across carrier networks
                 </CardDescription>
               </div>
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" className="text-xs font-semibold">
                 <Link to="/app/shipments">
-                  View all <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  View All ({shipments.data?.length ?? 0})
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-5">
             <ShipmentTable
               shipments={activeShipments}
-              emptyLabel="No active shipments"
+              emptyLabel="No active shipments in transit"
             />
           </CardContent>
         </Card>
       </div>
     </div>
   );
+}
+
 }

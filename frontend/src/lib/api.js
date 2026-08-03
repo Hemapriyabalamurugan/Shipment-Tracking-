@@ -188,8 +188,8 @@ export const shipmentsApi = {
       ),
     );
   },
-  async getByCustomer(customerId) {
-    const response = await api.get(`/shipments?customerId=${customerId}`);
+  async getByCustomer() {
+    const response = await api.get("/shipments/customer/me");
     return response.data;
   },
   async getTracking(id) {
@@ -204,16 +204,21 @@ export const shipmentsApi = {
     const response = await api.get("/shipments/hubs");
     return response.data;
   },
- 
+
   async create(payload) {
     const response = await api.post("/shipments", payload);
     return response.data;
   },
 
-  accept: async (id, operatorId) => {
-    const response = await api.post(`/shipments/${id}/accept`, {
-      operatorId,
-    });
+  // accept: async (id, operatorId) => {
+  //   const response = await api.post(`/shipments/${id}/accept`, {
+  //     operatorId,
+  //   });
+
+  //   return response.data;
+  // },
+  accept: async (id) => {
+    const response = await api.post(`/shipments/${id}/accept`);
 
     return response.data;
   },
@@ -246,7 +251,7 @@ export const shipmentsApi = {
 
     return response.data;
   },
-// ==========================================================
+  // ==========================================================
   getRouteHubs: async () => {
     const { data } = await api.get("/hubs");
     return data;

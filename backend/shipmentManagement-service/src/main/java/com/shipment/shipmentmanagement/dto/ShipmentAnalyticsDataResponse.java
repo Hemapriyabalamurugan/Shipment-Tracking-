@@ -16,6 +16,8 @@ public class ShipmentAnalyticsDataResponse {
     private Long shipmentId;
     private String trackingNumber;
     private Long businessClientId;
+    private Long customerId;
+    private Long driverId;
 
     private String status;
 

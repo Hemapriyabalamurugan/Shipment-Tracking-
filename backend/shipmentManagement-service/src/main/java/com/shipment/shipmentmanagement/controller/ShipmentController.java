@@ -77,22 +77,27 @@ public class ShipmentController {
 //    ) {
 //        return shipmentService.getBusinessAnalytics(businessClientId);
 //    }
-    @GetMapping("/customer/{customerId}")
-    public List<Shipment> getShipmentsByCustomer(
-            @PathVariable Long customerId
-    ) {
-        return shipmentService.getShipmentsByCustomer(customerId);
-    }
+@GetMapping("/customer/me")
+public List<Shipment> getMyCustomerShipments() {
+    return shipmentService.getMyCustomerShipments();
+}
+
+//    @PostMapping("/{id}/accept")
+//    public Shipment acceptShipment(
+//            @PathVariable Long id,
+//            @RequestBody AcceptShipmentRequest request
+//    ) {
+//        return shipmentService.acceptShipment(
+//                id,
+//                request.getOperatorId()
+//        );
+//    }
 
     @PostMapping("/{id}/accept")
     public Shipment acceptShipment(
-            @PathVariable Long id,
-            @RequestBody AcceptShipmentRequest request
+            @PathVariable Long id
     ) {
-        return shipmentService.acceptShipment(
-                id,
-                request.getOperatorId()
-        );
+        return shipmentService.acceptShipment(id);
     }
 
     @PutMapping("/{id}/status")

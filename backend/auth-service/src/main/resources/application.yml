@@ -3,9 +3,10 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ShiptrackPro
-    username: postgres
-    password: 
+    url: ${SHIPTRACK_DB_URL}
+    username: ${SHIPTRACK_DB_USERNAME}
+    password: ${SHIPTRACK_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -17,10 +18,10 @@ spring:
       hibernate:
         format_sql: true
   mail:
-   host: smtp.gmail.com
-   port: 587
-   username: 
-   password: 
+   host: ${SHIPTRACK_EMAIL_HOST}
+   port: ${SHIPTRACK_EMAIL_PORT}
+   username: ${SHIPTRACK_EMAIL_USERNAME}
+   password: ${SHIPTRACK_EMAIL_PASSWORD}
    properties:
      mail:
        smtp:
@@ -28,7 +29,7 @@ spring:
          starttls:
            enable: true
 jwt:
- secret: myVeryLongSecretKeyForShipmentApplicationJwtAuthentication2025
+ secret: ${SHIPTRACK_JWT_SECRET}
  expiration: 86400000
  refresh-token:
    expiration: 604800000
