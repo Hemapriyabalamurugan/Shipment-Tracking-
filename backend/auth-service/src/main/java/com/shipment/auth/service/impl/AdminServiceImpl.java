@@ -132,6 +132,7 @@ public class AdminServiceImpl implements AdminService {
                 .phone(user.getPhone())
                 .role(user.getRole().name())
                 .active(user.getActive())
+                .lastLogin(user.getLastLogin())
                 .build();
     }
 }

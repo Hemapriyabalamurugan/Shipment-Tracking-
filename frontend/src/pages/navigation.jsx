@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useRef } from "react";
+// import { useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,7 +18,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import SignaturePad from "signature_pad";
+// import SignaturePad from "signature_pad";
 import { shipmentsApi } from "@/lib/api";
 
 
@@ -30,16 +30,16 @@ export default function OperatorNavigationPage() {
       navigation?.currentHub?.hubName === navigation?.destinationHub?.hubName;
     const reachNextHub = useReachNextHub();
     const updateStatus = useUpdateShipmentStatus();
-    const [podImage, setPodImage] = useState(null);
-    const [preview, setPreview] = useState(null);
+    // const [podImage, setPodImage] = useState(null);
+    // const [preview, setPreview] = useState(null);
   const currentStatus = navigation?.shipmentStatus;
   const navigate = useNavigate();
 
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [customerName, setCustomerName] = useState("");
+  // const [customerName, setCustomerName] = useState("");
   
-  const sigRef = useRef(null);
-  const signaturePad = useRef(null);
+  // const sigRef = useRef(null);
+  // const signaturePad = useRef(null);
 
  
 
@@ -246,159 +246,7 @@ export default function OperatorNavigationPage() {
           </Button>
         </div>
 
-        {isAtDestination && (
-          <div className="rounded-xl border bg-white p-6 shadow-sm space-y-6">
-            <h3 className="text-lg font-semibold">Proof of Delivery</h3>
-
-            <div className="space-y-3">
-              {/* <Label>Proof of Delivery (POD)</Label> */}
-
-              <input
-                id="pod-upload"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-
-                  if (file) {
-                    setPodImage(file);
-                    setPreview(URL.createObjectURL(file));
-                  }
-                }}
-              />
-
-              <label htmlFor="pod-upload">
-                <Button
-                  type="button"
-                  asChild
-                  className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
-                >
-                  <span> Upload Proof of DeliveryImage</span>
-                </Button>
-              </label>
-
-              {preview && (
-                <div className="mt-4">
-                  <img
-                    src={preview}
-                    alt="POD Preview"
-                    className="w-full max-w-md h-64 object-cover rounded-lg border shadow"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* <div className="space-y-2">
-              <Label>Customer Signature</Label>
-
-              <canvas
-                ref={sigRef}
-                width={700}
-                height={180}
-                className="border rounded-lg w-full"
-              />
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => signaturePad.current.clear()}
-              >
-                Clear Signature
-              </Button>
-            </div> */}
-            <div className="space-y-2">
-              <Label>Customer Signature</Label>
-
-              <canvas
-                ref={(canvas) => {
-                  if (!canvas) return;
-
-                  sigRef.current = canvas;
-
-                  if (!signaturePad.current) {
-                    signaturePad.current = new SignaturePad(canvas, {
-                      penColor: "black",
-                      minWidth: 1,
-                      maxWidth: 2,
-                    });
-
-                    console.log("SignaturePad initialized");
-                  }
-                }}
-                style={{
-                  width: "100%",
-                  height: "180px",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "8px",
-                  background: "#fff",
-                  touchAction: "none",
-                }}
-              />
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (signaturePad.current) {
-                    signaturePad.current.clear();
-                  }
-                }}
-              >
-                Clear Signature
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Customer Name</Label>
-
-              <Input
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Enter customer name"
-              />
-            </div>
-
-            <div className="flex items-end gap-3">
-              <Button
-                disabled={!customerName || !podImage}
-                onClick={async () => {
-                  const signature = signaturePad.current.toDataURL();
-
-                  // ADD THESE LINES HERE
-                  if (signaturePad.current.isEmpty()) {
-                    alert("Please capture the customer's signature.");
-                    return;
-                  }
-
-                  const formData = new FormData();
-
-                  formData.append(
-                    "request",
-                    JSON.stringify({
-                      shipmentId: Number(id),
-                      recipientName: customerName,
-                      recipientPhone: "",
-                      signatureUrl: signature,
-                      deliveryNotes: "",
-                    }),
-                  );
-
-                  formData.append("photo", podImage);
-
-                  await shipmentsApi.createPod(formData);
-
-                  updateStatus.mutate({
-                    id: Number(id),
-                    status: selectedStatus,
-                  });
-                }}
-              >
-                Complete Delivery
-              </Button>
-            </div>
-          </div>
-        )}
+        
       </div>
 
       {/* <div className="flex justify-end gap-4"></div> */}

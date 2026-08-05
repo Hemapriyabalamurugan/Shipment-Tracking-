@@ -30,13 +30,13 @@ export const NAV_BY_ROLE = {
     {
       label: "Command Center",
       items: [
-      // changes done here to section add role like admin 
-        { label: "Dashboard", to: "/app/admin/dashboard", icon: LayoutDashboard },
-        // {
-        //   label: "Live Delivery Monitoring",
-        //   to: "/app/live-map",
-        //   icon: Activity,
-        // },
+        // changes done here to section add role like admin
+        {
+          label: "Dashboard",
+          to: "/app/admin/dashboard",
+          icon: LayoutDashboard,
+        },
+       
         { label: "Analytics", to: "/app/analytics", icon: BarChart3 },
       ],
     },
@@ -49,8 +49,7 @@ export const NAV_BY_ROLE = {
           icon: Package,
           badge: "shipments",
         },
-        // { label: "Tracking", to: "/app/track", icon: MapPin },
-        // { label: "ETA Prediction", to: "/app/eta-prediction", icon: Clock },
+
         { label: "Route Management", to: "/app/routes", icon: Route },
         {
           label: "Proof of Delivery",
@@ -58,27 +57,13 @@ export const NAV_BY_ROLE = {
           icon: ClipboardCheck,
           badge: "pod",
         },
-        // { label: "Fleet", to: "/app/fleet", icon: Truck },
       ],
     },
     {
       label: "Administration",
       items: [
         { label: "User Management", to: "/app/team", icon: Users },
-        { label: "Role Management", to: "/app/roles", icon: ShieldCheck },
-        // {
-        //   label: "Notifications",
-        //   to: "/app/notifications",
-        //   icon: MessageSquare,
-        // },
-        // { label: "Reports", to: "/app/reports", icon: FileText },
-        // {
-        //   label: "System Monitoring",
-        //   to: "/app/system-monitoring",
-        //   icon: Activity,
-        // },
-        // { label: "Audit Logs", to: "/app/audit-logs", icon: ScrollText },
-        // { label: "Settings", to: "/app/settings", icon: Settings },
+        // { label: "Role Management", to: "/app/roles", icon: ShieldCheck },
       ],
     },
   ],
@@ -86,7 +71,11 @@ export const NAV_BY_ROLE = {
     {
       label: "Deliveries",
       items: [
-        { label: "Dashboard", to: "/app/logistics_operator/dashboard", icon: LayoutDashboard },
+        {
+          label: "Dashboard",
+          to: "/app/logistics_operator/dashboard",
+          icon: LayoutDashboard,
+        },
         {
           label: "My Assignments",
           to: "/app/shipments",
@@ -109,7 +98,6 @@ export const NAV_BY_ROLE = {
           to: "/app/notifications",
           icon: MessageSquare,
         },
-        // { label: "Settings", to: "/app/settings", icon: Settings },
       ],
     },
   ],
@@ -117,7 +105,11 @@ export const NAV_BY_ROLE = {
     {
       label: "Overview",
       items: [
-        { label: "Dashboard", to: "/app/business_client/dashboard", icon: LayoutDashboard },
+        {
+          label: "Dashboard",
+          to: "/app/business_client/dashboard",
+          icon: LayoutDashboard,
+        },
         { label: "Analytics", to: "/app/analytics", icon: BarChart3 },
       ],
     },
@@ -131,13 +123,7 @@ export const NAV_BY_ROLE = {
           badge: "shipments",
         },
         { label: "Create Shipment", to: "/app/create-shipment", icon: Upload },
-        // { label: "Bulk Upload", to: "/app/bulk-upload", icon: Upload },
-        // {
-        //   label: "Shipment History",
-        //   to: "/app/shipment-history",
-        //   icon: History,
-        // },
-        // { label: "Tracking", to: "/app/track", icon: MapPin },
+
         {
           label: "Proof of Delivery",
           to: "/app/pod",
@@ -146,26 +132,17 @@ export const NAV_BY_ROLE = {
         },
       ],
     },
-    // {
-    //   label: "Account",
-    //   items: [
-    //     // { label: "Invoices", to: "/app/billing", icon: CreditCard },
-    //     // { label: "Reports", to: "/app/business-reports", icon: FileText },
-    //     // {
-    //     //   label: "Notifications",
-    //     //   to: "/app/notifications",
-    //     //   icon: MessageSquare,
-    //     // },
-    //     // { label: "Settings", to: "/app/settings", icon: Settings },
-    //   ],
-    // },
   ],
   customer: [
     {
       label: "Personal",
       items: [
-        { label: "Dashboard", to: "/app/customer/dashboard", icon: LayoutDashboard },
-        // { label: "Track Shipment", to: "/app/track", icon: MapPin },
+        {
+          label: "Dashboard",
+          to: "/app/customer/dashboard",
+          icon: LayoutDashboard,
+        },
+
         { label: "My Deliveries", to: "/app/deliveries", icon: Package },
         {
           label: "Notifications",
@@ -173,6 +150,12 @@ export const NAV_BY_ROLE = {
           icon: MessageSquare,
         },
         { label: "Profile", to: "/app/profile", icon: User },
+        {
+          label: "Proof of Delivery",
+          to: "/app/pod",
+          icon: ClipboardCheck,
+          badge: "pod",
+        },
       ],
     },
     {
@@ -191,7 +174,11 @@ export const NAV_BY_ROLE = {
     {
       label: "Support",
       items: [
-        { label: "Dashboard", to: "/app/support_agent/dashboard", icon: LayoutDashboard },
+        {
+          label: "Dashboard",
+          to: "/app/support_agent/dashboard",
+          icon: LayoutDashboard,
+        },
         {
           label: "Tickets",
           to: "/app/tickets",
@@ -278,7 +265,7 @@ export const PAGE_ACCESS = {
     "support_agent",
   ],
   "/app/notifications": [
-    "admin",
+    // "admin",
     "logistics_operator",
     "business_client",
     "customer",
@@ -290,13 +277,13 @@ export const PAGE_ACCESS = {
     "admin",
     "logistics_operator",
     "business_client",
-    // "support_agent",
+     "customer",
   ],
   "/app/reports": ["admin"],
   "/app/system-monitoring": ["admin"],
   "/app/audit-logs": ["admin"],
   "/app/create-shipment": ["business_client"],
-  // "/app/bulk-upload": ["business_client"],
+  
   "/app/shipment-history": ["business_client"],
   "/app/business-reports": ["business_client"],
   "/app/deliveries": ["customer"],

@@ -173,4 +173,3 @@ function ExecutiveHeader({ userName, company, delayedCount }) {
   );
 }
 ;
-}

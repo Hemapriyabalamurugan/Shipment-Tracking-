@@ -60,8 +60,11 @@ export default function LoginPage() {
         },
       );
 
-      localStorage.setItem("refreshToken", response.data.refreshToken);
-      localStorage.setItem("shiptrack.token", response.data.token);
+      // localStorage.setItem("refreshToken", response.data.refreshToken);
+      // localStorage.setItem("shiptrack.token", response.data.token);
+sessionStorage.setItem("refreshToken", response.data.refreshToken);
+sessionStorage.setItem("shiptrack.token", response.data.token);
+
 
       const roleMap = {
         ADMIN: "admin",
@@ -71,7 +74,19 @@ export default function LoginPage() {
         SUPPORT_AGENT: "support_agent",
       };
 
-      localStorage.setItem(
+      // localStorage.setItem(
+      //   "shiptrack.session",
+      //   JSON.stringify({
+      //     user: {
+      //       name: response.data.email,
+      //       email: response.data.email,
+      //       role: roleMap[response.data.role],
+      //     },
+      //     token: response.data.token,
+      //   }),
+      // );
+
+      sessionStorage.setItem(
         "shiptrack.session",
         JSON.stringify({
           user: {
@@ -293,4 +308,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+}

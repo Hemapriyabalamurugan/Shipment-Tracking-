@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useTeam, useInviteMember, useUpdateMemberStatus } from "@/lib/hooks";
+import { useTeam,  useUpdateMemberStatus } from "@/lib/hooks";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { LoadingState, EmptyState } from "@/components/shared/states";
@@ -78,33 +78,33 @@ const statusMeta = {
 
 export function TeamPage() {
   const { data: members, isLoading } = useTeam();
-  const invite = useInviteMember();
+  // const invite = useInviteMember();
   const updateStatus = useUpdateMemberStatus();
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    role: "operator",
-  });
+  // const [open, setOpen] = useState(false);
+  // const [form, setForm] = useState({
+  //   name: "",
+  //   email: "",
+  //   role: "operator",
+  // });
 
   const active = members?.filter((m) => m.status === "active") ?? [];
-  const invited = members?.filter((m) => m.status === "invited") ?? [];
+  // const invited = members?.filter((m) => m.status === "invited") ?? [];
   const suspended = members?.filter((m) => m.status === "suspended") ?? [];
 
-  const handleInvite = async () => {
-    try {
-      await invite.mutateAsync(form);
-      toast.success(`Invitation sent to ${form.email}`);
-      setOpen(false);
-      setForm({
-        name: "",
-        email: "",
-        role: "operator",
-      });
-    } catch {
-      toast.error("Failed to send invitation");
-    }
-  };
+  // const handleInvite = async () => {
+  //   try {
+  //     await invite.mutateAsync(form);
+  //     toast.success(`Invitation sent to ${form.email}`);
+  //     setOpen(false);
+  //     setForm({
+  //       name: "",
+  //       email: "",
+  //       role: "operator",
+  //     });
+  //   } catch {
+  //     toast.error("Failed to send invitation");
+  //   }
+  // };
 
   const handleStatusChange = async (id, status) => {
     await updateStatus.mutateAsync({
@@ -120,90 +120,80 @@ export function TeamPage() {
         title="Team & Users"
         description="Manage platform members, roles & permissions"
         icon={Users}
-        actions={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Invite member
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Invite a team member</DialogTitle>
-                <DialogDescription>
-                  They'll receive an email invitation to join ShipTrack Pro.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-2">
-                <div className="space-y-1.5">
-                  <Label>Full name</Label>
-                  <Input
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Jane Doe"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                    placeholder="jane@shiptrack.io"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Role</Label>
-                  <Select
-                    value={form.role}
-                    onValueChange={(v) => setForm({ ...form, role: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Administrator</SelectItem>
-                      {/* <SelectItem value="operator">
-                        Logistics Operator
-                      </SelectItem>
-                      <SelectItem value="business">Business Client</SelectItem>
-                      <SelectItem value="support">Support Agent</SelectItem> */}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleInvite}
-                  disabled={!form.name || !form.email || invite.isPending}
-                >
-                  {invite.isPending ? "Sending…" : "Send invitation"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        }
+        // actions={
+        //   <Dialog open={open} onOpenChange={setOpen}>
+        //     <DialogTrigger asChild>
+        //       <Button>
+        //         <UserPlus className="mr-2 h-4 w-4" />
+        //         Invite member
+        //       </Button>
+        //     </DialogTrigger>
+        //     <DialogContent>
+        //       <DialogHeader>
+        //         <DialogTitle>Invite a team member</DialogTitle>
+        //         <DialogDescription>
+        //           They'll receive an email invitation to join ShipTrack Pro.
+        //         </DialogDescription>
+        //       </DialogHeader>
+        //       <div className="space-y-4 py-2">
+        //         <div className="space-y-1.5">
+        //           <Label>Full name</Label>
+        //           <Input
+        //             value={form.name}
+        //             onChange={(e) => setForm({ ...form, name: e.target.value })}
+        //             placeholder="Jane Doe"
+        //           />
+        //         </div>
+        //         <div className="space-y-1.5">
+        //           <Label>Email</Label>
+        //           <Input
+        //             type="email"
+        //             value={form.email}
+        //             onChange={(e) =>
+        //               setForm({ ...form, email: e.target.value })
+        //             }
+        //             placeholder="jane@shiptrack.io"
+        //           />
+        //         </div>
+        //         <div className="space-y-1.5">
+        //           <Label>Role</Label>
+        //           <Select
+        //             value={form.role}
+        //             onValueChange={(v) => setForm({ ...form, role: v })}
+        //           >
+        //             <SelectTrigger>
+        //               <SelectValue />
+        //             </SelectTrigger>
+        //             <SelectContent>
+        //               <SelectItem value="admin">Administrator</SelectItem>
+        //               {/* <SelectItem value="operator">
+        //                 Logistics Operator
+        //               </SelectItem>
+        //               <SelectItem value="business">Business Client</SelectItem>
+        //               <SelectItem value="support">Support Agent</SelectItem> */}
+        //             </SelectContent>
+        //           </Select>
+        //         </div>
+        //       </div>
+        //       <DialogFooter>
+        //         <Button variant="outline" onClick={() => setOpen(false)}>
+        //           Cancel
+        //         </Button>
+
+        //       </DialogFooter>
+        //     </DialogContent>
+        //   </Dialog>
+        // }
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <StatCard
           label="Active Members"
           value={active.length}
           icon={UserCheck}
           iconClass="bg-success/10 text-success"
         />
-        <StatCard
-          label="Pending Invites"
-          value={invited.length}
-          icon={Mail}
-          iconClass="bg-warning/10 text-warning"
-        />
+
         <StatCard
           label="Suspended"
           value={suspended.length}
@@ -281,30 +271,26 @@ export function TeamPage() {
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => handleStatusChange(m.id, "active")}
-                            >
-                              <CheckCircle2 className="mr-2 h-4 w-4 text-success" />
-                              Activate
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                handleStatusChange(m.id, "invited")
-                              }
-                            >
-                              {/* <Mail className="mr-2 h-4 w-4 text-warning" /> */}
-                              {/* Resend invite */}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={() =>
-                                handleStatusChange(m.id, "suspended")
-                              }
-                            >
-                              <Ban className="mr-2 h-4 w-4" />
-                              Suspend
-                            </DropdownMenuItem>
+                            {m.status === "active" ? (
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() =>
+                                  handleStatusChange(m.id, "suspended")
+                                }
+                              >
+                                <Ban className="mr-2 h-4 w-4" />
+                                Suspend
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleStatusChange(m.id, "active")
+                                }
+                              >
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-success" />
+                                Activate
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

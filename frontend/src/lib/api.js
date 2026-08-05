@@ -41,11 +41,20 @@ const api = axios.create({
   timeout: 8000,
 });
 
+// api.interceptors.request.use((config) => {
+//   const token = localStorage.getItem(TOKEN_KEY);
+//   if (token) {
+//     config.headers.Authorization = `Bearer ${token}`;
+//   }
+//   return config;
+// });
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY);
+  const token = sessionStorage.getItem(TOKEN_KEY);
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
@@ -80,9 +89,11 @@ export const authApi = {
     if (!user || email.trim().length === 0) {
       throw new Error("Invalid credentials");
     }
-    const token = `mock.${btoa(user.id)}.${Date.now()}`;
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, token }));
+    // const token = `mock.${btoa(user.id)}.${Date.now()}`;
+    // localStorage.setItem(TOKEN_KEY, token);
+    // localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, token }));
+    sessionStorage.setItem(TOKEN_KEY, token);
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ user, token }));
     return { user, token };
   },
   // async me() {
@@ -119,8 +130,8 @@ export const authApi = {
   async me() {
     
     try {
-      const token = localStorage.getItem("shiptrack.token");
-
+      // const token = localStorage.getItem("shiptrack.token");
+const token = sessionStorage.getItem(TOKEN_KEY);
       // console.log("shiptrack.token =", token);
 
       if (!token) {
@@ -141,9 +152,12 @@ export const authApi = {
     } catch (error) {
       console.error("authApi.me error =", error);
 
-      localStorage.removeItem("shiptrack.token");
-      localStorage.removeItem("shiptrack.session");
-      localStorage.removeItem("refreshToken");
+      // localStorage.removeItem("shiptrack.token");
+      // localStorage.removeItem("shiptrack.session");
+      // localStorage.removeItem("refreshToken");
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem("refreshToken");
 
       return null;
     }
@@ -156,8 +170,11 @@ export const authApi = {
   // ===============================================
 
   logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(STORAGE_KEY);
+    // localStorage.removeItem(TOKEN_KEY);
+    // localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem("refreshToken");
   },
   async updateProfile(updates) {
     await latency();
@@ -378,36 +395,63 @@ export const ticketsApi = {
 };
 
 // --- Team ---
+// export const teamApi = {
+//   async list() {
+//     await latency();
+//     return clone(db.teamMembers);
+//   },
+//   async invite(payload) {
+//     await latency();
+//     const member = {
+//       id: `tm-${Date.now()}`,
+//       name: payload.name,
+//       email: payload.email,
+//       role: payload.role,
+//       status: "invited",
+//       lastActive: "—",
+//       joinedAt: new Date().toISOString(),
+//       company: "ShipTrack Pro",
+//       jobTitle: ROLE_TITLE[payload.role],
+//     };
+//     db.teamMembers.push(member);
+//     return clone(member);
+//   },
+//   async updateStatus(id, status) {
+//     await latency();
+//     const m = db.teamMembers.find((t) => t.id === id);
+//     if (!m) throw new Error("Member not found");
+//     m.status = status;
+//     return clone(m);
+//   },
+// };
 export const teamApi = {
   async list() {
-    await latency();
-    return clone(db.teamMembers);
+    const response = await api.get("/admin/users");
+
+    return response.data
+      .filter((user) => user.role?.toUpperCase() !== "ADMIN")
+      .map((user) => ({
+        id: user.id,
+        name: `${user.firstName} ${user.lastName}`.trim(),
+        email: user.email,
+        role: user.role.toLowerCase(),
+        status: user.active ? "active" : "suspended",
+        lastActive: user.lastLogin ?? "—",
+      }));
   },
-  async invite(payload) {
-    await latency();
-    const member = {
-      id: `tm-${Date.now()}`,
-      name: payload.name,
-      email: payload.email,
-      role: payload.role,
-      status: "invited",
-      lastActive: "—",
-      joinedAt: new Date().toISOString(),
-      company: "ShipTrack Pro",
-      jobTitle: ROLE_TITLE[payload.role],
-    };
-    db.teamMembers.push(member);
-    return clone(member);
-  },
+
   async updateStatus(id, status) {
-    await latency();
-    const m = db.teamMembers.find((t) => t.id === id);
-    if (!m) throw new Error("Member not found");
-    m.status = status;
-    return clone(m);
+    if (status === "active") {
+      await api.put(`/admin/users/${id}/activate`);
+    } else if (status === "suspended") {
+      await api.put(`/admin/users/${id}/deactivate`);
+    } else {
+      throw new Error(`Unsupported status: ${status}`);
+    }
+
+    return { id, status };
   },
 };
-
 const ROLE_TITLE = {
   admin: "Administrator",
   operator: "Logistics Operator",
@@ -579,18 +623,40 @@ export const routesApi = {
 };
 
 // --- Admin: POD ---
-export const podApi = {
-  // async list() {
-  //   await latency();
-  //   return clone(db.podRecords);
-  // },
-  async list() {
-  const response = await api.get("/pod");
-  return response.data;
-},
-  async verify(id, businessClientId) {
-    const response = await api.put(`/pod/${id}/verify/${businessClientId}`);
+// export const podApi = {
+//   // async list() {
+//   //   await latency();
+//   //   return clone(db.podRecords);
+//   // },
+//   async list() {
+//   const response = await api.get("/pod");
+//   return response.data;
+// },
+//   async verify(id, businessClientId) {
+//     const response = await api.put(`/pod/${id}/verify/${businessClientId}`);
 
+//     return response.data;
+//   },
+// };
+
+export const podApi = {
+  async list() {
+    const response = await api.get("/pod");
+    return response.data;
+  },
+
+  async create(formData) {
+    const response = await api.post("/pod", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  },
+
+  async verify(id) {
+    const response = await api.put(`/pod/${id}/verify`);
     return response.data;
   },
 };

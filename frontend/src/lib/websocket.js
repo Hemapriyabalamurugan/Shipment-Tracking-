@@ -14,7 +14,7 @@ export function connectNotificationSocket(userId, onMessage) {
     reconnectDelay: 5000,
 
     onConnect: () => {
-      console.log("✅ WebSocket Connected");
+      // console.log("✅ WebSocket Connected");
 
       stompClient.subscribe(`/topic/notifications/${userId}`, (message) => {
         const notification = JSON.parse(message.body);
@@ -23,7 +23,7 @@ export function connectNotificationSocket(userId, onMessage) {
     },
 
     onDisconnect: () => {
-      console.log("❌ WebSocket Disconnected");
+      // console.log("❌ WebSocket Disconnected");
     },
 
     onStompError: (frame) => {

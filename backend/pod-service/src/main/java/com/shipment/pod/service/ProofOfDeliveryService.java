@@ -33,9 +33,9 @@ public ProofOfDelivery create(
         MultipartFile photo) throws IOException {
     UserProfileResponse currentUser = authClient.getCurrentUser();
 
-    if (!"LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
+    if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {
         throw new RuntimeException(
-                "Only operators can upload Proof of Delivery."
+                "Only customers can upload Proof of Delivery."
         );
     }
 
@@ -44,17 +44,33 @@ public ProofOfDelivery create(
                     request.getShipmentId()
             );
 
-    if (shipment.getDriverId() == null) {
+// Shipment must belong to the logged-in customer
+    if (shipment.getCustomerId() == null ||
+            !shipment.getCustomerId().equals(currentUser.getId())) {
+
         throw new RuntimeException(
-                "This shipment has not been assigned to an operator."
+                "You are not allowed to upload Proof of Delivery for this shipment."
         );
     }
 
-    if (!shipment.getDriverId().equals(currentUser.getId())) {
+    // Prevent duplicate POD for same shipment
+    if (repository.findByShipmentId(request.getShipmentId()).isPresent()) {
         throw new RuntimeException(
-                "You are not assigned to this shipment."
+                "Proof of Delivery already exists for this shipment."
         );
     }
+
+//    if (shipment.getDriverId() == null) {
+//        throw new RuntimeException(
+//                "This shipment has not been assigned to an operator."
+//        );
+//    }
+//
+//    if (!shipment.getDriverId().equals(currentUser.getId())) {
+//        throw new RuntimeException(
+//                "You are not assigned to this shipment."
+//        );
+//    }
     String photoUrl = cloudinaryService.uploadImage(photo);
         ProofOfDelivery pod = ProofOfDelivery.builder()
                 .shipmentId(request.getShipmentId())
@@ -65,12 +81,6 @@ public ProofOfDelivery create(
                 .recipientPhone(request.getRecipientPhone())
                 .verificationStatus("PENDING")
                 .capturedAt(LocalDateTime.now())
-//                .signatureData(request.getSignatureUrl())
-//                .photoUrl(request.getPhotoUrl())
-//                .deliveryNotes(request.getNotes())
-//                .verificationStatus(request.getDeliveryStatus())
-//                .verifiedAt(LocalDateTime.now())
-//                .verified(false)
                 .build();
 
         return repository.save(pod);
@@ -135,21 +145,21 @@ public ProofOfDelivery create(
         }
 
         // Assigned operator can view the POD too
-        if ("LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
-
-            if (shipment.getDriverId() == null ||
-                    !shipment.getDriverId().equals(currentUser.getId())) {
-
-                throw new RuntimeException(
-                        "You are not allowed to view this Proof of Delivery."
-                );
-            }
-
-            return repository.findByShipmentId(shipmentId)
-                    .orElseThrow(() ->
-                            new RuntimeException("Proof of Delivery not found.")
-                    );
-        }
+//        if ("LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
+//
+//            if (shipment.getDriverId() == null ||
+//                    !shipment.getDriverId().equals(currentUser.getId())) {
+//
+//                throw new RuntimeException(
+//                        "You are not allowed to view this Proof of Delivery."
+//                );
+//            }
+//
+//            return repository.findByShipmentId(shipmentId)
+//                    .orElseThrow(() ->
+//                            new RuntimeException("Proof of Delivery not found.")
+//                    );
+//        }
 
         throw new RuntimeException(
                 "You are not allowed to view this Proof of Delivery."
@@ -163,9 +173,39 @@ public ProofOfDelivery create(
 //    public List<ProofOfDelivery> getPendingVerification() {
 //        return repository.findByVerified(false);
 //    }
-public List<ProofOfDelivery> getPendingVerification() {
-    return repository.findByVerificationStatus("PENDING");
-}
+//public List<ProofOfDelivery> getPendingVerification() {
+//    return repository.findByVerificationStatus("PENDING");
+//}
+
+    public List<ProofOfDelivery> getPendingVerification() {
+
+        UserProfileResponse currentUser =
+                authClient.getCurrentUser();
+
+        // Only Business Client can access pending PODs
+        if (!"BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())) {
+            throw new RuntimeException(
+                    "Only business clients can view pending Proofs of Delivery."
+            );
+        }
+
+        return repository.findByVerificationStatus("PENDING")
+                .stream()
+                .filter(pod -> {
+
+                    ShipmentAnalyticsDataResponse shipment =
+                            shipmentClient.getShipmentForVerification(
+                                    pod.getShipmentId()
+                            );
+
+                    // Return only PODs belonging to shipments
+                    // created by the logged-in Business Client
+                    return shipment.getBusinessClientId() != null
+                            && shipment.getBusinessClientId()
+                            .equals(currentUser.getId());
+                })
+                .toList();
+    }
 //    public ProofOfDelivery verify(Long id) {
 //
 //        ProofOfDelivery pod =
@@ -369,13 +409,13 @@ public List<ProofOfDeliveryResponse> getAll() {
                                     .equals(currentUser.getId());
                 }
 
-                // Operator sees PODs only for shipments assigned to them
-                else if ("LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
-                    allowed =
-                            shipment.getDriverId() != null
-                                    && shipment.getDriverId()
-                                    .equals(currentUser.getId());
-                }
+//                // Operator sees PODs only for shipments assigned to them
+//                else if ("LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
+//                    allowed =
+//                            shipment.getDriverId() != null
+//                                    && shipment.getDriverId()
+//                                    .equals(currentUser.getId());
+//                }
 
                 // Customer sees PODs only for their shipments
                 else if ("CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {

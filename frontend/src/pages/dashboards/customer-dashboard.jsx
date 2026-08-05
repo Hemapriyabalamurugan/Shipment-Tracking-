@@ -19,7 +19,10 @@ import {
 export default function CustomerDashboard() {
   const { user } = useAuth();
   const myShipments = useMyShipments(user.id);
-  const isLoading = myShipments.isLoading;
+  const podRecords = usePodRecords();
+  // const isLoading = myShipments.isLoading;
+  const isLoading = myShipments.isLoading || podRecords.isLoading;
+  const pods = podRecords.data ?? [];
 
   const all = myShipments.data ?? [];
   const active = all.filter((s) =>
@@ -76,9 +79,12 @@ export default function CustomerDashboard() {
             <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground">
               <Package className="h-6 w-6" />
             </div>
-            <p className="text-base font-bold text-foreground">No active deliveries</p>
+            <p className="text-base font-bold text-foreground">
+              No active deliveries
+            </p>
             <p className="text-xs text-muted-foreground max-w-sm">
-              Your shipments will appear here automatically once a booking is dispatched to your address.
+              Your shipments will appear here automatically once a booking is
+              dispatched to your address.
             </p>
           </CardContent>
         </Card>
@@ -88,12 +94,22 @@ export default function CustomerDashboard() {
         <CardHeader className="border-b border-border/50 pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-bold">Your Packages</CardTitle>
-              <CardDescription className="text-xs">History of all incoming and completed deliveries</CardDescription>
+              <CardTitle className="text-base font-bold">
+                Your Packages
+              </CardTitle>
+              <CardDescription className="text-xs">
+                History of all incoming and completed deliveries
+              </CardDescription>
             </div>
-            <Button asChild variant="outline" size="sm" className="text-xs font-semibold">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="text-xs font-semibold"
+            >
               <Link to="/app/deliveries">
-                All Deliveries ({all.length}) <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                All Deliveries ({all.length}){" "}
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Link>
             </Button>
           </div>
@@ -101,9 +117,16 @@ export default function CustomerDashboard() {
         <CardContent className="pt-5">
           {all.length > 0 ? (
             <div className="space-y-3">
-              {all.map((s) => (
+              {/* {all.map((s) => (
                 <DeliveryRow key={s.id} shipment={s} />
-              ))}
+              ))} */}
+              {all.map((s) => {
+                const pod = pods.find(
+                  (p) => Number(p.shipmentId) === Number(s.id),
+                );
+
+                return <DeliveryRow key={s.id} shipment={s} pod={pod} />;
+              })}
             </div>
           ) : (
             <EmptyState
@@ -125,20 +148,13 @@ function CustomerHeader({ userName }) {
       <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between z-10">
         <div>
           <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl text-foreground">
-            Hi, {userName} 👋
+            Hi, {userName} 
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             Track your incoming packages and check real-time ETA updates
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="brand" size="sm" className="text-xs font-bold">
-            <Link to="/app/track">
-              <Search className="mr-1.5 h-3.5 w-3.5" />
-              Track Package Number
-            </Link>
-          </Button>
-        </div>
+        
       </div>
     </div>
   );
@@ -163,7 +179,10 @@ function MiniStat({ label, value, icon: Icon, class: cls }) {
 function FeaturedTrackingCard({ shipment }) {
   const etaLabel = relativeDay(shipment.estimatedDeliveryAt ?? shipment.estimatedDelivery);
   const isOutForDelivery = shipment.status === "OUT_FOR_DELIVERY" || shipment.status === "out_for_delivery";
+const isDelivered =
+  shipment.status === "DELIVERED" || shipment.status === "delivered";
 
+// const progress = isDelivered ? 100 : (shipment.progress ?? 60);
   return (
     <Card className="overflow-hidden shadow-card border-border/80">
       <div
@@ -190,27 +209,40 @@ function FeaturedTrackingCard({ shipment }) {
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 {isOutForDelivery ? "Arriving Today" : "Package In Transit"}
               </p>
-              <p className="text-xl sm:text-2xl font-extrabold text-foreground mt-0.5">{etaLabel}</p>
+              <p className="text-xl sm:text-2xl font-extrabold text-foreground mt-0.5">
+                {etaLabel}
+              </p>
             </div>
           </div>
           <StatusBadge status={shipment.status} />
         </div>
 
         <div className="mt-6">
-          <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-            <span>From: <strong className="text-foreground">{shipment.senderCity}</strong></span>
-            <span className="font-bold text-primary">{shipment.progress ?? 60}%</span>
-            <span>To: <strong className="text-foreground">{shipment.receiverCity}</strong></span>
+          <div className="flex items-center justify-start text-xs font-semibold text-muted-foreground">
+            <span>
+              From:{" "}
+              <strong className="text-foreground">{shipment.senderCity}</strong>
+            </span>
+            {/* <span className="font-bold text-primary">  -------------------  </span> */}
+            <span className="mx-6 text-2xl text-gray-500">
+              ---------→
+            </span>
+            <span>
+              To:{" "}
+              <strong className="text-foreground">
+                {shipment.receiverCity}
+              </strong>
+            </span>
           </div>
-          <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-muted/80">
+          {/* <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-muted/80">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-500",
                 isOutForDelivery ? "bg-amber-500" : "gradient-brand",
               )}
-              style={{ width: `${shipment.progress ?? 60}%` }}
+              style={{ width: `${progress}%` }}
             />
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-4 text-xs font-medium text-muted-foreground">
@@ -223,7 +255,9 @@ function FeaturedTrackingCard({ shipment }) {
 
       <div className="flex items-center justify-between border-t border-border/60 bg-muted/20 px-6 py-4">
         <div>
-          <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Tracking Number</p>
+          <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+            Tracking Number
+          </p>
           <p className="font-mono text-sm font-extrabold text-foreground">
             {shipment.trackingNumber}
           </p>
@@ -238,56 +272,149 @@ function FeaturedTrackingCard({ shipment }) {
   );
 }
 
-function DeliveryRow({ shipment }) {
-  const isDelivered = shipment.status === "DELIVERED" || shipment.status === "delivered";
-  const isOutForDelivery = shipment.status === "OUT_FOR_DELIVERY" || shipment.status === "out_for_delivery";
+// function DeliveryRow({ shipment,pod }) {
+//   const isDelivered = shipment.status === "DELIVERED" || shipment.status === "delivered";
+//   const isOutForDelivery = shipment.status === "OUT_FOR_DELIVERY" || shipment.status === "out_for_delivery";
+
+//   return (
+//     <Link
+//       to={`/app/shipments/${shipment.id}`}
+//       className="flex items-center gap-4 rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-primary/40 hover:shadow-2xs"
+//     >
+//       <span
+//         className={cn(
+//           "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
+//           isDelivered
+//             ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+//             : isOutForDelivery
+//               ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+//               : "bg-primary/10 text-primary border-primary/20",
+//         )}
+//       >
+//         {isDelivered ? (
+//           <CheckCircle2 className="h-5 w-5" />
+//         ) : (
+//           <Truck className="h-5 w-5" />
+//         )}
+//       </span>
+//       <div className="min-w-0 flex-1">
+//         <div className="flex items-center gap-2">
+//           <span className="font-mono text-xs font-bold text-foreground">
+//             {shipment.trackingNumber}
+//           </span>
+//           <StatusBadge status={shipment.status} size="sm" />
+//         </div>
+//         <p className="mt-1 truncate text-xs text-muted-foreground font-medium">
+//           {shipment.senderCity} → {shipment.receiverCity}
+//         </p>
+//       </div>
+//       <div className="text-right">
+//         <p
+//           className={cn(
+//             "text-xs font-bold",
+//             isOutForDelivery && "text-amber-600 dark:text-amber-400",
+//           )}
+//         >
+//           {isDelivered ? "Delivered" : relativeDay(shipment.estimatedDeliveryAt ?? shipment.estimatedDelivery)}
+//         </p>
+//         <p className="text-[10px] text-muted-foreground mt-0.5">{shipment.carrier || "Carrier Express"}</p>
+//       </div>
+//       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+//     </Link>
+//   );
+// }
+
+function DeliveryRow({ shipment, pod }) {
+  const isDelivered =
+    shipment.status === "DELIVERED" || shipment.status === "delivered";
+
+  const isOutForDelivery =
+    shipment.status === "OUT_FOR_DELIVERY" ||
+    shipment.status === "out_for_delivery";
+
+  const podStatus = pod?.verificationStatus?.toUpperCase();
 
   return (
-    <Link
-      to={`/app/shipments/${shipment.id}`}
-      className="flex items-center gap-4 rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-primary/40 hover:shadow-2xs"
-    >
-      <span
-        className={cn(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
-          isDelivered
-            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-            : isOutForDelivery
-              ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-              : "bg-primary/10 text-primary border-primary/20",
-        )}
+    <div className="rounded-xl border border-border/70 bg-card transition-all hover:border-primary/40 hover:shadow-2xs">
+      {/* Shipment details */}
+      <Link
+        to={`/app/shipments/${shipment.id}`}
+        className="flex items-center gap-4 p-4"
       >
-        {isDelivered ? (
-          <CheckCircle2 className="h-5 w-5" />
-        ) : (
-          <Truck className="h-5 w-5" />
-        )}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xs font-bold text-foreground">
-            {shipment.trackingNumber}
-          </span>
-          <StatusBadge status={shipment.status} size="sm" />
-        </div>
-        <p className="mt-1 truncate text-xs text-muted-foreground font-medium">
-          {shipment.senderCity} → {shipment.receiverCity}
-        </p>
-      </div>
-      <div className="text-right">
-        <p
+        <span
           className={cn(
-            "text-xs font-bold",
-            isOutForDelivery && "text-amber-600 dark:text-amber-400",
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
+            isDelivered
+              ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+              : isOutForDelivery
+                ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                : "bg-primary/10 text-primary border-primary/20",
           )}
         >
-          {isDelivered ? "Delivered" : relativeDay(shipment.estimatedDeliveryAt ?? shipment.estimatedDelivery)}
-        </p>
-        <p className="text-[10px] text-muted-foreground mt-0.5">{shipment.carrier || "Carrier Express"}</p>
-      </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-    </Link>
+          {isDelivered ? (
+            <CheckCircle2 className="h-5 w-5" />
+          ) : (
+            <Truck className="h-5 w-5" />
+          )}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs font-bold text-foreground">
+              {shipment.trackingNumber}
+            </span>
+
+            <StatusBadge status={shipment.status} size="sm" />
+          </div>
+
+          <p className="mt-1 truncate text-xs text-muted-foreground font-medium">
+            {shipment.senderCity} → {shipment.receiverCity}
+          </p>
+        </div>
+
+        <div className="text-right">
+          <p
+            className={cn(
+              "text-xs font-bold",
+              isOutForDelivery && "text-amber-600 dark:text-amber-400",
+            )}
+          >
+            {isDelivered
+              ? "Delivered"
+              : relativeDay(
+                  shipment.estimatedDeliveryAt ?? shipment.estimatedDelivery,
+                )}
+          </p>
+
+          <p className="mt-0.5 text-[10px] text-muted-foreground">
+            {shipment.carrier || "Carrier Express"}
+          </p>
+        </div>
+
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </Link>
+
+      {/* POD actions - only after delivery */}
+      {isDelivered && (
+        <div className="border-t border-border/60 px-4 py-3">
+          {!pod ? (
+            <Button asChild size="sm">
+              <Link to={`/app/customer/pod/${shipment.id}`}>Upload POD</Link>
+            </Button>
+          ) : podStatus === "VERIFIED" ? (
+            <div className="flex items-center justify-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-600">
+              <CheckCircle2 className="h-4 w-4" />
+              POD Verified
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-600">
+              <Clock className="h-4 w-4" />
+              Pending Verification
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
-}

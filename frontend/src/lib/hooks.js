@@ -155,16 +155,16 @@ export function useTeam() {
     queryFn: teamApi.list,
   });
 }
-export function useInviteMember() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: teamApi.invite,
-    onSuccess: () =>
-      qc.invalidateQueries({
-        queryKey: queryKeys.team,
-      }),
-  });
-}
+// export function useInviteMember() {
+//   const qc = useQueryClient();
+//   return useMutation({
+//     mutationFn: teamApi.invite,
+//     onSuccess: () =>
+//       qc.invalidateQueries({
+//         queryKey: queryKeys.team,
+//       }),
+//   });
+// }
 export function useUpdateMemberStatus() {
   const qc = useQueryClient();
   return useMutation({

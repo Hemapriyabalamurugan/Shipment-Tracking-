@@ -3,7 +3,7 @@ package com.shipment.auth.dto.response;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
+import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
@@ -18,4 +18,5 @@ public class AdminUserResponse {
     private Boolean active;
     private Boolean emailVerified;
     private Boolean phoneVerified;
+    private LocalDateTime lastLogin;
 }

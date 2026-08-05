@@ -44,7 +44,7 @@ import BusinessDashboard from "./pages/dashboards/business-dashboard";
 import OperatorDashboard from "./pages/dashboards/operator-dashboard";
 import SupportDashboard from "./pages/dashboards/support-dashboard";
 import OperatorNavigationPage from "@/pages/navigation";
-
+import CustomerPodUploadPage from "@/pages/customer-pod-upload";
 
 export default function App() {
   return (
@@ -91,11 +91,14 @@ export default function App() {
                 <Route path="shipments/:id" element={<ShipmentDetailPage />} />
 
                 <Route
+                  path="customer/pod/:shipmentId"
+                  element={<CustomerPodUploadPage />}
+                />
+
+                <Route
                   path="operator/navigation/:id"
                   element={<OperatorNavigationPage />}
                 />
-
-                
 
                 <Route path="live-map" element={<LiveMapPage />} />
                 <Route path="track" element={<TrackPage />} />
@@ -136,6 +139,8 @@ export default function App() {
                 <Route path="deliveries" element={<MyDeliveriesPage />} />
               </Route>
             </Route>
+
+            
 
             {/* Catch-all routes */}
             {/* <Route
