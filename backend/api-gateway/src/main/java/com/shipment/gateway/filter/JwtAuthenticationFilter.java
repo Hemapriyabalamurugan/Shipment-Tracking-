@@ -23,15 +23,24 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     public JwtAuthenticationFilter(JwtService jwtService) {
         this.jwtService = jwtService;
     }
-    private static final List<String> PUBLIC_ENDPOINTS = List.of(
-            "/api/auth/login",
-            "/api/auth/register",
-            "/api/auth/verify-email",
-            "/api/auth/verify-phone",
-            "/api/auth/forgot-password",
-            "/api/auth/reset-password",
-            "/api/auth/refresh-token"
-    );
+//    private static final List<String> PUBLIC_ENDPOINTS = List.of(
+//            "/api/auth/login",
+//            "/api/auth/register",
+//            "/api/auth/verify-email",
+//            "/api/auth/verify-phone",
+//            "/api/auth/forgot-password",
+//            "/api/auth/reset-password",
+//            "/api/auth/refresh-token"
+//    );
+private static final List<String> PUBLIC_ENDPOINTS = List.of(
+        "/api/auth/login",
+        "/api/auth/register",
+        "/api/auth/verify-email",
+        "/api/auth/verify-phone",
+        "/api/auth/refresh-token",
+        "/api/password/forgot",
+        "/api/password/reset"
+);
 
     @Override
     public Mono<Void> filter(

@@ -17,7 +17,7 @@ package com.shipment.auth.service;
 
 import com.shipment.auth.dto.request.ForgotPasswordRequest;
 import com.shipment.auth.dto.request.ResetPasswordRequest;
-import com.shipment.auth.dto.request.VerifyResetOtpRequest;
+
 
 public interface PasswordResetService {
 
@@ -25,9 +25,7 @@ public interface PasswordResetService {
             ForgotPasswordRequest request
     );
 
-    void verifyResetOtp(
-            VerifyResetOtpRequest request
-    );
+
 
     void resetPassword(
             ResetPasswordRequest request

@@ -2,7 +2,7 @@ package com.shipment.auth.controller;
 
 import com.shipment.auth.dto.request.ForgotPasswordRequest;
 import com.shipment.auth.dto.request.ResetPasswordRequest;
-import com.shipment.auth.dto.request.VerifyResetOtpRequest;
+
 import com.shipment.auth.dto.response.ApiResponse;
 import com.shipment.auth.service.PasswordResetService;
 import jakarta.validation.Valid;
@@ -28,26 +28,12 @@ public class PasswordResetController {
         return ResponseEntity.ok(
                 ApiResponse.builder()
                         .success(true)
-                        .message("Password reset OTP sent")
+                        .message("Password reset link sent to your registered email")
                         .build()
         );
     }
 
-    @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse> verifyResetOtp(
-            @Valid @RequestBody
-            VerifyResetOtpRequest request
-    ) {
 
-        passwordResetService.verifyResetOtp(request);
-
-        return ResponseEntity.ok(
-                ApiResponse.builder()
-                        .success(true)
-                        .message("OTP verified successfully")
-                        .build()
-        );
-    }
 
     @PostMapping("/reset")
     public ResponseEntity<ApiResponse> resetPassword(

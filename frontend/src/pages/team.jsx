@@ -66,10 +66,7 @@ const statusMeta = {
     label: "Active",
     class: "bg-success/10 text-success",
   },
-  invited: {
-    label: "Invited",
-    class: "bg-warning/15 text-warning",
-  },
+ 
   suspended: {
     label: "Suspended",
     class: "bg-destructive/10 text-destructive",

@@ -1,5 +1,5 @@
 import { useAuth } from "@/context/auth-context";
-import { useShipments, useInvoices, useBusinessAnalytics } from "@/lib/hooks";
+import { useShipments, useBusinessAnalytics } from "@/lib/hooks";
 import { StatCard } from "@/components/shared/stat-card";
 import { ShipmentTable } from "@/components/shared/shipment-table";
 import { LoadingState } from "@/components/shared/states";
@@ -26,11 +26,10 @@ import {
 export default function BusinessDashboard() {
   const { user } = useAuth();
   const myShipments = useShipments();
-  const invoices = useInvoices();
   const analytics = useBusinessAnalytics(user.id);
 
   const isLoading =
-    myShipments.isLoading || analytics.isLoading || invoices.isLoading;
+    myShipments.isLoading || analytics.isLoading ;
 
   const allShipments = myShipments.data ?? [];
   const delivered = allShipments.filter((s) => s.status === "DELIVERED" || s.status === "delivered");

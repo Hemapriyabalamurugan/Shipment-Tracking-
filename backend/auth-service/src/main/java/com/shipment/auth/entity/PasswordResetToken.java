@@ -18,11 +18,12 @@ public class PasswordResetToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String otp;
+//    private String otp;
 
     private LocalDateTime expiryTime;
-
-    private Boolean verified;
+//
+//    private Boolean verified;
+private String resetToken;
 
     @OneToOne
     @JoinColumn(name = "user_id")

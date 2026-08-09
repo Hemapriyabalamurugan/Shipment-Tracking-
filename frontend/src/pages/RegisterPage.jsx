@@ -2,12 +2,25 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "@/lib/api";
 import { Logo } from "@/components/shared/logo";
-import { User, Mail, Phone, Lock, MapPin, Building, Shield, CheckCircle2, ArrowRight } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  Lock,
+  Eye,
+  EyeOff,
+  MapPin,
+  Building,
+  Shield,
+  CheckCircle2,
+  ArrowRight,
+} from "lucide-react";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
+const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -84,7 +97,8 @@ const RegisterPage = () => {
               Create Your Enterprise Account
             </h2>
             <p className="text-xs text-slate-400 max-w-md mx-auto">
-              Get started with ShipTrackPro for real-time fleet operations, automated route optimization, and digital proof of delivery.
+              Get started with ShipTrackPro for real-time fleet operations,
+              automated route optimization, and digital proof of delivery.
             </p>
           </div>
 
@@ -101,7 +115,7 @@ const RegisterPage = () => {
                     type="text"
                     id="firstName"
                     name="firstName"
-                    placeholder="John"
+                    placeholder="Catjil"
                     value={formData.firstName}
                     onChange={handleChange}
                     required
@@ -119,7 +133,7 @@ const RegisterPage = () => {
                     type="text"
                     id="lastName"
                     name="lastName"
-                    placeholder="Doe"
+                    placeholder="Sharma"
                     value={formData.lastName}
                     onChange={handleChange}
                     required
@@ -141,7 +155,7 @@ const RegisterPage = () => {
                     type="email"
                     id="email"
                     name="email"
-                    placeholder="john@company.com"
+                    placeholder="yourcompany@gmail.com"
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -159,7 +173,7 @@ const RegisterPage = () => {
                     type="tel"
                     id="phone"
                     name="phone"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder=""
                     value={formData.phone}
                     onChange={handleChange}
                     required
@@ -171,40 +185,79 @@ const RegisterPage = () => {
 
             {/* Password & Confirm Password */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Password */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">
                   Password <span className="text-rose-400">*</span>
                 </label>
+
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     placeholder="••••••••••••"
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-11 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
               </div>
+
+              {/* Confirm Password */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">
                   Confirm Password <span className="text-rose-400">*</span>
                 </label>
+
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     id="confirmPassword"
                     name="confirmPassword"
                     placeholder="••••••••••••"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-11 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
@@ -263,11 +316,30 @@ const RegisterPage = () => {
                   required
                   className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-4 py-2.5 text-xs text-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition cursor-pointer"
                 >
-                  <option value="" className="bg-slate-900 text-slate-400">Select your account role</option>
-                  <option value="CUSTOMER" className="bg-slate-900 text-white">Customer (Package Recipient)</option>
-                  <option value="BUSINESS_CLIENT" className="bg-slate-900 text-white">Business Client (Shipper)</option>
-                  <option value="LOGISTICS_OPERATOR" className="bg-slate-900 text-white">Logistics Operator (Driver)</option>
-                  <option value="SUPPORT_AGENT" className="bg-slate-900 text-white">Support Agent</option>
+                  <option value="" className="bg-slate-900 text-slate-400">
+                    Select your account role
+                  </option>
+                  <option value="CUSTOMER" className="bg-slate-900 text-white">
+                    Customer (Package Recipient)
+                  </option>
+                  <option
+                    value="BUSINESS_CLIENT"
+                    className="bg-slate-900 text-white"
+                  >
+                    Business Client (Shipper)
+                  </option>
+                  <option
+                    value="LOGISTICS_OPERATOR"
+                    className="bg-slate-900 text-white"
+                  >
+                    Logistics Operator (Driver)
+                  </option>
+                  <option
+                    value="SUPPORT_AGENT"
+                    className="bg-slate-900 text-white"
+                  >
+                    Support Agent
+                  </option>
                 </select>
               </div>
             </div>
@@ -287,11 +359,17 @@ const RegisterPage = () => {
                 className="text-xs text-slate-400 cursor-pointer leading-normal"
               >
                 I agree to the{" "}
-                <a href="#" className="font-semibold text-primary hover:underline">
+                <a
+                  href="#"
+                  className="font-semibold text-primary hover:underline"
+                >
                   Terms &amp; Conditions
                 </a>{" "}
                 and{" "}
-                <a href="#" className="font-semibold text-primary hover:underline">
+                <a
+                  href="#"
+                  className="font-semibold text-primary hover:underline"
+                >
                   Privacy Policy
                 </a>
               </label>

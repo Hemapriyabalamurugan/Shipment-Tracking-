@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { Mail, Lock, ShieldCheck, ArrowRight, Truck, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  ArrowRight,
+  Truck,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { Logo } from "@/components/shared/logo";
 
@@ -10,6 +20,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState("");
   const { refreshUser } = useAuth();
 
@@ -17,6 +28,12 @@ export default function LoginPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState("");
+  const [forgotSuccess, setForgotSuccess] = useState("");
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -60,8 +77,7 @@ export default function LoginPage() {
         },
       );
 
-      // localStorage.setItem("refreshToken", response.data.refreshToken);
-      // localStorage.setItem("shiptrack.token", response.data.token);
+
 sessionStorage.setItem("refreshToken", response.data.refreshToken);
 sessionStorage.setItem("shiptrack.token", response.data.token);
 
@@ -74,17 +90,7 @@ sessionStorage.setItem("shiptrack.token", response.data.token);
         SUPPORT_AGENT: "support_agent",
       };
 
-      // localStorage.setItem(
-      //   "shiptrack.session",
-      //   JSON.stringify({
-      //     user: {
-      //       name: response.data.email,
-      //       email: response.data.email,
-      //       role: roleMap[response.data.role],
-      //     },
-      //     token: response.data.token,
-      //   }),
-      // );
+      
 
       sessionStorage.setItem(
         "shiptrack.session",
@@ -128,6 +134,36 @@ sessionStorage.setItem("shiptrack.token", response.data.token);
     }
   };
 
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+
+    setForgotError("");
+    setForgotSuccess("");
+
+    try {
+      setForgotLoading(true);
+
+      const response = await axios.post(
+        "http://localhost:8080/api/password/forgot",
+        {
+          email: forgotEmail,
+        },
+      );
+
+      setForgotSuccess(
+        response.data.message ||
+          "Password reset link sent to your registered email.",
+      );
+    } catch (error) {
+      console.error(error);
+
+      setForgotError(error?.response?.data?.message || "User not found");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen w-full bg-slate-950 grid-bg">
       {/* Left visual panel */}
@@ -148,7 +184,8 @@ sessionStorage.setItem("shiptrack.token", response.data.token);
             Real-time tracking and intelligent fleet management.
           </h1>
           <p className="text-sm text-slate-400 leading-relaxed">
-            Gain end-to-end operational visibility over your global shipments, automated ETAs, proof of delivery, and instant dispute resolution.
+            Gain end-to-end operational visibility over your global shipments,
+            automated ETAs, proof of delivery, and instant dispute resolution.
           </p>
 
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800">
@@ -223,17 +260,49 @@ sessionStorage.setItem("shiptrack.token", response.data.token);
                 <label className="text-xs font-semibold text-slate-300">
                   Password
                 </label>
+
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
                     required
-                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-10 pr-11 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotEmail(email);
+                    setForgotError("");
+                    setForgotSuccess("");
+                    setForgotPasswordOpen(true);
+                  }}
+                  className="text-xs font-semibold text-primary hover:underline"
+                >
+                  Forgot Password?
+                </button>
               </div>
 
               <button
@@ -306,6 +375,114 @@ sessionStorage.setItem("shiptrack.token", response.data.token);
           </div>
         </div>
       </div>
+
+      {forgotPasswordOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-7 shadow-2xl animate-fade-in">
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => {
+                setForgotPasswordOpen(false);
+                setForgotError("");
+                setForgotSuccess("");
+              }}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-white"
+            >
+              ✕
+            </button>
+
+            <div className="mb-6">
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Lock className="h-5 w-5" />
+              </div>
+
+              <h2 className="text-xl font-bold text-white">Forgot Password?</h2>
+
+              <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                Enter your registered email address and we'll send you a secure
+                link to reset your password.
+              </p>
+            </div>
+
+            <form onSubmit={handleForgotPassword} className="space-y-5">
+              {/* Error */}
+              {forgotError && (
+                <div className="flex items-center gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3.5 text-xs font-semibold text-rose-400">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{forgotError}</span>
+                </div>
+              )}
+
+              {/* Success */}
+              {forgotSuccess && (
+                <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3.5 text-xs font-semibold text-emerald-400">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>{forgotSuccess}</span>
+                </div>
+              )}
+
+              {/* Email */}
+              {!forgotSuccess && (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">
+                      Email Address
+                    </label>
+
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
+                      <input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="name@company.com"
+                        required
+                        autoFocus
+                        className="w-full rounded-xl border border-slate-800 bg-slate-900/80 py-2.5 pl-10 pr-4 text-xs text-white placeholder:text-slate-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl gradient-brand py-3 text-xs font-bold text-white shadow-lg shadow-primary/20 transition hover:opacity-95 disabled:opacity-50"
+                  >
+                    {forgotLoading ? (
+                      <>
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Sending Reset Link...
+                      </>
+                    ) : (
+                      <>
+                        Send Reset Link
+                        <ArrowRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+
+              {/* After success */}
+              {forgotSuccess && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForgotPasswordOpen(false);
+                    setForgotSuccess("");
+                    setForgotError("");
+                  }}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900 py-3 text-xs font-bold text-white transition hover:bg-slate-800"
+                >
+                  Back to Login
+                </button>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

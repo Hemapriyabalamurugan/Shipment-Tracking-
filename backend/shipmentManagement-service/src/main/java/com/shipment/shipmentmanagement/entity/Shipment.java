@@ -174,6 +174,12 @@ public class Shipment {
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
+    @Column(name = "cancelled_by_customer", nullable = false)
+    private Boolean cancelledByCustomer = false;
+
+    @Column(name = "cancellation_reason", length = 1000)
+    private String cancellationReason;
+
     // =====================================================
     // Audit Fields
     // =====================================================

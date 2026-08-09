@@ -51,8 +51,8 @@ export function PodPage() {
   const { user } = useAuth();
   const [filter, setFilter] = useState("all");
 
-  const canVerify = user?.role === "business_client";
-  const canUpload = user?.role === "logistics_operator";
+  const canVerify = user?.role === "customer";
+ 
 
 const filtered =
   records?.filter(
@@ -65,26 +65,24 @@ const verified =
 const pending =
   records?.filter((r) => r.verificationStatus === "PENDING") ?? [];
 
-const missing = [];
 
-  // const handleVerify = async (id) => {
-  //   await verify.mutateAsync(id);
-  //   toast.success("POD verified successfully");
-  // };
 
   const handleVerify = async (id) => {
-    await verify.mutateAsync({
-      id,
-      businessClientId: user.id,
-    });
+    try {
+      await verify.mutateAsync(id);
+      toast.success("POD verified successfully");
+    } catch (error) {
+      console.error("POD verification failed:", error);
 
-    toast.success("POD verified successfully");
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to verify POD",
+      );
+    }
   };
 
-  const handleReject = async (id) => {
-    await verify.mutateAsync(id);
-    toast.success("POD rejected");
-  };
+  
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -113,12 +111,7 @@ const missing = [];
           icon={Clock}
           iconClass="bg-warning/10 text-warning"
         />
-        {/* <StatCard
-          label="Missing"
-          value={missing.length}
-          icon={FileSearch}
-          iconClass="bg-destructive/10 text-destructive"
-        /> */}
+       
       </div>
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v)}>
@@ -137,7 +130,7 @@ const missing = [];
       ) : filtered.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((rec) => {
-            // const StatusIcon = statusMeta[rec.status].icon;
+            
             const status = rec.verificationStatus.toLowerCase();
             const StatusIcon = statusMeta[status].icon;
             return (
@@ -174,21 +167,7 @@ const missing = [];
                     </span>
                   </div>
 
-                  {/* <div className="mt-4 flex h-24 items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
-                    {rec.verificationStatus === "VERIFIED" ? (
-                      <div className="flex flex-col items-center gap-1 text-success">
-                        <PenLine className="h-6 w-6" />
-                        <span className="text-xs font-medium">
-                          Signed by {rec.signedBy}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-1 text-muted-foreground">
-                        <PenLine className="h-6 w-6 opacity-40" />
-                        <span className="text-xs">No signature captured</span>
-                      </div>
-                    )}
-                  </div> */}
+                 
                   <div className="mt-4 space-y-3">
                     <img
                       src={rec.photoUrl}
@@ -237,16 +216,7 @@ const missing = [];
                         <Check className="mr-1.5 h-4 w-4" />
                         Verify
                       </Button>
-                      {/* <Button
-                        onClick={() => handleReject(rec.id)}
-                        disabled={verify.isPending}
-                        variant="outline"
-                        className="flex-1"
-                        size="sm"
-                      >
-                        <X className="mr-1.5 h-4 w-4" />
-                        Reject
-                      </Button> */}
+                      
                     </div>
                   )}
 
@@ -257,12 +227,7 @@ const missing = [];
                     </div>
                   )}
 
-                  {/* {rec.status === "rejected" && (
-                    <div className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-destructive/5 py-2 text-xs font-medium text-destructive">
-                      <X className="h-3.5 w-3.5" />
-                      Rejected
-                    </div>
-                  )} */}
+                  
 
                   {rec.verificationStatus === "VERIFIED" && (
                     <div className="mt-4 flex items-center justify-center gap-1.5 rounded-lg bg-success/5 py-2 text-xs font-medium text-success">

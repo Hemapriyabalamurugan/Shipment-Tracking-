@@ -665,19 +665,7 @@ export function CreateShipmentPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {/* <div className="space-y-2">
-                    <Label htmlFor="estimatedDeliveryAt">
-                      Estimated Delivery Date
-                    </Label>
-                    <Input
-                      id="estimatedDeliveryAt"
-                      type="date"
-                      value={form.estimatedDeliveryAt}
-                      onChange={(e) =>
-                        update("estimatedDeliveryAt", e.target.value)
-                      }
-                    />
-                  </div> */}
+                 
                 </div>
 
                 {/* Review Card */}
@@ -700,12 +688,7 @@ export function CreateShipmentPage() {
                       label="Priority"
                       value={selectedPriority?.label}
                     />
-                    {/* <ReviewRow
-                      label="Estimated Delivery"
-                      value={new Date(
-                        form.estimatedDeliveryAt,
-                      ).toLocaleDateString()}
-                    /> */}
+                    
                     <ReviewRow
                       label="Declared Value"
                       value={formatCurrency(form.declaredValue)}

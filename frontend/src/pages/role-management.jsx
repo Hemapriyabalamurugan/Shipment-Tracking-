@@ -58,12 +58,7 @@ export function RoleManagementPage() {
           icon={ShieldCheck}
           iconClass="bg-chart-4/10 text-chart-4"
         />
-        {/* <StatCard
-          label="Permission Sets"
-          value={roles?.reduce((s, r) => s + r.permissions.length, 0) ?? 0}
-          icon={Lock}
-          iconClass="bg-success/10 text-success"
-        /> */}
+        
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">

@@ -1,9 +1,9 @@
 export const ROLE_LABELS = {
   admin: "Administrator",
-  operator: "Logistics Operator",
-  business: "Business Client",
-  customer: "Customer",
-  support: "Support Agent",
+  operator: "LOGISTIC_OPERATOR",
+  business: "BUSINESS_CLIENT",
+  customer: "CUSTOMER",
+  support: "SUPPORT_AGENT",
 };
 
 export const ROLE_DESCRIPTIONS = {

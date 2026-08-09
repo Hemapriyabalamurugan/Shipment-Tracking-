@@ -54,15 +54,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (!state.user) return;
 
-    // connectNotificationSocket(state.user.id, () => {
-    //   console.log("📩 Notification received");
-
-    //   queryClient.invalidateQueries({
-    //     queryKey: queryKeys.notifications,
-    //   });
-    // });
+   
 connectNotificationSocket(state.user.id, () => {
-  console.log("📩 Notification received");
+  
 
   // Refresh notifications
   queryClient.invalidateQueries({
@@ -123,7 +117,7 @@ connectNotificationSocket(state.user.id, () => {
       user: updated,
     }));
   }, []);
-  // ================changes done her ====================
+  
   const refreshUser = useCallback(async () => {
     const user = await authApi.me();
 
@@ -135,7 +129,7 @@ connectNotificationSocket(state.user.id, () => {
 
     return user;
   }, []);
-  // ================================================
+ 
 
   const hasRole = useCallback(
     (...roles) => (state.user ? roles.includes(state.user.role) : false),

@@ -11,10 +11,7 @@ public interface PasswordResetTokenRepository
 
     Optional<PasswordResetToken> findByUser(User user);
 
-    Optional<PasswordResetToken> findByUserAndOtp(
-            User user,
-            String otp
-    );
+    Optional<PasswordResetToken> findByResetToken(String resetToken);
 
     void deleteByUser(User user);
 }

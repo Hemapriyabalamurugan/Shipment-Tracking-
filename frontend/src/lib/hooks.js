@@ -1,12 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   shipmentsApi,
-  vehiclesApi,
-  driversApi,
+  
   notificationsApi,
   ticketsApi,
   teamApi,
-  invoicesApi,
+  
   analyticsApi,
 } from "./api";
 import { queryKeys } from "./query-client";
@@ -26,6 +25,39 @@ export function useShipment(id) {
     queryKey: id ? queryKeys.shipment(id) : ["shipments", "none"],
     queryFn: () => shipmentsApi.getById(id),
     enabled: !!id,
+  });
+}
+
+export function useCancelShipmentByCustomer() {
+  const qc = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: ({ id, reason }) => shipmentsApi.cancelByCustomer(id, reason),
+
+    onSuccess: async (_, variables) => {
+      // Refresh customer's shipment list
+      if (user?.id) {
+        await qc.invalidateQueries({
+          queryKey: queryKeys.myShipments(user.id),
+        });
+      }
+
+      // Refresh general shipment data
+      await qc.invalidateQueries({
+        queryKey: queryKeys.shipments,
+      });
+
+      // Refresh this specific shipment
+      await qc.invalidateQueries({
+        queryKey: queryKeys.shipment(variables.id),
+      });
+
+      // Business-client notification data can refresh as well
+      await qc.invalidateQueries({
+        queryKey: queryKeys.notifications,
+      });
+    },
   });
 }
 // ===============================================================
@@ -63,24 +95,7 @@ export function useCreateShipment() {
       }),
   });
 }
-export function useVehicles() {
-  return useQuery({
-    queryKey: queryKeys.vehicles,
-    queryFn: vehiclesApi.list,
-  });
-}
-export function useDrivers() {
-  return useQuery({
-    queryKey: queryKeys.drivers,
-    queryFn: driversApi.list,
-  });
-}
-// export function useNotifications() {
-//   return useQuery({
-//     queryKey: queryKeys.notifications,
-//     queryFn: notificationsApi.list,
-//   });
-// }
+
 
 export function useNotifications() {
   return useQuery({
@@ -155,16 +170,7 @@ export function useTeam() {
     queryFn: teamApi.list,
   });
 }
-// export function useInviteMember() {
-//   const qc = useQueryClient();
-//   return useMutation({
-//     mutationFn: teamApi.invite,
-//     onSuccess: () =>
-//       qc.invalidateQueries({
-//         queryKey: queryKeys.team,
-//       }),
-//   });
-// }
+
 export function useUpdateMemberStatus() {
   const qc = useQueryClient();
   return useMutation({
@@ -181,12 +187,7 @@ export function useInvoices() {
     queryFn: invoicesApi.list,
   });
 }
-// export function useAnalytics() {
-//   return useQuery({
-//     queryKey: queryKeys.analytics,
-//     queryFn: analyticsApi.get,
-//   });
-// }
+
 
 export function useAnalytics(startDate, endDate) {
   return useQuery({
@@ -197,21 +198,7 @@ export function useAnalytics(startDate, endDate) {
     enabled: !!startDate && !!endDate,
   });
 }
-// export function useAnalytics() {
-//   const { user } = useAuth();
 
-//   return useQuery({
-//     queryKey: ["analytics", user.role, user.id],
-//     queryFn: () => {
-//       if (user.role === "ADMIN") {
-//         return analyticsApi.get();
-//       }
-
-//       return analyticsApi.getBusinessDashboard(user.id);
-//     },
-//     enabled: !!user,
-//   });
-// }
 export function useActivity() {
   return useQuery({
     queryKey: queryKeys.activity,
@@ -219,13 +206,7 @@ export function useActivity() {
   });
 }
 
-// export function useBusinessAnalytics(businessClientId) {
-//   return useQuery({
-//     queryKey: ["business-analytics", businessClientId],
-//     queryFn: () => analyticsApi.getBusinessDashboard(businessClientId),
-//     enabled: !!businessClientId,
-//   });
-// }
+
 export function useBusinessAnalytics(businessClientId, startDate, endDate) {
   return useQuery({
     queryKey: ["business-analytics", businessClientId, startDate, endDate],
@@ -239,40 +220,12 @@ export function useBusinessAnalytics(businessClientId, startDate, endDate) {
 
 // --- Admin hooks ---
 import {
-  rolesApi,
-  microservicesApi,
-  auditLogsApi,
-  etaPredictionsApi,
-  routesApi,
+  
   podApi,
-  systemMetricsApi,
-  notificationMetricsApi,
-  reportsApi,
+  
 } from "./api";
-export function useRoles() {
-  return useQuery({
-    queryKey: queryKeys.roles,
-    queryFn: rolesApi.list,
-  });
-}
-export function useMicroservices() {
-  return useQuery({
-    queryKey: queryKeys.microservices,
-    queryFn: microservicesApi.list,
-  });
-}
-export function useAuditLogs() {
-  return useQuery({
-    queryKey: queryKeys.auditLogs,
-    queryFn: auditLogsApi.list,
-  });
-}
-export function useEtaPredictions() {
-  return useQuery({
-    queryKey: queryKeys.etaPredictions,
-    queryFn: etaPredictionsApi.list,
-  });
-}
+
+
 export function useRoutes() {
   return useQuery({
     queryKey: queryKeys.routes,
@@ -288,12 +241,7 @@ export function useFindRoute(originHubId, destinationHubId) {
   });
 }
 
-// export function useHubs() {
-//   return useQuery({
-//     queryKey: ["hubs"],
-//     queryFn: () => shipmentsApi.getHubs(),
-//   });
-// }
+
 export function useHubs() {
   return useQuery({
     queryKey: ["route-hubs"],
@@ -310,10 +258,10 @@ export function usePodRecords() {
 }
 export function useVerifyPod() {
   const qc = useQueryClient();
+
   return useMutation({
-    // mutationFn: podApi.verify,
-    mutationFn: ({ id, businessClientId }) =>
-      podApi.verify(id, businessClientId),
+    mutationFn: (id) => podApi.verify(id),
+
     onSuccess: () =>
       qc.invalidateQueries({
         queryKey: queryKeys.podRecords,
@@ -341,58 +289,10 @@ export function useReports() {
 }
 
 // --- Operator hooks ---
-import { trafficApi, driverPerformanceApi } from "./api";
-export function useTrafficIncidents() {
-  return useQuery({
-    queryKey: queryKeys.trafficIncidents,
-    queryFn: trafficApi.list,
-    refetchInterval: 10000,
-  });
-}
-export function useDriverPerformance() {
-  return useQuery({
-    queryKey: queryKeys.driverPerformance,
-    queryFn: driverPerformanceApi.list,
-  });
-}
-// export function useAcceptShipment() {
-//   const qc = useQueryClient();
 
-//   return useMutation({
-//     mutationFn: ({ id, operatorId }) => shipmentsApi.accept(id, operatorId),
 
-//     onSuccess: () => {
-//       qc.invalidateQueries({
-//         queryKey: queryKeys.shipments,
-//       });
 
-//       qc.invalidateQueries({
-//         queryKey: queryKeys.notifications,
-//       });
-//     },
-//   });
-// }
-// export function useAcceptShipment() {
-//   const qc = useQueryClient();
 
-//   return useMutation({
-//     mutationFn: ({ id, operatorId }) => shipmentsApi.accept(id, operatorId),
-
-//     onSuccess: async () => {
-//       await qc.invalidateQueries({
-//         queryKey: queryKeys.shipments,
-//       });
-
-//       await qc.refetchQueries({
-//         queryKey: queryKeys.shipments,
-//       });
-
-//       await qc.invalidateQueries({
-//         queryKey: queryKeys.notifications,
-//       });
-//     },
-//   });
-// }
 
 export function useAcceptShipment() {
   const qc = useQueryClient();

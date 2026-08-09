@@ -98,7 +98,12 @@ public class RouteFinderServiceImpl implements RouteFinderService {
                 }
             }
         }
-
+//=====================================================================
+        // IMPORTANT
+        if (!distance.containsKey(destinationHubId)) {
+            throw new RuntimeException("No route found.");
+        }
+// =====================================================================
         List<Long> hubIds = new ArrayList<>();
 
         Long current = destinationHubId;

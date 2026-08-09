@@ -31,11 +31,19 @@ public class ProofOfDeliveryService {
 public ProofOfDelivery create(
         ProofOfDeliveryRequest request,
         MultipartFile photo) throws IOException {
+//    UserProfileResponse currentUser = authClient.getCurrentUser();
+//
+//    if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {
+//        throw new RuntimeException(
+//                "Only customers can upload Proof of Delivery."
+//        );
+//    }
+
     UserProfileResponse currentUser = authClient.getCurrentUser();
 
-    if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {
+    if (!"LOGISTICS_OPERATOR".equalsIgnoreCase(currentUser.getRole())) {
         throw new RuntimeException(
-                "Only customers can upload Proof of Delivery."
+                "Only logistics operators can upload Proof of Delivery."
         );
     }
 
@@ -45,11 +53,23 @@ public ProofOfDelivery create(
             );
 
 // Shipment must belong to the logged-in customer
-    if (shipment.getCustomerId() == null ||
-            !shipment.getCustomerId().equals(currentUser.getId())) {
+//    if (shipment.getCustomerId() == null ||
+//            !shipment.getCustomerId().equals(currentUser.getId())) {
+//
+//        throw new RuntimeException(
+//                "You are not allowed to upload Proof of Delivery for this shipment."
+//        );
+//    }
 
+    if (shipment.getDriverId() == null) {
         throw new RuntimeException(
-                "You are not allowed to upload Proof of Delivery for this shipment."
+                "This shipment has not been assigned to an operator."
+        );
+    }
+
+    if (!shipment.getDriverId().equals(currentUser.getId())) {
+        throw new RuntimeException(
+                "You are not assigned to this shipment."
         );
     }
 
@@ -183,9 +203,15 @@ public ProofOfDelivery create(
                 authClient.getCurrentUser();
 
         // Only Business Client can access pending PODs
-        if (!"BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())) {
+//        if (!"BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())) {
+//            throw new RuntimeException(
+//                    "Only business clients can view pending Proofs of Delivery."
+//            );
+//        }
+
+        if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {
             throw new RuntimeException(
-                    "Only business clients can view pending Proofs of Delivery."
+                    "Only customers can view pending Proofs of Delivery."
             );
         }
 
@@ -199,9 +225,9 @@ public ProofOfDelivery create(
                             );
 
                     // Return only PODs belonging to shipments
-                    // created by the logged-in Business Client
-                    return shipment.getBusinessClientId() != null
-                            && shipment.getBusinessClientId()
+
+                    return shipment.getCustomerId() != null
+                            && shipment.getCustomerId()
                             .equals(currentUser.getId());
                 })
                 .toList();
@@ -252,10 +278,15 @@ public ProofOfDelivery verify(Long id) {
     UserProfileResponse currentUser =
             authClient.getCurrentUser();
 
-    // Only Business Clients can verify POD
-    if (!"BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())) {
+    // Only customers can verify POD
+//    if (!"BUSINESS_CLIENT".equalsIgnoreCase(currentUser.getRole())) {
+//        throw new RuntimeException(
+//                "Only business clients can verify Proof of Delivery."
+//        );
+//    }
+    if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {
         throw new RuntimeException(
-                "Only business clients can verify Proof of Delivery."
+                "Only customers can verify Proof of Delivery."
         );
     }
 
@@ -264,15 +295,27 @@ public ProofOfDelivery verify(Long id) {
                     new RuntimeException("Proof of Delivery not found.")
             );
 
+    if ("VERIFIED".equalsIgnoreCase(pod.getVerificationStatus())) {
+        throw new RuntimeException(
+                "This Proof of Delivery has already been verified."
+        );
+    }
     // Get shipment ownership from Shipment Service
     ShipmentAnalyticsDataResponse shipment =
             shipmentClient.getShipmentForVerification(
                     pod.getShipmentId()
             );
 
-    // The logged-in Business Client must own this shipment
-    if (shipment.getBusinessClientId() == null ||
-            !shipment.getBusinessClientId().equals(currentUser.getId())) {
+    // The logged-in customers must own this shipment
+//    if (shipment.getBusinessClientId() == null ||
+//            !shipment.getBusinessClientId().equals(currentUser.getId())) {
+//
+//        throw new RuntimeException(
+//                "You are not allowed to verify this Proof of Delivery."
+//        );
+//    }
+    if (shipment.getCustomerId() == null ||
+            !shipment.getCustomerId().equals(currentUser.getId())) {
 
         throw new RuntimeException(
                 "You are not allowed to verify this Proof of Delivery."

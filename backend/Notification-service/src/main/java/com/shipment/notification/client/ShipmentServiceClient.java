@@ -8,8 +8,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "SHIPMENTMANAGEMENT-SERVICE")
 public interface ShipmentServiceClient {
 
-    @GetMapping("/api/shipments/{id}")
-    ShipmentResponse getShipment(
-            @PathVariable Long id
-    );
+//    @GetMapping("/api/shipments/{id}")
+//    ShipmentResponse getShipment(
+//            @PathVariable Long id
+//    );
+@GetMapping("/api/shipments/internal/{id}")
+ShipmentResponse getShipment(
+        @PathVariable Long id
+);
 }

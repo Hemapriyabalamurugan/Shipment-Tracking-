@@ -92,7 +92,7 @@ export function ShipmentsPage() {
         }
         icon={Package}
         actions={
-          (user.role === "business_client" || user.role === "ADMIN" || user.role === "admin") ? (
+          (user.role === "business_client" ) ? (
             <Button asChild variant="brand" size="sm" className="font-bold text-xs">
               <Link to="/app/create-shipment">
                 <Plus className="mr-1.5 h-4 w-4" />
@@ -114,21 +114,7 @@ export function ShipmentsPage() {
               className="pl-10 text-xs rounded-xl"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Select value={mode} onValueChange={setMode}>
-              <SelectTrigger className="w-[150px] text-xs font-semibold rounded-xl">
-                <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />
-                <SelectValue placeholder="Mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All modes</SelectItem>
-                <SelectItem value="road">Road</SelectItem>
-                <SelectItem value="air">Air</SelectItem>
-                <SelectItem value="ocean">Ocean</SelectItem>
-                <SelectItem value="rail">Rail</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          
         </div>
 
         <Tabs value={status} onValueChange={setStatus} className="w-full">

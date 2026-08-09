@@ -217,4 +217,24 @@ public List<Shipment> getMyCustomerShipments() {
                 endDate
         );
     }
+
+    @PostMapping("/{id}/customer-cancel")
+    public Shipment cancelShipmentByCustomer(
+            @PathVariable Long id,
+            @jakarta.validation.Valid
+            @RequestBody CustomerCancellationRequest request
+    ) {
+
+        return shipmentService.cancelShipmentByCustomer(
+                id,
+                request
+        );
+    }
+
+    @GetMapping("/internal/{id}")
+    public Shipment getShipmentByIdInternal(
+            @PathVariable Long id
+    ) {
+        return shipmentService.getShipmentByIdInternal(id);
+    }
 }

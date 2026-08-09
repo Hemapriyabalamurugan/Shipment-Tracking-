@@ -38,7 +38,7 @@ import {
   Navigation,
   Printer,
   Share2,
-  
+  CircleX,
 } from "lucide-react";
 
 const modeIcon = {
@@ -48,6 +48,8 @@ const modeIcon = {
   rail: Train,
   multimodal: Truck,
 };
+
+
 
 
 
@@ -116,7 +118,7 @@ export function ShipmentDetailPage() {
 
   // const ModeIcon = modeIcon[shipment.mode];
   const ModeIcon = Truck;
-
+const isCustomerCancelled = shipment.cancelledByCustomer === true;
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -206,66 +208,99 @@ export function ShipmentDetailPage() {
         <div className="space-y-4">
           {/* Shipment Details */}
 
+        
+
+          {isCustomerCancelled ? (
+            <Card className="border-destructive/30">
+              <CardHeader>
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+                    <CircleX className="h-5 w-5" />
+                  </span>
+
+                  <div>
+                    <CardTitle className="text-destructive">
+                      Shipment Cancelled
+                    </CardTitle>
+
+                    <CardDescription className="mt-1">
+                      This parcel was cancelled by the customer.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent>
+                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Cancellation Reason
+                  </p>
+
+                  <p className="mt-2 whitespace-pre-wrap break-words text-sm font-medium text-foreground">
+                    {shipment.cancellationReason ||
+                      "No cancellation reason was provided."}
+                  </p>
+                </div>
+
+                {shipment.cancelledAt && (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Cancelled on {formatDateTime(shipment.cancelledAt)}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Delivery Prediction</CardTitle>
+                <CardDescription>
+                  Live ETA and delivery forecast
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <DetailRow
+                  icon={Navigation}
+                  label="Remaining Distance"
+                  value={`${trackingData?.remainingDistanceKm ?? 0} km`}
+                />
+
+                <DetailRow
+                  icon={Truck}
+                  label="Estimated Travel Time"
+                  value={`${trackingData?.estimatedHours ?? 0} hrs ${
+                    trackingData?.estimatedMinutes ?? 0
+                  } mins`}
+                />
+
+                <DetailRow
+                  icon={Calendar}
+                  label="Estimated Arrival"
+                  value={formatDateTime(trackingData?.estimatedArrival)}
+                />
+
+                <DetailRow
+                  icon={Package}
+                  label="Forecast"
+                  value={trackingData?.deliveryForecast?.forecastStatus}
+                />
+
+                <DetailRow
+                  icon={Package}
+                  label="Confidence"
+                  value={`${trackingData?.deliveryForecast?.confidencePercentage}%`}
+                />
+
+                <DetailRow
+                  icon={Package}
+                  label="Reason"
+                  value={trackingData?.deliveryForecast?.reason}
+                />
+              </CardContent>
+            </Card>
+          )}
           <Card>
-            <CardHeader>
-              <CardTitle>Delivery Prediction</CardTitle>
-              <CardDescription>Live ETA and delivery forecast</CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <DetailRow
-                icon={Navigation}
-                label="Remaining Distance"
-                value={`${trackingData?.remainingDistanceKm ?? 0} km`}
-              />
-
-              <DetailRow
-                icon={Truck}
-                label="Estimated Travel Time"
-                value={`${trackingData?.estimatedHours ?? 0} hrs ${
-                  trackingData?.estimatedMinutes ?? 0
-                } mins`}
-              />
-
-              <DetailRow
-                icon={Calendar}
-                label="Estimated Arrival"
-                value={formatDateTime(trackingData?.estimatedArrival)}
-              />
-
-              <DetailRow
-                icon={Package}
-                label="Forecast"
-                value={trackingData?.deliveryForecast?.forecastStatus}
-              />
-
-              <DetailRow
-                icon={Package}
-                label="Confidence"
-                value={`${trackingData?.deliveryForecast?.confidencePercentage}%`}
-              />
-
-              <DetailRow
-                icon={Package}
-                label="Reason"
-                value={trackingData?.deliveryForecast?.reason}
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            {/* <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <ModeIcon className="h-4 w-4" />
-                </span>
-                Shipment Details
-              </CardTitle>
-              
-            </CardHeader> */}
-
-            {/* new thing added */}
-
-            {/* ==================================================== */}
+            
             <CardHeader>
               <CardTitle>Sender</CardTitle>
               <CardDescription>Shipment sender information</CardDescription>
@@ -301,37 +336,7 @@ ${shipment.senderCountry}`}
               />
             </CardContent>
 
-            {/* <CardContent className="space-y-4">
-              <DetailRow
-                icon={Building2}
-                label="Customer"
-                value={shipment.customer}
-              />
-              <DetailRow
-                icon={Truck}
-                label="Carrier"
-                value={`${shipment.carrier} · ${shipment.service}`}
-              />
-              <DetailRow
-                icon={Calendar}
-                label="Pickup"
-                value={formatDateTime(shipment.pickupAt)}
-              />
-              <DetailRow
-                icon={Calendar}
-                label="Estimated delivery"
-                value={`${relativeDay(shipment.estimatedDeliveryAt)} · ${formatDateTime(
-                  shipment.estimatedDeliveryAt,
-                )}`}
-              />
-              {shipment.actualDelivery && (
-                <DetailRow
-                  icon={Calendar}
-                  label="Actual delivery"
-                  value={formatDateTime(shipment.actualDelivery)}
-                />
-              )}
-            </CardContent> */}
+            
           </Card>
 
           {/* Cargo */}

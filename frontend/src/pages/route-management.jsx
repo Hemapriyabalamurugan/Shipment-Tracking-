@@ -38,19 +38,7 @@ export function RouteManagementPage() {
   const [originHubId, setOriginHubId] = useState("");
   const [destinationHubId, setDestinationHubId] = useState("");
 
-  // const [search, setSearch] = useState(false);
-
-  // const { data: route } = useFindRoute(
-  //   originHubId,
-  //   destinationHubId,
-  //   search
-  // );
-  // const [searchParams, setSearchParams] = useState(null);
-
-  // const { data: route } = useFindRoute(
-  //   searchParams?.originHubId,
-  //   searchParams?.destinationHubId,
-  // );
+  
   const [request, setRequest] = useState(null);
 
   const { data: route } = useFindRoute(
@@ -157,19 +145,6 @@ const eta = route ? `${route.estimatedHours}h ${route.estimatedMinutes}m` : "-";
                   ))}
                 </SelectContent>
               </Select>
-              {/*  ======================================================================from moulika*/}
-                {/* <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                        const temp = originHubId;
-                        setOriginHubId(destinationHubId);
-                        setDestinationHubId(temp);
-                    }}
-                >
-                    <ArrowDownUp className="h-4 w-4" />
-                </Button> */}
-              {/*  ================================================================================*/}
 
               <Select
                 value={destinationHubId}
@@ -188,12 +163,6 @@ const eta = route ? `${route.estimatedHours}h ${route.estimatedMinutes}m` : "-";
                 </SelectContent>
               </Select>
 
-              {/* <Button
-                onClick={() => setSearch(true)}
-                disabled={!originHubId || !destinationHubId}
-              >
-                Show Route
-              </Button> */}
               <Button
                 onClick={() =>
                   setRequest({
@@ -208,12 +177,6 @@ const eta = route ? `${route.estimatedHours}h ${route.estimatedMinutes}m` : "-";
             </div>
           </div>
           <div className="h-[420px]">
-            {/* <MapView
-              points={selectedPoints}
-              route={selectedRoute}
-              zoom={selected ? 5 : 4}
-              className="!rounded-none h-[420px]"
-            /> */}
             <MapView
               points={selectedPoints}
               route={selectedRoute}
@@ -224,107 +187,52 @@ const eta = route ? `${route.estimatedHours}h ${route.estimatedMinutes}m` : "-";
         </Card>
         {/*================================================================*/}
         <div className="space-y-3 max-h-[480px] overflow-y-auto scrollbar-thin">
-         {route && (
-           <Card>
-             <CardContent className="p-5">
-                <CardTitle className="mb-4">Route Details</CardTitle>
+          {route && (
+            <Card>
+              <CardContent className="p-5">
+                <CardTitle className="mb-6">Route Details</CardTitle>
 
-               <div className="space-y-4">
-                  {route?.route?.map((hub, index) => (
-                    <div key={hub.hubId} className="flex flex-col items-center">
-                      <div className="w-full rounded-lg border p-3">
-                        <div className="font-semibold">{hub.hubName}</div>
+                <div className="w-full overflow-x-auto">
+                  <div className="flex min-w-max items-start px-6 pb-8">
+                    {route?.route?.map((hub, index) => {
+                      const isLast = index === route.route.length - 1;
 
-                      <div className="text-xs text-muted-foreground">
-                         {hub.city}
-                       </div>
-                     </div>
+                      return (
+                        <div key={hub.hubId} className="flex">
+                          {/* Current city */}
+                          <div className="relative w-0">
+                            {/* City name */}
+                            <div className="absolute left-1/2 top-0 -translate-x-1/2 whitespace-nowrap text-sm font-medium text-muted-foreground">
+                              {hub.city}
+                            </div>
 
-                     {index !== route.route.length - 1 && (
-                       <div className="flex flex-col items-center py-2">
-                         <div className="h-8 border-l-2 border-dashed border-primary" />
+                            {/* Dot */}
+                            <div className="absolute left-1/2 top-9 z-10 h-3.5 w-3.5 -translate-x-1/2 rounded-full border-2 border-primary bg-background" />
+                          </div>
 
-                         <div className="text-xs font-medium text-primary">
-                           {hub.distanceToNextKm} km
-                         </div>
-                       </div>
-                     )}
-                   </div>
-                 ))}
-               </div>
-             </CardContent>
-           </Card>
+                          {/* Connection to next city */}
+                          {!isLast && (
+                            <div className="relative h-20 w-64">
+                              {/* Continuous line */}
+                              <div className="absolute left-0 right-0 top-[42px] h-0.5 bg-primary" />
+
+                              {/* Distance */}
+                              <div className="absolute left-1/2 top-[50px] -translate-x-1/2 whitespace-nowrap text-xs font-medium text-primary">
+                                {hub.distanceToNextKm} km
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
 
-
-      {/*    ========================== from moulika*/}
-          {/* Calculated Route Results Section */}
-          {/* {route && ( */}
-               {/* <div className="glass-card result-card"> */}
-                  {/* Total Distance & Route Banner */}
-                  {/* <div className="summary-banner">
-                      <div>
-                          <div className="banner-subtitle">Calculated Shortest Route (Dijkstra Algorithm)</div>
-                          <div className="banner-title">
-                              {route.sourceHub.city} <ArrowRight className="inline-icon" size={20} /> {route.destinationHub.city}
-                          </div>
-                      </div>
-
-                      <div className="distance-badge">
-                          <span className="distance-val">{route.totalDistanceKm}</span>
-                          <span className="distance-unit">km Total Distance</span>
-                      </div>
-                  </div> */}
-
-                  {/* Logistics Metrics Grid */}
-                  {/* <div className="vehicle-metrics-grid">
-                      <div className="metric-card">
-                          <div className="metric-icon vehicle-icon">
-                              <Truck size={20} />
-                          </div>
-                          <div className="metric-info">
-                              <span className="metric-label">Vehicle Selected</span>
-                              <span className="metric-value">{route.selectedVehicle || vehicleType}</span>
-                          </div>
-                      </div>
-
-                      <div className="metric-card">
-                          <div className="metric-icon time-icon">
-                              <Clock size={20} />
-                          </div>
-                          <div className="metric-info">
-                              <span className="metric-label">Est. Travel Time</span>
-                              <span className="metric-value">{route.estimatedTravelTime}</span>
-                          </div>
-                      </div>
-
-                      <div className="metric-card">
-                          <div className={`metric-icon ${isNotRecommended ? 'warning-status-icon' : 'success-status-icon'}`}>
-                              {isNotRecommended ? <AlertOctagon size={20} /> : <ShieldCheck size={20} />}
-                          </div>
-                          <div className="metric-info">
-                              <span className="metric-label">Vehicle Suitability</span>
-                              <span className={`status-tag ${isNotRecommended ? 'not-recommended' : 'recommended'}`}>
-                  {isNotRecommended ? 'Not Recommended' : 'Recommended'}
-                </span>
-                          </div>
-                      </div>
-                  </div> */}
-
-                  {/* Recommendation Warning Banner */}
-                  {/* {isNotRecommended && (
-                      <div className="warning-recommendation-banner">
-                          <AlertTriangle className="warning-icon" size={22} />
-                          <div className="warning-content">
-                              <h4 className="warning-title">Vehicle Distance Warning</h4>
-                              <p className="warning-message">{routeResult.vehicleMessage}</p>
-                          </div>
-                      </div>
-                  )} */}
-              {/* // </div> */}
-          {/* // )} */}
-      {/*    ============================================================*/}
+        
       </div>
     </div>
   );

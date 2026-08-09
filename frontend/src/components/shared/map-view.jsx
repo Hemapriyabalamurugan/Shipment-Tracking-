@@ -34,34 +34,7 @@ const amberIcon = L.divIcon({
   iconAnchor: [12, 12],
 });
 
-// ===================================================================================================
-// from moulika
-// Animated Vehicle Icon for Leaflet Map
-const createVehicleIcon = (vehicleType = 'TRUCK') => {
-  const typeLower = (vehicleType || '').toLowerCase();
-  let emoji = '🚛';
-  if (typeLower.includes('bike')) emoji = '🏍️';
-  else if (typeLower.includes('car')) emoji = '🚗';
-  else if (typeLower.includes('van')) emoji = '🚐';
-  else if (typeLower.includes('heavy')) emoji = '🚚';
 
-  const html = `
-    <div class="moving-vehicle-marker">
-      <div class="vehicle-pulse-ring"></div>
-      <div class="vehicle-icon-box">
-        <span class="vehicle-emoji">${emoji}</span>
-      </div>
-    </div>
-  `;
-
-  return L.divIcon({
-    className: 'custom-vehicle-div-icon',
-    html: html,
-    iconSize: [42, 42],
-    iconAnchor: [21, 21]
-  });
-};
-// =====================================================================
 function FitBounds({ points }) {
   const map = useMap();
   useEffect(() => {
@@ -70,9 +43,7 @@ function FitBounds({ points }) {
       map.setView(points[0], 6);
     } else {
       const bounds = L.latLngBounds(points);
-      // map.fitBounds(bounds, {
-      //   padding: [60, 60],
-      // });
+     
       map.fitBounds(bounds, {
         padding: [20, 20],
         maxZoom: 10,
@@ -83,172 +54,34 @@ function FitBounds({ points }) {
 }
 
 export function MapView({
-  // shipment,
+ 
   points,
   route,
   className,
-  // ============
-  // showCurrent = true,
+ 
+ 
   tracking,
-  // ==================
+  
   zoom = 5,
 }) {
   const mapRef = useRef(null);
 
-//   ==================================================================
-//   from moulika
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [speedMultiplier, setSpeedMultiplier] = useState(1);
-  const animRef = useRef(null);
-  const lastTimeRef = useRef(null);
-// =====================================================================
-  // let allPoints = [];
-  // let polyline = [];
-
-  // if (shipment) {
-  //   allPoints = [
-  //     [shipment.origin.lat, shipment.origin.lng],
-  //     [shipment.destination.lat, shipment.destination.lng],
-  //   ];
-  //   if (showCurrent)
-  //     allPoints.push([
-  //       shipment.currentLocation.lat,
-  //       shipment.currentLocation.lng,
-  //     ]);
-  //   polyline = [
-  //     [shipment.origin.lat, shipment.origin.lng],
-  //     [shipment.currentLocation.lat, shipment.currentLocation.lng],
-  //     [shipment.destination.lat, shipment.destination.lng],
-  //   ];
-  // } else if (points && points.length > 0) {
-  //   allPoints = points.map((p) => [p.lat, p.lng]);
-  // }
 
 
 
-  // let allPoints = [];
-  // let polyline = [];
-
-  // if (tracking) {
-  //   if (tracking.origin) {
-  //     allPoints.push([tracking.origin.latitude, tracking.origin.longitude]);
-  //   }
-
-  //   if (tracking.currentLocation) {
-  //     allPoints.push([
-  //       tracking.currentLocation.latitude,
-  //       tracking.currentLocation.longitude,
-  //     ]);
-  //   }
-
-  //   if (tracking.destination) {
-  //     allPoints.push([
-  //       tracking.destination.latitude,
-  //       tracking.destination.longitude,
-  //     ]);
-  //   }
-
-  //   if (tracking.route) {
-  //     polyline = tracking.route.map((hub) => [hub.latitude, hub.longitude]);
-  //   }
-  // }
 
 
   let allPoints = [];
   let polyline = [];
 
 
-  const activeRouteCoords = polyline; // also from moulika
-  // from moulika
-  // ================================================================
-  // Reset animation when new route calculated
-  useEffect(() => {
-    if (activeRouteCoords.length >= 2) {
-      setProgress(0);
-      setIsPlaying(true);
-    }
-  }, [route]); // here was routeResult
-  // Animation Frame Loop
-  useEffect(() => {
-    if (!isPlaying || activeRouteCoords.length < 2) {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-      lastTimeRef.current = null;
-      return;
-    }
 
-    const durationSeconds = Math.max(8, activeRouteCoords.length * 4) / speedMultiplier;
 
-    const animate = (time) => {
-      if (lastTimeRef.current !== null) {
-        const delta = (time - lastTimeRef.current) / 1000;
-        setProgress((prev) => {
-          const next = prev + delta / durationSeconds;
-          if (next >= 1) {
-            setIsPlaying(false);
-            return 1;
-          }
-          return next;
-        });
-      }
-      lastTimeRef.current = time;
-      animRef.current = requestAnimationFrame(animate);
-    };
+  
 
-    animRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, [isPlaying, activeRouteCoords.length, speedMultiplier]);
+  
 
-  // Interpolate vehicle position along multi-segment polyline path
-  const getVehiclePositionAndSegment = () => {
-    if (activeRouteCoords.length < 2) return { pos: null, currentSegment: null, hopIndex: 0 };
-
-    const segmentLengths = [];
-    let totalLen = 0;
-    for (let i = 0; i < activeRouteCoords.length - 1; i++) {
-      const p1 = activeRouteCoords[i];
-      const p2 = activeRouteCoords[i + 1];
-      const dist = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
-      segmentLengths.push(dist);
-      totalLen += dist;
-    }
-
-    if (totalLen === 0) return { pos: activeRouteCoords[0], currentSegment: null, hopIndex: 0 };
-
-    const targetDist = progress * totalLen;
-    let accumulated = 0;
-
-    for (let i = 0; i < segmentLengths.length; i++) {
-      const segLen = segmentLengths[i];
-      if (accumulated + segLen >= targetDist || i === segmentLengths.length - 1) {
-        const segProgress = segLen > 0 ? (targetDist - accumulated) / segLen : 0;
-        const clampedProg = Math.max(0, Math.min(1, segProgress));
-
-        const p1 = activeRouteCoords[i];
-        const p2 = activeRouteCoords[i + 1];
-        const lat = p1[0] + (p2[0] - p1[0]) * clampedProg;
-        const lng = p1[1] + (p2[1] - p1[1]) * clampedProg;
-
-        const fromNode = activePathNodes[i];
-        const toNode = activePathNodes[i + 1];
-
-        return {
-          pos: [lat, lng],
-          currentSegment: { from: fromNode?.city, to: toNode?.city, hop: i + 1 },
-          hopIndex: i
-        };
-      }
-      accumulated += segLen;
-    }
-
-    return { pos: activeRouteCoords[activeRouteCoords.length - 1], currentSegment: null, hopIndex: activeRouteCoords.length - 2 };
-  };
-
-  const { pos: vehiclePos, currentSegment } = getVehiclePositionAndSegment();
-
-  // ======================================================================================================================================
+  
 
   if (tracking) {
     if (tracking.origin) {
@@ -277,86 +110,28 @@ export function MapView({
 
     polyline = route?.map((p) => [p.lat, p.lng]) ?? [];
   }
-  // =================================================================================
-
-  // if (route && route.length > 0) {
-  //   polyline = route.map((p) => [p.lat, p.lng]);
-  // }
+  
 
   return (
     <MapContainer
       center={allPoints[0] ?? [20.5937, 78.9629]}
       zoom={route ? 6 : 5}
       scrollWheelZoom={false}
-      className={cn("h-full w-full rounded-xl", className)}
+      
+      className={cn("relative z-0 isolate h-full w-full rounded-xl", className)}
       ref={(m) => {
         if (m) mapRef.current = m;
       }}
     >
       <TileLayer
         attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        // url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png
+        
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
       <FitBounds points={allPoints} />
 
-      {/* ================================================================================================= */}
-      {/* {shipment && (
-        <> */}
-      {/* <Marker
-            position={[shipment.origin.lat, shipment.origin.lng]}
-            icon={blueIcon}
-          >
-            <Popup>
-              <div className="text-sm">
-                <p className="font-semibold">Origin</p>
-                <p className="text-muted-foreground">{shipment.senderCity}</p>
-              </div>
-            </Popup>
-          </Marker> */}
-
-      {/* <Marker
-            position={[shipment.destination.lat, shipment.destination.lng]}
-            icon={greenIcon}
-          >
-            <Popup>
-              <div className="text-sm">
-                <p className="font-semibold">Destination</p>
-                <p className="text-muted-foreground">{shipment.receiverCity}</p>
-              </div>
-            </Popup>
-          </Marker> */}
-
-      {/* {showCurrent && (
-            <Marker
-              position={[
-                shipment.currentLocation.lat,
-                shipment.currentLocation.lng,
-              ]}
-              icon={amberIcon}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <p className="font-semibold">Current location</p>
-                  <p className="text-muted-foreground">
-                    {shipment.currentLocation.name}
-                  </p>
-                </div>
-              </Popup>
-            </Marker>
-          )} */}
-
-      {/* <Polyline
-            positions={polyline}
-            pathOptions={{
-              color: "hsl(217, 91%, 50%)",
-              weight: 3,
-              opacity: 0.7,
-              dashArray: showCurrent ? undefined : "8 8",
-            }}
-          /> */}
-      {/* </>
-      )} */}
+      
+      
 
       {tracking && (
         <>
@@ -417,7 +192,7 @@ export function MapView({
           />
         </>
       )}
-      {/* ==================================================================================================== */}
+     
 
       {points?.map((p, i) => (
         <Marker
@@ -454,28 +229,7 @@ export function MapView({
           }}
         />
       )}
-    {/*  from moulikaa*/}
-    {/*  ==============================================*/}
-      {vehiclePos && (
-          <Marker
-              position={vehiclePos}
-              icon={vehicleIcon}
-              zIndexOffset={1000}
-          >
-            <Popup className="vehicle-live-popup">
-              <div className="vehicle-popup-content">
-                <h4><Truck size={16} /> {routeResult?.selectedVehicle || 'Vehicle'} En Route</h4>
-                <p><strong>Speed:</strong> {speedMultiplier * 60} km/h (Simulated)</p>
-                <p><strong>Current Leg:</strong> {currentSegment ? `${currentSegment.from} ➔ ${currentSegment.to}` : 'Arrived'}</p>
-                <p><strong>Progress:</strong> {Math.round(progress * 100)}% Complete</p>
-              </div>
-            </Popup>
-            <Tooltip direction="top" permanent offset={[0, -25]} className="vehicle-live-tooltip">
-              {routeResult?.selectedVehicle || 'Vehicle'}: {Math.round(progress * 100)}%
-            </Tooltip>
-          </Marker>
-      )}
-    {/*  ===========================================================*/}
+     
     </MapContainer>
   );
 }

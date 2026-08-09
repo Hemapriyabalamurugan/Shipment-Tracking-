@@ -28,17 +28,23 @@ export function ShipmentTable({
 }) {
   const [search, setSearch] = useState("");
 
-  const filteredShipments = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-    if (!keyword) return shipments;
+ const filteredShipments = useMemo(() => {
+   const keyword = search.trim().toLowerCase();
 
-    return shipments.filter((s) =>
-      s.trackingNumber?.toLowerCase().includes(keyword) ||
-      s.senderCity?.toLowerCase().includes(keyword) ||
-      s.receiverCity?.toLowerCase().includes(keyword) ||
-      s.senderName?.toLowerCase().includes(keyword)
-    );
-  }, [shipments, search]);
+   const filtered = keyword
+     ? shipments.filter(
+         (s) =>
+           s.trackingNumber?.toLowerCase().includes(keyword) ||
+           s.senderCity?.toLowerCase().includes(keyword) ||
+           s.receiverCity?.toLowerCase().includes(keyword) ||
+           s.senderName?.toLowerCase().includes(keyword),
+       )
+     : shipments;
+
+   return [...filtered].sort(
+     (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+   );
+ }, [shipments, search]);
 
   if (shipments.length === 0) {
     return (
@@ -55,18 +61,7 @@ export function ShipmentTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
-          <Input
-            placeholder="Search tracking #, city, or sender..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-card shadow-2xs"
-          />
-        </div>
-        <div className="text-xs text-muted-foreground font-medium">
-          Showing <span className="font-bold text-foreground">{filteredShipments.length}</span> of {shipments.length}
-        </div>
+       
       </div>
 
       {filteredShipments.length === 0 ? (

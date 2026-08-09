@@ -15,10 +15,7 @@ public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
 
-//    @GetMapping("/admin/dashboard")
-//    public DashboardAnalyticsResponse getAdminDashboard() {
-//        return analyticsService.getAdminDashboard();
-//    }
+
 
     @GetMapping("/admin/dashboard")
     public DashboardAnalyticsResponse getAdminDashboard(

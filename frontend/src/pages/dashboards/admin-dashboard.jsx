@@ -1,14 +1,14 @@
 import { useAuth } from "@/context/auth-context";
 import {
   useShipments,
-  useVehicles,
+  // useVehicles,
   useTeam,
   useAnalytics,
-  useActivity,
-  useMicroservices,
+  // useActivity,
+  // useMicroservices,
   usePodRecords,
-  useNotificationMetrics,
-  useDrivers,
+  // useNotificationMetrics,
+  // useDrivers,
 } from "@/lib/hooks";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -40,36 +40,37 @@ import { Link } from "react-router-dom";
 export default function AdminDashboard() {
   const { user } = useAuth();
   const shipments = useShipments();
-  const vehicles = useVehicles();
-  const drivers = useDrivers();
+  // const vehicles = useVehicles();
+  // const drivers = useDrivers();
   const team = useTeam();
   const analytics = useAnalytics();
-  const activity = useActivity();
-  const microservices = useMicroservices();
+  // const activity = useActivity();
+  // const microservices = useMicroservices();
   const podRecords = usePodRecords();
-  const notificationMetrics = useNotificationMetrics();
+  // const notificationMetrics = useNotificationMetrics();
 
   const isLoading =
     shipments.isLoading ||
-    vehicles.isLoading ||
-    analytics.isLoading ||
-    microservices.isLoading;
+    // vehicles.isLoading ||
+    analytics.isLoading 
+    // microservices.isLoading
+    ;
 
   const activeShipments =
     shipments.data?.filter((s) =>
       ["IN_TRANSIT", "OUT_FOR_DELIVERY", "PICKED_UP"].includes(s.status),
     ) ?? [];
-  const activeVehicles =
-    vehicles.data?.filter((v) => v.status === "active") ?? [];
+  // const activeVehicles =
+  //   vehicles.data?.filter((v) => v.status === "active") ?? [];
   const pendingPod =
     podRecords.data?.filter(
       (p) => p.status === "pending" || p.status === "missing",
     ) ?? [];
   const totalUsers = team.data?.length ?? 0;
 
-  const operationalMs =
-    microservices.data?.filter((m) => m.status === "operational").length ?? 0;
-  const totalMs = microservices.data?.length ?? 0;
+  // const operationalMs =
+  //   microservices.data?.filter((m) => m.status === "operational").length ?? 0;
+  // const totalMs = microservices.data?.length ?? 0;
 
   if (isLoading) {
     return (
@@ -99,10 +100,7 @@ export default function AdminDashboard() {
                 <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl text-foreground">
                   Command Center
                 </h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Systems Operational ({operationalMs}/{totalMs || 4})
-                </span>
+               
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Welcome back, <span className="font-semibold text-foreground">{user.firstName ?? user.name}</span> — real-time logistics operations & fleet telemetry
@@ -174,12 +172,12 @@ export default function AdminDashboard() {
                   Real-time monitor of packages currently dispatched across carrier networks
                 </CardDescription>
               </div>
-              <Button asChild variant="outline" size="sm" className="text-xs font-semibold">
+              {/* <Button asChild variant="outline" size="sm" className="text-xs font-semibold">
                 <Link to="/app/shipments">
                   View All ({shipments.data?.length ?? 0})
                   <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
-              </Button>
+              </Button> */}
             </div>
           </CardHeader>
           <CardContent className="pt-5">

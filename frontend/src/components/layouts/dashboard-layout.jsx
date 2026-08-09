@@ -206,21 +206,6 @@ function Topbar({ onMenuClick }) {
         <Menu className="h-5 w-5" />
       </button>
 
-      <div className="relative hidden max-w-sm flex-1 md:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/70" />
-        <input
-          type="text"
-          placeholder="Search shipments, tracking #..."
-          className="h-9 w-full rounded-lg border border-border/80 bg-background/60 pl-9 pr-3 text-xs placeholder:text-muted-foreground/60 transition-all focus:border-primary/80 focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              const q = e.target.value.trim();
-              if (q) navigate(`/app/shipments?q=${encodeURIComponent(q)}`);
-            }
-          }}
-        />
-      </div>
-
       <div className="ml-auto flex items-center gap-2">
         <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold uppercase tracking-wider">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -228,6 +213,8 @@ function Topbar({ onMenuClick }) {
         </div>
 
         {/* Notifications Dropdown */}
+        
+        {user.role !== "admin" && ( 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted/80 hover:text-foreground">
@@ -240,10 +227,15 @@ function Topbar({ onMenuClick }) {
               )}
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-84 p-0 shadow-lg border border-border/80">
+          <DropdownMenuContent
+            align="end"
+            className="w-84 p-0 shadow-lg border border-border/80"
+          >
             <div className="flex items-center justify-between border-b border-border/80 px-4 py-3 bg-muted/30">
               <div>
-                <p className="text-xs font-bold text-foreground">Notifications</p>
+                <p className="text-xs font-bold text-foreground">
+                  Notifications
+                </p>
                 <p className="text-[10px] text-muted-foreground">
                   {unread.length} unread alert{unread.length === 1 ? "" : "s"}
                 </p>
@@ -312,6 +304,7 @@ function Topbar({ onMenuClick }) {
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
 
         {/* User Account Menu */}
         <DropdownMenu>
@@ -333,7 +326,10 @@ function Topbar({ onMenuClick }) {
               <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground/70 sm:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 shadow-lg border border-border/80">
+          <DropdownMenuContent
+            align="end"
+            className="w-56 shadow-lg border border-border/80"
+          >
             <DropdownMenuLabel className="font-normal p-3">
               <div className="flex flex-col gap-0.5">
                 <p className="text-xs font-bold text-foreground">{user.name}</p>
@@ -343,14 +339,17 @@ function Topbar({ onMenuClick }) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/app/profile")} className="text-xs font-medium cursor-pointer">
+            <DropdownMenuItem
+              onClick={() => navigate("/app/profile")}
+              className="text-xs font-medium cursor-pointer"
+            >
               <UserIcon className="mr-2 h-4 w-4 text-muted-foreground" />
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate("/app/settings")} className="text-xs font-medium cursor-pointer">
+            {/* <DropdownMenuItem onClick={() => navigate("/app/settings")} className="text-xs font-medium cursor-pointer">
               <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
               Settings
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-xs font-semibold text-destructive focus:text-destructive cursor-pointer"

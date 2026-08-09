@@ -1,5 +1,10 @@
 import { useAuth } from "@/context/auth-context";
-import { useMyShipments, usePodRecords } from "@/lib/hooks";
+import { useState } from "react";
+import {
+  useMyShipments,
+  useCancelShipmentByCustomer,
+ 
+} from "@/lib/hooks";
 import { LoadingState, EmptyState } from "@/components/shared/states";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,15 +19,16 @@ import {
   ArrowRight,
   Search,
   ChevronRight,
+  PackageX,
 } from "lucide-react";
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
   const myShipments = useMyShipments(user.id);
-  const podRecords = usePodRecords();
-  // const isLoading = myShipments.isLoading;
-  const isLoading = myShipments.isLoading || podRecords.isLoading;
-  const pods = podRecords.data ?? [];
+  
+  const isLoading = myShipments.isLoading;
+  
+  
 
   const all = myShipments.data ?? [];
   const active = all.filter((s) =>
@@ -117,16 +123,10 @@ export default function CustomerDashboard() {
         <CardContent className="pt-5">
           {all.length > 0 ? (
             <div className="space-y-3">
-              {/* {all.map((s) => (
+              {all.map((s) => (
                 <DeliveryRow key={s.id} shipment={s} />
-              ))} */}
-              {all.map((s) => {
-                const pod = pods.find(
-                  (p) => Number(p.shipmentId) === Number(s.id),
-                );
-
-                return <DeliveryRow key={s.id} shipment={s} pod={pod} />;
-              })}
+              ))}
+              
             </div>
           ) : (
             <EmptyState
@@ -177,12 +177,59 @@ function MiniStat({ label, value, icon: Icon, class: cls }) {
 }
 
 function FeaturedTrackingCard({ shipment }) {
+  // =================================================================
+  const cancelMutation = useCancelShipmentByCustomer();
+
+  const [showCancelForm, setShowCancelForm] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelError, setCancelError] = useState("");
+
+  const shipmentStatus = shipment.status?.toUpperCase();
+
+  const canCancel =
+    !shipment.cancelledByCustomer &&
+    (shipmentStatus === "CREATED" || shipmentStatus === "PICKED_UP");
+  // =======================================================================
   const etaLabel = relativeDay(shipment.estimatedDeliveryAt ?? shipment.estimatedDelivery);
   const isOutForDelivery = shipment.status === "OUT_FOR_DELIVERY" || shipment.status === "out_for_delivery";
 const isDelivered =
   shipment.status === "DELIVERED" || shipment.status === "delivered";
+  
 
-// const progress = isDelivered ? 100 : (shipment.progress ?? 60);
+  // const progress = isDelivered ? 100 : (shipment.progress ?? 60);
+  
+  const handleCancelShipment = async () => {
+    const reason = cancelReason.trim();
+
+    setCancelError("");
+
+    if (reason.length < 5) {
+      setCancelError(
+        "Please provide a cancellation reason of at least 5 characters.",
+      );
+      return;
+    }
+
+    try {
+      await cancelMutation.mutateAsync({
+        id: shipment.id,
+        reason,
+      });
+
+      setCancelReason("");
+      setShowCancelForm(false);
+    } catch (error) {
+      console.error("Customer cancellation error:", error);
+
+      setCancelError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Unable to cancel this parcel.",
+      );
+    }
+  };
+
+  // ===================================================================
   return (
     <Card className="overflow-hidden shadow-card border-border/80">
       <div
@@ -206,9 +253,9 @@ const isDelivered =
               <Truck className="h-7 w-7 animate-bounce-subtle" />
             </span>
             <div>
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              {/* <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 {isOutForDelivery ? "Arriving Today" : "Package In Transit"}
-              </p>
+              </p> */}
               <p className="text-xl sm:text-2xl font-extrabold text-foreground mt-0.5">
                 {etaLabel}
               </p>
@@ -224,9 +271,7 @@ const isDelivered =
               <strong className="text-foreground">{shipment.senderCity}</strong>
             </span>
             {/* <span className="font-bold text-primary">  -------------------  </span> */}
-            <span className="mx-6 text-2xl text-gray-500">
-              ---------→
-            </span>
+            <span className="mx-6 text-2xl text-gray-500">---------→</span>
             <span>
               To:{" "}
               <strong className="text-foreground">
@@ -262,12 +307,115 @@ const isDelivered =
             {shipment.trackingNumber}
           </p>
         </div>
-        <Button asChild variant="brand" size="sm" className="font-bold text-xs">
+        {/* <Button asChild variant="brand" size="sm" className="font-bold text-xs">
           <Link to={`/app/shipments/${shipment.id}`}>
             Live Track <ArrowRight className="ml-1.5 h-4 w-4" />
           </Link>
-        </Button>
+        </Button> */}
+
+        <div className="flex items-center gap-2">
+          {canCancel && (
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="font-bold text-xs"
+              onClick={() => {
+                setCancelError("");
+                setShowCancelForm(true);
+              }}
+            >
+              <PackageX className="mr-1.5 h-4 w-4" />
+              Cancel Parcel
+            </Button>
+          )}
+          <Button
+            asChild
+            variant="brand"
+            size="sm"
+            className="font-bold text-xs"
+          >
+            <Link to={`/app/shipments/${shipment.id}`}>
+              Live Track
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
       </div>
+
+      {/* ============================================================ */}
+
+      {showCancelForm && canCancel && (
+        <div className="border-t border-border/60 bg-muted/10 px-6 py-4">
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                Why do you want to cancel this parcel?
+              </p>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Please provide a reason before confirming the cancellation.
+              </p>
+            </div>
+
+            <textarea
+              value={cancelReason}
+              onChange={(e) => {
+                setCancelReason(e.target.value);
+                setCancelError("");
+              }}
+              placeholder="Enter cancellation reason..."
+              maxLength={1000}
+              rows={3}
+              disabled={cancelMutation.isPending}
+              className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+
+            {cancelError && (
+              <p className="text-xs font-medium text-destructive">
+                {cancelError}
+              </p>
+            )}
+
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">
+                {cancelReason.length}/1000
+              </span>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={cancelMutation.isPending}
+                  onClick={() => {
+                    setShowCancelForm(false);
+                    setCancelReason("");
+                    setCancelError("");
+                  }}
+                >
+                  Keep Parcel
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  disabled={
+                    cancelMutation.isPending || cancelReason.trim().length < 5
+                  }
+                  onClick={handleCancelShipment}
+                >
+                  {cancelMutation.isPending
+                    ? "Cancelling..."
+                    : "Confirm Cancellation"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ============================================================ */}
     </Card>
   );
 }
@@ -324,7 +472,7 @@ const isDelivered =
 //   );
 // }
 
-function DeliveryRow({ shipment, pod }) {
+function DeliveryRow({ shipment }) {
   const isDelivered =
     shipment.status === "DELIVERED" || shipment.status === "delivered";
 
@@ -332,7 +480,7 @@ function DeliveryRow({ shipment, pod }) {
     shipment.status === "OUT_FOR_DELIVERY" ||
     shipment.status === "out_for_delivery";
 
-  const podStatus = pod?.verificationStatus?.toUpperCase();
+  // const podStatus = pod?.verificationStatus?.toUpperCase();
 
   return (
     <div className="rounded-xl border border-border/70 bg-card transition-all hover:border-primary/40 hover:shadow-2xs">
@@ -394,26 +542,7 @@ function DeliveryRow({ shipment, pod }) {
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
       </Link>
 
-      {/* POD actions - only after delivery */}
-      {isDelivered && (
-        <div className="border-t border-border/60 px-4 py-3">
-          {!pod ? (
-            <Button asChild size="sm">
-              <Link to={`/app/customer/pod/${shipment.id}`}>Upload POD</Link>
-            </Button>
-          ) : podStatus === "VERIFIED" ? (
-            <div className="flex items-center justify-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-600">
-              <CheckCircle2 className="h-4 w-4" />
-              POD Verified
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-600">
-              <Clock className="h-4 w-4" />
-              Pending Verification
-            </div>
-          )}
-        </div>
-      )}
+      
     </div>
   );
 }

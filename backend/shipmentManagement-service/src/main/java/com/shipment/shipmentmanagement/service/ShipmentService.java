@@ -665,20 +665,20 @@ public Shipment acceptShipment(Long shipmentId) {
             "PICKED_UP"
     );
 
-    System.out.println("CUSTOMER notification sent.");
+
 
 //    notificationClient.markShipmentAccepted(
 //            shipment.getId(),
 //            operatorId
 //    );
-    System.out.println("Updating operator notifications...");
+
 
     notificationClient.markShipmentAccepted(
             shipment.getId(),
             operatorId
     );
 
-    System.out.println("Operator notifications updated.");
+
 
     return shipment;
 }
@@ -739,9 +739,19 @@ public Shipment acceptShipment(Long shipmentId) {
             );
         }
 
+//======================================================================================
+
+//  ==================================================================================
+
         if (!shipment.getDriverId().equals(currentUser.getId())) {
             throw new RuntimeException(
                     "This shipment is assigned to another operator."
+            );
+        }
+
+        if (Boolean.TRUE.equals(shipment.getCancelledByCustomer())) {
+            throw new RuntimeException(
+                    "This parcel was cancelled by the customer. No further operations are allowed."
             );
         }
 
@@ -845,6 +855,91 @@ public Shipment acceptShipment(Long shipmentId) {
                 message,
                 status.name()
         );
+
+        return updatedShipment;
+    }
+
+    @Transactional
+    public Shipment cancelShipmentByCustomer(
+            Long shipmentId,
+            CustomerCancellationRequest request
+    ) {
+
+        // 1. Get currently logged-in user
+        UserProfileResponse currentUser =
+                authClient.getCurrentUser();
+
+        // 2. Only CUSTOMER can use this operation
+        if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRole())) {
+            throw new RuntimeException(
+                    "Only customers can cancel their parcel."
+            );
+        }
+
+        // 3. Find shipment
+        Shipment shipment = shipmentRepository.findById(shipmentId)
+                .orElseThrow(() ->
+                        new RuntimeException("Shipment not found")
+                );
+
+        // 4. Make sure this parcel belongs to this customer
+        if (shipment.getCustomerId() == null ||
+                !shipment.getCustomerId().equals(currentUser.getId())) {
+
+            throw new RuntimeException(
+                    "You are not authorized to cancel this parcel."
+            );
+        }
+
+        // 5. Prevent duplicate cancellation
+        if (Boolean.TRUE.equals(
+                shipment.getCancelledByCustomer()
+        )) {
+            throw new RuntimeException(
+                    "This parcel has already been cancelled."
+            );
+        }
+
+        // 6. Customer can cancel ONLY before IN_TRANSIT
+        // According to our lifecycle this means CREATED or PICKED_UP.
+        if (shipment.getStatus() != ShipmentStatus.CREATED &&
+                shipment.getStatus() != ShipmentStatus.PICKED_UP) {
+
+            throw new RuntimeException(
+                    "This parcel can no longer be cancelled."
+            );
+        }
+
+        // 7. Store cancellation information.
+        // IMPORTANT:
+        // We are NOT changing ShipmentStatus here.
+        shipment.setCancelledByCustomer(true);
+        shipment.setCancellationReason(
+                request.getReason().trim()
+        );
+        shipment.setCancelledAt(LocalDateTime.now());
+
+        // Customer cancellation is a dedicated business operation.
+// Customer still cannot use the general status-update endpoint.
+        shipment.setStatus(ShipmentStatus.CANCELLED);
+
+        Shipment updatedShipment =
+                shipmentRepository.save(shipment);
+
+        // 8. Notify ONLY the Business Client
+        if (updatedShipment.getBusinessClientId() != null) {
+
+            sendNotification(
+                    updatedShipment.getBusinessClientId(),
+                    updatedShipment,
+                    "Shipment Cancelled by Customer",
+                    "Customer cancelled shipment "
+                            + updatedShipment.getTrackingNumber()
+                            + ".",
+
+                    "CUSTOMER_CANCELLED"
+            );
+        }
 
         return updatedShipment;
     }
@@ -991,6 +1086,16 @@ public Shipment acceptShipment(Long shipmentId) {
                         .deliveredAt(shipment.getDeliveredAt())
                         .build())
                 .toList();
+    }
+
+    public Shipment getShipmentByIdInternal(Long id) {
+
+        return shipmentRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Shipment not found with id: " + id
+                        )
+                );
     }
 }
 

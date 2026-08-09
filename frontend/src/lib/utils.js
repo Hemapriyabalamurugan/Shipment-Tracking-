@@ -47,14 +47,7 @@ export function timeAgo(iso) {
   if (day < 7) return `${day}d ago`;
   return formatDate(iso);
 }
-// export function initials(name) {
-//   return name
-//     .split(" ")
-//     .map((p) => p[0])
-//     .slice(0, 2)
-//     .join("")
-//     .toUpperCase();
-// }
+
 export function initials(name) {
   if (!name) return "?";
 

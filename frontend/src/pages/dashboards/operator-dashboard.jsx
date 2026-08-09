@@ -86,17 +86,28 @@ export default function OperatorDashboard() {
 
   const assigned = shipments.data ?? [];
   const pending = assigned.filter(
-    (s) => s.status === "CREATED" || s.status === "PICKED_UP",
+    (s) =>
+      !s.cancelledByCustomer &&
+      (s.status === "CREATED" || s.status === "PICKED_UP"),
   );
 
+  // const active = assigned.filter(
+  //   (s) => s.status === "IN_TRANSIT" || s.status === "OUT_FOR_DELIVERY",
+  // );
   const active = assigned.filter(
-    (s) => s.status === "IN_TRANSIT" || s.status === "OUT_FOR_DELIVERY",
+    (s) =>
+      !s.cancelledByCustomer &&
+      (s.status === "IN_TRANSIT" || s.status === "OUT_FOR_DELIVERY"),
   );
 
   const delivered = assigned.filter((s) => s.status === "DELIVERED");
 
   const failed = assigned.filter(
     (s) => s.status === "FAILED_DELIVERY" || s.status === "CANCELLED",
+  );
+
+  const customerCancelled = assigned.filter(
+    (s) => s.cancelledByCustomer === true,
   );
   const recentNotifications = notifications.data?.slice(0, 5) ?? [];
 
@@ -164,16 +175,20 @@ export default function OperatorDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 max-h-[560px] overflow-y-auto scrollbar-thin p-5">
-            {active.length === 0 && pending.length === 0 ? (
+            {active.length === 0 &&
+            pending.length === 0 &&
+            customerCancelled.length === 0 ? (
               <div className="flex flex-col items-center py-12 text-center">
                 <div className="h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-3">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
                 <p className="text-sm font-bold text-foreground">All Clear!</p>
-                <p className="mt-1 text-xs text-muted-foreground">You currently have no pending active deliveries assigned.</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  You currently have no pending active deliveries assigned.
+                </p>
               </div>
             ) : (
-              [...active, ...pending].map((s) => (
+              [...active, ...pending, ...customerCancelled].map((s) => (
                 <AssignmentCard
                   key={s.id}
                   shipment={s}
@@ -218,7 +233,9 @@ export default function OperatorDashboard() {
                     <Activity className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-bold text-foreground">{n.title}</p>
+                    <p className="truncate text-xs font-bold text-foreground">
+                      {n.title}
+                    </p>
                     <p className="truncate text-[11px] text-muted-foreground leading-relaxed mt-0.5">
                       {n.message}
                     </p>
@@ -334,6 +351,7 @@ function AssignmentCard({ shipment, acceptShipment, updateShipmentStatus }) {
 
   const StatusIcon = statusMeta.icon;
   const canAccept = shipment.status === "CREATED";
+  const isCustomerCancelled = shipment.cancelledByCustomer === true;
 
   function getProgress(status) {
     switch (status) {
@@ -389,14 +407,19 @@ function AssignmentCard({ shipment, acceptShipment, updateShipmentStatus }) {
         </span>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-2.5">
+      {/* <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/40 pt-2.5">
         <span className="font-medium">
-          ETA: <span className="font-bold text-foreground">{relativeDay(shipment.estimatedDeliveryAt)}</span>
+          ETA:{" "}
+          <span className="font-bold text-foreground">
+            {relativeDay(shipment.estimatedDeliveryAt)}
+          </span>
         </span>
-        <span className="font-semibold text-foreground">Progress: {progress}%</span>
-      </div>
+        <span className="font-semibold text-foreground">
+          Progress: {progress}%
+        </span>
+      </div> */}
 
-      <div className="h-1.5 overflow-hidden rounded-full bg-muted/80">
+      {/* <div className="h-1.5 overflow-hidden rounded-full bg-muted/80">
         <div
           className={cn(
             "h-full rounded-full transition-all duration-300",
@@ -408,9 +431,9 @@ function AssignmentCard({ shipment, acceptShipment, updateShipmentStatus }) {
                   ? "bg-amber-500"
                   : "bg-primary",
           )}
-          style={{ width: `${progress}%` }}
+          // style={{ width: `${progress}%` }}
         />
-      </div>
+      </div> */}
 
       {canAccept && (
         <div className="pt-1">
@@ -430,21 +453,34 @@ function AssignmentCard({ shipment, acceptShipment, updateShipmentStatus }) {
         </div>
       )}
 
-      {isActive && (
+      {(isActive || isCustomerCancelled) && (
         <div className="pt-1 flex items-center gap-2">
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="w-full text-xs font-semibold"
-          >
-            <Link to={`/app/operator/navigation/${shipment.id}`}>
-              <Navigation className="mr-1.5 h-3.5 w-3.5 text-primary" />
-              Open Live Navigation
-            </Link>
-          </Button>
+          {isCustomerCancelled ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="destructive"
+              className="w-full text-xs font-bold"
+              disabled
+            >
+              <XCircle className="mr-1.5 h-3.5 w-3.5" />
+              Cancelled by Customer
+            </Button>
+          ) : (
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="w-full text-xs font-semibold"
+            >
+              <Link to={`/app/operator/navigation/${shipment.id}`}>
+                <Navigation className="mr-1.5 h-3.5 w-3.5 text-primary" />
+                Open Live Navigation
+              </Link>
+            </Button>
+          )}
         </div>
       )}
     </div>
   );
-}
+}

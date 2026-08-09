@@ -16,7 +16,6 @@ export function RequireAuth({ roles }) {
       </div>
     );
   }
-// console.log("RequireAuth user:", user, "loading:", loading); //////
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

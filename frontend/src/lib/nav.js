@@ -36,7 +36,7 @@ export const NAV_BY_ROLE = {
           to: "/app/admin/dashboard",
           icon: LayoutDashboard,
         },
-       
+
         { label: "Analytics", to: "/app/analytics", icon: BarChart3 },
       ],
     },
@@ -63,7 +63,7 @@ export const NAV_BY_ROLE = {
       label: "Administration",
       items: [
         { label: "User Management", to: "/app/team", icon: Users },
-        // { label: "Role Management", to: "/app/roles", icon: ShieldCheck },
+        
       ],
     },
   ],
@@ -81,12 +81,6 @@ export const NAV_BY_ROLE = {
           to: "/app/shipments",
           icon: Package,
           badge: "shipments",
-        },
-        {
-          label: "Proof of Delivery",
-          to: "/app/pod",
-          icon: ClipboardCheck,
-          badge: "pod",
         },
       ],
     },
@@ -130,6 +124,7 @@ export const NAV_BY_ROLE = {
           icon: ClipboardCheck,
           badge: "pod",
         },
+        { label: "Route Management", to: "/app/routes", icon: Route },
       ],
     },
   ],
@@ -156,6 +151,7 @@ export const NAV_BY_ROLE = {
           icon: ClipboardCheck,
           badge: "pod",
         },
+        { label: "Route Management", to: "/app/routes", icon: Route },
       ],
     },
     {
@@ -191,13 +187,7 @@ export const NAV_BY_ROLE = {
           icon: Package,
           badge: "shipments",
         },
-        // { label: "Live Map", to: "/app/live-map", icon: Map },
-        // {
-        //   label: "Proof of Delivery",
-        //   to: "/app/pod",
-        //   icon: ClipboardCheck,
-        //   badge: "pod",
-        // },
+        ,
       ],
     },
     // {
@@ -207,13 +197,7 @@ export const NAV_BY_ROLE = {
   ],
 };
 
-// export const ROLE_HOME = {
-//   admin: "/app/dashboard",
-//   operator: "/app/dashboard",
-//   business: "/app/dashboard",
-//   customer: "/app/dashboard",
-//   support: "/app/dashboard",
-// };
+
 export const ROLE_HOME = {
   admin: "/app/admin/dashboard",
   customer: "/app/customer/dashboard",
@@ -223,7 +207,7 @@ export const ROLE_HOME = {
 };
 
 export const PAGE_ACCESS = {
-  // "/app/dashboard": ["admin", "logistics_operator", "business_client", "customer", "support_agent"],
+  
 
   // Dashboards
   "/app/admin/dashboard": ["admin"],
@@ -243,13 +227,13 @@ export const PAGE_ACCESS = {
   // shared pages
   "/app/live-map": ["admin", "support_agent"],
   "/app/track": ["admin", "business_client", "customer"],
-  // "/app/fleet": ["admin"],
+  
   "/app/drivers": ["admin"],
   "/app/live-drivers": ["admin"],
   "/app/team": ["admin"],
   "/app/roles": ["admin"],
   "/app/tickets": ["admin", "customer", "support_agent"],
-  "/app/billing": ["admin", "business_client"],
+  
   // "/app/settings": [
   //   "admin",
   //   "logistics_operator",
@@ -272,18 +256,13 @@ export const PAGE_ACCESS = {
     "support_agent",
   ],
   "/app/eta-prediction": ["admin"],
-  "/app/routes": ["admin"],
-  "/app/pod": [
-    "admin",
-    "logistics_operator",
-    "business_client",
-     "customer",
-  ],
+  "/app/routes": ["admin", "business_client", "customer"],
+  "/app/pod": ["admin", "logistics_operator", "business_client", "customer"],
   "/app/reports": ["admin"],
   "/app/system-monitoring": ["admin"],
   "/app/audit-logs": ["admin"],
   "/app/create-shipment": ["business_client"],
-  
+
   "/app/shipment-history": ["business_client"],
   "/app/business-reports": ["business_client"],
   "/app/deliveries": ["customer"],
