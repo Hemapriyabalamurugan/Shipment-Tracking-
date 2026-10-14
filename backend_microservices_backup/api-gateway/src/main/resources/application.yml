@@ -1,0 +1,88 @@
+
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/api/auth/**,/api/admin/**,/api/password/**
+
+        - id: delivery-service
+          uri: lb://DELIVERY-SERVICE
+          predicates:
+            - Path=/api/drivers/**
+
+        - id: notification-service
+          uri: lb://NOTIFICATION-SERVICE
+          predicates:
+            - Path=/api/notifications/**
+
+        - id: pod-service
+          uri: lb://POD-SERVICE
+          predicates:
+            - Path=/api/pod/**
+
+        - id: shipment-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/shipments/**
+
+        - id: navigation-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/navigation/**
+
+        - id: journey-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/journey/**
+
+        - id: route-finder-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/routes/**
+
+        - id: hub-service
+          uri: lb://SHIPMENTMANAGEMENT-SERVICE
+          predicates:
+            - Path=/api/hubs/**
+
+        - id: analytics-service
+          uri: lb://ANALYTICS-SERVICE
+          predicates:
+            - Path=/api/analytics/**
+
+        - id: delivery-reports-service
+          uri: lb://DELIVERY-REPORTS-SERVICE
+          predicates:
+            - Path=/api/delivery-reports/**
+
+jwt:
+  secret: ${SHIPTRACK_JWT_SECRET:myVeryLongSecretKeyForShipmentApplicationJwtAuthentication2025}
+  expiration: 86400000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

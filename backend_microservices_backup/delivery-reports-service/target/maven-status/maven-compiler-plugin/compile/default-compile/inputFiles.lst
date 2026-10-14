@@ -1,0 +1,13 @@
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\client\AuthClient.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\client\ShipmentClient.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\config\FeignClientConfig.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\controller\DeliveryReportController.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\DeliveryReportsServiceApplication.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\dto\response\DeliveryReportResponse.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\dto\response\DeliveryVolumeTrendResponse.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\dto\response\ShipmentAnalyticsDataResponse.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\dto\response\ShipmentStatusResponse.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\dto\response\TopRouteResponse.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\dto\response\UserProfileResponse.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\service\DeliveryReportService.java
+C:\Users\suriy\Downloads\SHIPMENT_TECH_PRO (1)\SHIPMENT_TECH_PRO\backend\delivery-reports-service\src\main\java\com\shipment\deliveryreports\service\impl\DeliveryReportServiceImpl.java

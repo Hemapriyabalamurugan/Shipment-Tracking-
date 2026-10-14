@@ -1,0 +1,23 @@
+package com.shipment.analytics.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class DeliveryVolumeTrendResponse {
+
+    private LocalDate date;
+
+    private long volume;
+
+    private long delivered;
+
+    private long shipments;
+}

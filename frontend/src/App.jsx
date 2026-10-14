@@ -29,6 +29,7 @@ import { ReportsPage } from "@/pages/reports";
 
 
 
+import { DeliveryReportsPage } from "@/pages/delivery-reports";
 import { CreateShipmentPage } from "@/pages/create-shipment";
 
 import { ShipmentHistoryPage } from "@/pages/shipment-history";
@@ -113,6 +114,7 @@ export default function App() {
                 <Route path="routes" element={<RouteManagementPage />} />
                 <Route path="pod" element={<PodPage />} />
                 <Route path="reports" element={<ReportsPage />} />
+                <Route path="delivery-reports" element={<DeliveryReportsPage />} />
                 
                 <Route
                   path="create-shipment"

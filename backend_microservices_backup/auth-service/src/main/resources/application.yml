@@ -1,0 +1,45 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: ${SHIPTRACK_DB_URL:jdbc:postgresql://localhost:5432/ShiptrackPro}
+    username: ${SHIPTRACK_DB_USERNAME:postgres}
+    password: ${SHIPTRACK_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+    show-sql: true
+
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+   host: ${SHIPTRACK_EMAIL_HOST:smtp.gmail.com}
+   port: ${SHIPTRACK_EMAIL_PORT:587}
+   username: ${SHIPTRACK_EMAIL_USERNAME:noreply@shiptrack.com}
+   password: ${SHIPTRACK_EMAIL_PASSWORD:secret}
+   properties:
+     mail:
+       smtp:
+         auth: true
+         starttls:
+           enable: true
+jwt:
+ secret: ${SHIPTRACK_JWT_SECRET:myVeryLongSecretKeyForShipmentApplicationJwtAuthentication2025}
+ expiration: 86400000
+ refresh-token:
+   expiration: 604800000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+#  jackson:
+#    serialization:
+#      write-dates-as-timestamps: false

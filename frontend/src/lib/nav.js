@@ -38,6 +38,7 @@ export const NAV_BY_ROLE = {
         },
 
         { label: "Analytics", to: "/app/analytics", icon: BarChart3 },
+        { label: "Delivery Reports", to: "/app/delivery-reports", icon: FileText },
       ],
     },
     {
@@ -82,6 +83,11 @@ export const NAV_BY_ROLE = {
           icon: Package,
           badge: "shipments",
         },
+        {
+          label: "Delivery Reports",
+          to: "/app/delivery-reports",
+          icon: FileText,
+        },
       ],
     },
     {
@@ -105,6 +111,7 @@ export const NAV_BY_ROLE = {
           icon: LayoutDashboard,
         },
         { label: "Analytics", to: "/app/analytics", icon: BarChart3 },
+        { label: "Delivery Reports", to: "/app/delivery-reports", icon: FileText },
       ],
     },
     {
@@ -139,6 +146,7 @@ export const NAV_BY_ROLE = {
         },
 
         { label: "My Deliveries", to: "/app/deliveries", icon: Package },
+        { label: "Delivery Reports", to: "/app/delivery-reports", icon: FileText },
         {
           label: "Notifications",
           to: "/app/notifications",
@@ -259,6 +267,12 @@ export const PAGE_ACCESS = {
   "/app/routes": ["admin", "business_client", "customer"],
   "/app/pod": ["admin", "logistics_operator", "business_client", "customer"],
   "/app/reports": ["admin"],
+  "/app/delivery-reports": [
+    "admin",
+    "business_client",
+    "customer",
+    "logistics_operator",
+  ],
   "/app/system-monitoring": ["admin"],
   "/app/audit-logs": ["admin"],
   "/app/create-shipment": ["business_client"],
