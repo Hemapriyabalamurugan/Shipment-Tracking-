@@ -14,10 +14,8 @@ public class UpdateProfileRequest {
     @NotBlank
     private String lastName;
 
-    @NotBlank
     private String phone;
 
-    @NotBlank
     private String address;
 
     private String companyName;

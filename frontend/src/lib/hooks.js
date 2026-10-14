@@ -164,6 +164,18 @@ export function useUpdateTicketStatus() {
     },
   });
 }
+
+export function useCreateTicket() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (newTicket) => ticketsApi.create(newTicket),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: queryKeys.tickets,
+      });
+    },
+  });
+}
 export function useTeam() {
   return useQuery({
     queryKey: queryKeys.team,

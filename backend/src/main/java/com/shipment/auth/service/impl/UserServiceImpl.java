@@ -191,6 +191,8 @@ public class UserServiceImpl implements UserService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .role(user.getRole().name())
+                .address(user.getAddress())
+                .companyName(user.getCompanyName())
                 .build();
     }
 
@@ -229,6 +231,8 @@ public class UserServiceImpl implements UserService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .role(user.getRole().name())
+                .address(user.getAddress())
+                .companyName(user.getCompanyName())
                 .build();
     }
 

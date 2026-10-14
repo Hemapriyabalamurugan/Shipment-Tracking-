@@ -725,7 +725,8 @@ public class AuthServiceImpl implements AuthService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .phone(user.getPhone())
-//                .companyName(user.getCompanyName())
+                .address(user.getAddress())
+                .companyName(user.getCompanyName())
                 .build();
     }
 
@@ -744,6 +745,8 @@ public class AuthServiceImpl implements AuthService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .phone(user.getPhone())
+                .address(user.getAddress())
+                .companyName(user.getCompanyName())
                 .build();
     }
 }
